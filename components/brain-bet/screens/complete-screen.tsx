@@ -1,20 +1,31 @@
 'use client'
 
-import { ArrowRight, Check, PartyPopper } from 'lucide-react'
+import { ArrowRight, Check, PartyPopper, Trophy } from 'lucide-react'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
-import { PLAY_ORDER, STATS, TOTAL_GAMES, type StatId, type StatResult } from '@/lib/brain-bet'
+import { PLAY_ORDER, STATS, TOTAL_GAMES, type RawRecord, type StatId } from '@/lib/brain-bet'
 
 interface CompleteScreenProps {
   statId: StatId
   /** zero-based index of the game just finished */
   index: number
-  /** raw record + final stat earned this round (see lib/brain-bet.ts generateResult) */
-  result: StatResult
+  /** display raw record for this round (formatted per-game, see lib/scoring/*) */
+  raw: RawRecord
+  /** current Personal Best raw record, if one exists and differs from this round's */
+  personalBestRaw?: RawRecord | null
+  /** whether this round's result is now the Personal Best */
+  isNewRecord?: boolean
   onNext: () => void
 }
 
-export function CompleteScreen({ statId, index, result, onNext }: CompleteScreenProps) {
+export function CompleteScreen({
+  statId,
+  index,
+  raw,
+  personalBestRaw,
+  isNewRecord,
+  onNext,
+}: CompleteScreenProps) {
   const stat = STATS[statId]
   const isLast = index === TOTAL_GAMES - 1
   const nextStat = isLast ? null : STATS[PLAY_ORDER[index + 1]]
@@ -39,14 +50,31 @@ export function CompleteScreen({ statId, index, result, onNext }: CompleteScreen
 
       {/* this round's raw record */}
       <div className="mt-6 w-full rounded-2xl bg-card px-6 py-5 toy-border toy-shadow">
-        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          이번 기록
-        </p>
+        <div className="flex items-center justify-center gap-2">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            이번 기록
+          </p>
+          {isNewRecord && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+              <Trophy size={10} strokeWidth={3} />
+              NEW RECORD
+            </span>
+          )}
+        </div>
         <p className="mt-1 font-display text-4xl font-extrabold leading-none text-foreground">
-          {result.raw.primary}
+          {raw.primary}
         </p>
-        {result.raw.secondary && (
-          <p className="mt-2 text-sm text-muted-foreground">{result.raw.secondary}</p>
+        {raw.secondary && <p className="mt-2 text-sm text-muted-foreground">{raw.secondary}</p>}
+
+        {personalBestRaw && !isNewRecord && (
+          <div className="mt-4 border-t border-border pt-3">
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              개인 최고
+            </p>
+            <p className="mt-1 font-display text-lg font-extrabold text-foreground">
+              {personalBestRaw.primary}
+            </p>
+          </div>
         )}
       </div>
 

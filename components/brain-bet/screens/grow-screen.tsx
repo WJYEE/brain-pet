@@ -2,18 +2,19 @@
 
 import { ArrowLeft, Sparkles } from 'lucide-react'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
-import { PLAY_ORDER, STATS, type StatId, type StatResult } from '@/lib/brain-bet'
+import { PLAY_ORDER, STATS, type StatId } from '@/lib/brain-bet'
+import type { StatStatusMap } from '@/lib/game/types'
 import { cn } from '@/lib/utils'
 
 interface GrowScreenProps {
-  results: Record<StatId, StatResult | null>
+  statStatus: StatStatusMap
   recommendedStat: StatId
   onSelect: (statId: StatId) => void
   onBack: () => void
 }
 
 /** Free Play game selection ("성장시키기"). No recommendation rule/XP math yet — see lib/room.ts. */
-export function GrowScreen({ results, recommendedStat, onSelect, onBack }: GrowScreenProps) {
+export function GrowScreen({ statStatus, recommendedStat, onSelect, onBack }: GrowScreenProps) {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col px-5 pb-10 pt-8">
       <header className="flex items-center gap-3">
@@ -38,8 +39,10 @@ export function GrowScreen({ results, recommendedStat, onSelect, onBack }: GrowS
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         {PLAY_ORDER.map((id) => {
           const stat = STATS[id]
-          const result = results[id]
+          const status = statStatus[id]
           const isRecommended = id === recommendedStat
+          const personalBest = status.current?.raw.primary ?? '--'
+          const recent = status.history[status.history.length - 1]?.raw.primary ?? '--'
           return (
             <button
               key={id}
@@ -64,7 +67,7 @@ export function GrowScreen({ results, recommendedStat, onSelect, onBack }: GrowS
                   )}
                 </div>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  개인 최고 -- · 최근 기록 {result ? result.raw.primary : '--'}
+                  개인 최고 {personalBest} · 최근 기록 {recent}
                 </p>
                 {isRecommended && (
                   <p className="mt-1 text-xs font-semibold text-primary">

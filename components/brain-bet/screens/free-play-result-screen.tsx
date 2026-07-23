@@ -3,23 +3,27 @@
 import { ArrowRight, Trophy } from 'lucide-react'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { ToyButton } from '@/components/brain-bet/toy-button'
-import { STATS, type StatId, type StatResult } from '@/lib/brain-bet'
+import { STATS, type RawRecord, type StatId } from '@/lib/brain-bet'
 
 interface FreePlayResultScreenProps {
   statId: StatId
-  result: StatResult
+  raw: RawRecord
+  personalBestRaw?: RawRecord | null
+  isNewRecord?: boolean
   isRecommended: boolean
   onReturnToRoom: () => void
 }
 
 /**
  * Free Play completion screen (distinct from the first-play Stat Discovery
- * screen per GAME_SPEC §109-110). Shows only the raw record — no Personal
- * Best comparison, NEW RECORD flag, or real XP math yet.
+ * screen per GAME_SPEC §109-110). Shows the raw record plus Personal Best /
+ * NEW RECORD — still no real XP math, just a flat "EXP 획득" label.
  */
 export function FreePlayResultScreen({
   statId,
-  result,
+  raw,
+  personalBestRaw,
+  isNewRecord,
   isRecommended,
   onReturnToRoom,
 }: FreePlayResultScreenProps) {
@@ -33,14 +37,31 @@ export function FreePlayResultScreen({
       </h1>
 
       <div className="mt-6 w-full rounded-2xl bg-card px-6 py-5 toy-border toy-shadow">
-        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          이번 기록
-        </p>
+        <div className="flex items-center justify-center gap-2">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            이번 기록
+          </p>
+          {isNewRecord && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+              <Trophy size={10} strokeWidth={3} />
+              NEW RECORD
+            </span>
+          )}
+        </div>
         <p className="mt-1 font-display text-4xl font-extrabold leading-none text-foreground">
-          {result.raw.primary}
+          {raw.primary}
         </p>
-        {result.raw.secondary && (
-          <p className="mt-2 text-sm text-muted-foreground">{result.raw.secondary}</p>
+        {raw.secondary && <p className="mt-2 text-sm text-muted-foreground">{raw.secondary}</p>}
+
+        {personalBestRaw && !isNewRecord && (
+          <div className="mt-4 border-t border-border pt-3">
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              개인 최고
+            </p>
+            <p className="mt-1 font-display text-lg font-extrabold text-foreground">
+              {personalBestRaw.primary}
+            </p>
+          </div>
         )}
       </div>
 
