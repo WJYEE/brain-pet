@@ -3,18 +3,18 @@
 import { ArrowRight, Check, PartyPopper } from 'lucide-react'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
-import { PLAY_ORDER, STATS, TOTAL_GAMES, type StatId } from '@/lib/brain-bet'
+import { PLAY_ORDER, STATS, TOTAL_GAMES, type StatId, type StatResult } from '@/lib/brain-bet'
 
 interface CompleteScreenProps {
   statId: StatId
   /** zero-based index of the game just finished */
   index: number
-  /** placeholder record earned this round */
-  record: number
+  /** raw record + final stat earned this round (see lib/brain-bet.ts generateResult) */
+  result: StatResult
   onNext: () => void
 }
 
-export function CompleteScreen({ statId, index, record, onNext }: CompleteScreenProps) {
+export function CompleteScreen({ statId, index, result, onNext }: CompleteScreenProps) {
   const stat = STATS[statId]
   const isLast = index === TOTAL_GAMES - 1
   const nextStat = isLast ? null : STATS[PLAY_ORDER[index + 1]]
@@ -37,15 +37,17 @@ export function CompleteScreen({ statId, index, record, onNext }: CompleteScreen
         좋아요! {stat.name} 스탯을 발견했어요.
       </h1>
 
-      {/* this round's record */}
+      {/* this round's raw record */}
       <div className="mt-6 w-full rounded-2xl bg-card px-6 py-5 toy-border toy-shadow">
         <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          NEW RECORD
+          이번 기록
         </p>
-        <p className="mt-1 font-display text-5xl font-extrabold leading-none text-foreground">
-          {record}
-          <span className="ml-1 text-2xl text-primary">{stat.unit}</span>
+        <p className="mt-1 font-display text-4xl font-extrabold leading-none text-foreground">
+          {result.raw.primary}
         </p>
+        {result.raw.secondary && (
+          <p className="mt-2 text-sm text-muted-foreground">{result.raw.secondary}</p>
+        )}
       </div>
 
       {/* overall progress */}

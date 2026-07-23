@@ -1,0 +1,58 @@
+'use client'
+
+import { useState } from 'react'
+import { ArrowRight } from 'lucide-react'
+import { Logo } from '@/components/brain-bet/logo'
+import { Statling } from '@/components/brain-bet/statling'
+import { ToyButton } from '@/components/brain-bet/toy-button'
+import type { StatId } from '@/lib/brain-bet'
+import { STATLING_NAME_MAX_LENGTH, STATLING_NAME_MIN_LENGTH, isValidStatlingName } from '@/lib/naming'
+
+interface NamingScreenProps {
+  topStat: StatId
+  onConfirm: (name: string) => void
+}
+
+export function NamingScreen({ topStat, onConfirm }: NamingScreenProps) {
+  const [name, setName] = useState('')
+  const valid = isValidStatlingName(name)
+
+  return (
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-10 text-center">
+      <Logo size="sm" />
+
+      <div className="mt-6">
+        <Statling type={topStat} size={140} mood="happy" className="animate-float" />
+      </div>
+
+      <h1 className="mt-6 text-balance font-display text-2xl font-extrabold leading-snug text-foreground">
+        이 친구에게
+        <br />
+        이름을 지어주세요.
+      </h1>
+
+      <div className="mt-6 w-full">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value.slice(0, STATLING_NAME_MAX_LENGTH))}
+          placeholder="이름 입력"
+          maxLength={STATLING_NAME_MAX_LENGTH}
+          className="w-full rounded-2xl bg-card px-4 py-3.5 text-center font-display text-lg font-extrabold text-foreground toy-border outline-none placeholder:font-sans placeholder:font-normal placeholder:text-muted-foreground"
+        />
+        <p className="mt-2 text-xs font-semibold text-muted-foreground">
+          {STATLING_NAME_MIN_LENGTH}~{STATLING_NAME_MAX_LENGTH}자로 지어주세요. (
+          {name.trim().length}/{STATLING_NAME_MAX_LENGTH})
+        </p>
+      </div>
+
+      <ToyButton
+        className="mt-6 w-full"
+        disabled={!valid}
+        onClick={() => valid && onConfirm(name.trim())}
+      >
+        이름 정하기
+        <ArrowRight size={20} strokeWidth={2.8} />
+      </ToyButton>
+    </div>
+  )
+}

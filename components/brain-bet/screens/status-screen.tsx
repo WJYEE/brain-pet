@@ -1,29 +1,51 @@
 'use client'
 
-import { RotateCcw, Share2, Trophy } from 'lucide-react'
+import { ArrowRight, RotateCcw, Trophy } from 'lucide-react'
 import { Logo } from '@/components/brain-bet/logo'
 import { RadarChart } from '@/components/brain-bet/radar-chart'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
+import { ToyButton } from '@/components/brain-bet/toy-button'
 import { STATS, STAT_DISPLAY_ORDER, type StatId } from '@/lib/brain-bet'
+import { cn } from '@/lib/utils'
 
 interface StatusScreenProps {
   values: Record<StatId, number>
-  onReplay: () => void
+  /** first-complete: right after the first 6 games. my-stats: viewed via Room nav. */
+  context?: 'first-complete' | 'my-stats'
+  onMeetStatling?: () => void
+  onReplay?: () => void
 }
 
-export function StatusScreen({ values, onReplay }: StatusScreenProps) {
+export function StatusScreen({
+  values,
+  context = 'first-complete',
+  onMeetStatling,
+  onReplay,
+}: StatusScreenProps) {
   const topStat = STAT_DISPLAY_ORDER.reduce((best, id) =>
     (values[id] ?? 0) > (values[best] ?? 0) ? id : best,
   )
+  const isFirstComplete = context === 'first-complete'
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-4xl flex-col px-5 py-8">
+    <div
+      className={cn(
+        'mx-auto flex min-h-dvh w-full max-w-4xl flex-col px-5 py-8',
+        !isFirstComplete && 'pb-28',
+      )}
+    >
       <header className="flex items-center justify-between">
         <Logo size="sm" />
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground toy-border toy-shadow-sm">
-          <Trophy size={14} strokeWidth={2.6} />
-          6개 게임 모두 완료
-        </span>
+        {isFirstComplete ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground toy-border toy-shadow-sm">
+            <Trophy size={14} strokeWidth={2.6} />
+            6개 게임 모두 완료
+          </span>
+        ) : (
+          <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            내 스탯
+          </span>
+        )}
       </header>
 
       <div className="mt-6 text-center">
@@ -80,25 +102,18 @@ export function StatusScreen({ values, onReplay }: StatusScreenProps) {
       </div>
 
       {/* actions */}
-      <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-        <button
-          type="button"
-          onClick={onReplay}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 font-display text-lg font-extrabold text-primary-foreground toy-border toy-shadow transition-transform duration-150 hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none"
-        >
-          <RotateCcw size={20} strokeWidth={2.6} />
-          다시 하기
-        </button>
-        <button
-          type="button"
-          disabled
-          className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-2xl bg-card px-6 py-4 font-display text-lg font-extrabold text-muted-foreground toy-border opacity-70"
-          title="공유 기능은 곧 추가돼요"
-        >
-          <Share2 size={20} strokeWidth={2.6} />
-          공유하기 (준비 중)
-        </button>
-      </div>
+      {isFirstComplete && (
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <ToyButton onClick={onMeetStatling}>
+            나의 Statling 만나러 가기
+            <ArrowRight size={20} strokeWidth={2.8} />
+          </ToyButton>
+          <ToyButton variant="secondary" onClick={onReplay}>
+            <RotateCcw size={20} strokeWidth={2.6} />
+            다시 하기
+          </ToyButton>
+        </div>
+      )}
     </div>
   )
 }

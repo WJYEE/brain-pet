@@ -9,13 +9,15 @@ import { STATS, type StatId } from '@/lib/brain-bet'
 
 interface GameScreenProps {
   statId: StatId
-  /** zero-based index of this game in the sequence */
+  /** zero-based index of this game in the sequence (ignored when mode is 'free') */
   index: number
+  /** 'first' = onboarding sequence with progress pips; 'free' = single Free Play round */
+  mode?: 'first' | 'free'
   /** called when the (placeholder) game round is finished */
   onComplete: () => void
 }
 
-export function GameScreen({ statId, index, onComplete }: GameScreenProps) {
+export function GameScreen({ statId, index, mode = 'first', onComplete }: GameScreenProps) {
   const stat = STATS[statId]
   const Icon = stat.icon
   const tint = { backgroundColor: `color-mix(in oklch, var(${stat.colorVar}) 14%, var(--card))` } as CSSProperties
@@ -25,7 +27,13 @@ export function GameScreen({ statId, index, onComplete }: GameScreenProps) {
       {/* top bar */}
       <header className="flex items-center justify-between gap-4">
         <Logo size="sm" />
-        <ProgressTrack current={index} />
+        {mode === 'first' ? (
+          <ProgressTrack current={index} />
+        ) : (
+          <span className="rounded-xl bg-secondary px-3 py-1.5 text-xs font-bold text-secondary-foreground toy-border">
+            FREE PLAY
+          </span>
+        )}
       </header>
 
       {/* current stat + round */}
