@@ -1,308 +1,657 @@
-# Brain_Pet — GAME_SPEC
+# Statling — GAME_SPEC
 
-> Version: v0.1
-> 목적: 6개 능력 스탯 측정을 위한 MVP 미니게임의 세부 규칙 정의
-> 대상: Claude Code 및 개발 참고용
-> 상태: 1차 확정안
+> Version: v1.0  
+> 목적: Statling의 6개 미니게임 규칙, 기록 산정, 스탯 계산, 재도전 및 성장 반영 기준을 정의한다.  
+> 대상: 제품 기획 및 개발 참고용  
+> 상태: v1.0 통합 게임 규칙 확정안
 
 ---
 
-# 0. 공통 설계 원칙
+# 1. 문서 목적
 
-## 0.1 6개 스탯
-
-Brain_Pet 다음 6개의 스탯을 측정한다.
+Statling은 다음 6개의 미니게임을 통해 사용자의 수행 기록을 측정한다.
 
 ```text
-1. Memory      기억력
-2. Focus       집중력
-3. Reaction    순발력
-4. Judgment    판단력
-5. Spatial     공간감각
-6. Reasoning   추리력
+Memory
+기억력
+
+Focus
+집중력
+
+Reaction
+순발력
+
+Judgment
+판단력
+
+Spatial
+공간감각
+
+Reasoning
+추리력
 ```
 
-최종 결과는 육각형 Radar Chart 형태의 `MY STATUS`로 표현한다.
+각 게임은 서로 다른 방식으로 기록을 생성하지만, 최종적으로는 동일한 `0~100 Stat`으로 변환하여 `MY STATUS`와 Radar Chart에 표시한다.
 
----
-
-# 0.2 게임 길이
-
-스탯별 목표 플레이 시간은 다음과 같다.
-
-| Stat      | 목표 플레이 시간 |
-| --------- | --------: |
-| Reaction  |    30~60초 |
-| Judgment  |    30~60초 |
-| Memory    |    30~60초 |
-| Focus     |    30~60초 |
-| Spatial   |      1~2분 |
-| Reasoning |      1~2분 |
-
-각 게임의 시도 횟수와 문제 수는 동일하게 통일하지 않는다.
-
-각 능력 특성에 맞게 별도로 설계한다.
-
----
-
-# 0.3 점수 구조
-
-Brain_Pet은 아래 세 값을 구분한다.
+이 문서는 다음 항목을 정의한다.
 
 ```text
-RAW DATA
+게임 규칙
+
+플레이 시간
+
+시도 횟수
+
+난이도
+
+Raw Record
+
+Game Score
+
+Personal Best
+
+Percentile
+
+Final Stat
+
+재도전
+
+신기록
+
+XP
+
+Anti-cheat
+
+기록 History
+```
+
+---
+
+# 2. 핵심 데이터 구조
+
+모든 게임 결과는 다음 구조를 따른다.
+
+```text
+RAW PERFORMANCE
 ↓
 GAME SCORE
 ↓
-STAT PERCENTILE
+PERCENTILE
+↓
+FINAL STAT
 ```
 
 ---
 
-## RAW DATA
+# 3. Raw Performance
 
-사용자가 실제로 수행한 원본 데이터.
+`Raw Performance`는 사용자가 실제 게임에서 만든 원시 기록이다.
+
+게임마다 측정 방식과 단위가 다를 수 있다.
 
 예:
 
 ```text
-Reaction Time = 231ms
+Reaction
+205 ms
 
-Correct = 12
-Wrong = 2
+Memory
+Level 8 / Accuracy 92%
 
-Response Time = 4.2sec
+Focus
+Accuracy 94% / Average Response 1.2 sec
+
+Judgment
+Accuracy 88% / Response 620 ms
+
+Spatial
+9 / 12 Correct
+
+Reasoning
+10 / 12 Correct
 ```
 
-가능한 경우 Trial 단위로 저장한다.
+Raw Record의 단위를 억지로 통일하지 않는다.
+
+따라서 다음과 같은 구조는 사용하지 않는다.
+
+```text
+Reaction
+205 ms
+
+Memory
+LV 8
+
+Focus
+920 pts
+
+Judgment
+850 pts
+
+Spatial
+740 pts
+
+Reasoning
+810 pts
+```
+
+단순히 UI 편의를 위해 의미 없는 `pts`를 만들어서는 안 된다.
 
 ---
 
-## GAME SCORE
+# 4. Game Score
 
-각 게임에서 계산되는 기록 또는 점수.
-
-예:
-
-```text
-Reaction Score
-82,430
-
-Memory Score
-7,820
-```
-
-사용자가 기록을 갱신하고 비교하기 위한 값이다.
-
-게임별 Score Formula는 서로 다를 수 있다.
-
----
-
-## STAT
-
-최종 스탯은 절대점수를 그대로 0~100으로 변환하지 않고 상대 백분위를 기반으로 한다.
+각 게임의 여러 Raw Data를 하나의 비교 가능한 내부 점수로 변환한다.
 
 예:
 
 ```text
+Reaction
+
+Median Reaction
+False Start
+Consistency
+
+↓
+
 Reaction Game Score
-82,430
-
-↓
-
-서비스 사용자 분포 기준
-
-Percentile
-78.4%
-
-↓
-
-Reaction STAT
-78
 ```
 
-즉:
+Game Score는:
 
 ```text
-STAT ≈ Percentile Rank
+내부 비교
+
+Percentile 계산
+
+Personal Best 판정
+
+Ranking 계산
 ```
 
-로 사용한다.
+등에 활용한다.
+
+기본 원칙:
+
+```text
+Game Score가 높을수록 좋은 성과
+```
+
+가 되도록 통일한다.
 
 ---
 
-# 0.4 Percentile 정책
+# 5. Game Score는 사용자에게 기본적으로 노출하지 않는다
 
-초기 사용자 데이터가 부족할 때 임의 Percentile을 생성하지 않는다.
-
-초기 MVP에서는:
+예:
 
 ```text
-Reaction Record
+GAME SCORE
+8,240
+```
 
-231ms
+와 같은 내부 숫자는 기본 UI에 표시하지 않는다.
 
-STAT
+사용자에게는 이해하기 쉬운 Raw Record를 보여준다.
+
+예:
+
+```text
+⚡ 순발력
+
+이번 기록
+205 ms
+
+개인 최고
+198 ms
+```
+
+Game Score는 내부 계산용이다.
+
+---
+
+# 6. Final Stat
+
+최종 `MY STATUS`에서는 6개의 게임을 모두 동일한 `0~100` Stat으로 표현한다.
+
+Stat은 기본적으로:
+
+```text
+사용자 기록 Percentile Rank
+```
+
+와 동일하게 정의한다.
+
+예:
+
+```text
+내 기록보다 낮은 사용자가
+82%
+
+↓
+
+Percentile Rank
+82
+
+↓
+
+Reaction Stat
+82
+```
+
+따라서:
+
+```text
+Stat 82
+=
+82nd Percentile
+=
+상위 약 18%
+```
+
+이다.
+
+---
+
+# 7. MY STATUS 표시 방식
+
+예:
+
+```text
+MY STATUS
+
+Memory      67
+Focus       94
+Reaction    82
+Judgment    58
+Spatial     71
+Reasoning   76
+```
+
+Radar Chart에서도 동일한 값을 사용한다.
+
+```text
+0
+~
+100
+```
+
+의 공통 축으로 비교한다.
+
+---
+
+# 8. Percentile 비교 집단
+
+기본 비교 대상:
+
+```text
+동일 Game Version을 정상적으로 완료한
+Statling 유효 사용자
+```
+
+유효 기록 조건:
+
+```text
+게임 정상 완료
+
+필수 Trial 충족
+
+비정상 입력 아님
+
+Anti-cheat Flag 없음
+
+동일 Game Version
+```
+
+---
+
+# 9. 사용자 수가 적을 때의 정책
+
+초기에는 가짜 Percentile을 만들지 않는다.
+
+## N < 100
+
+```text
 비교 데이터 수집 중
 ```
 
-형태로 표시할 수 있다.
+으로 표시한다.
 
-충분한 데이터 확보 이후:
-
-```text
-Reaction
-
-231ms
-
-서비스 사용자 2,381명 기준
-상위 18%
-
-STAT 82
-```
-
-형태로 변경한다.
-
----
-
-## Percentile 계산 기준
-
-가능하면 아래 조건을 만족하는 사용자만 비교군에 포함한다.
-
-```text
-- 게임 정상 완료
-- 비정상 입력 제외
-- Bot / 반복 매크로 제외
-- 최소 Trial 충족
-- 동일 Game Version
-```
-
-게임 룰이나 난이도가 크게 변경되는 경우:
-
-```text
-game_version
-```
-
-을 반드시 저장한다.
-
-서로 다른 버전의 점수를 무조건 같은 분포에 섞지 않는다.
-
----
-
-# 0.5 점수 방향 통일
-
-내부적으로 최종 `GAME SCORE`는:
-
-```text
-높을수록 좋은 기록
-```
-
-이 되도록 통일하는 것을 권장한다.
-
-예:
-
-Reaction은 원래 ms가 낮을수록 좋지만 Score 계산 시 역변환한다.
-
-```text
-231ms → 높은 Score
-420ms → 낮은 Score
-```
-
-이를 통해:
-
-```text
-Higher Score = Better Performance
-```
-
-원칙을 유지한다.
-
----
-
-# 0.6 최고 기록 정책
-
-각 게임은 최소 다음 기록을 저장한다.
-
-```text
-current_score
-best_score
-previous_best_score
-attempt_count
-```
-
-재도전 결과:
-
-```text
-현재 Score > Best Score
-```
-
-일 경우:
-
-```text
-NEW RECORD
-```
-
-표시.
-
----
-
-# 0.7 Stat 업데이트 정책
-
-MVP 권장 방식:
-
-```text
-Best Valid Score
-→ Percentile 계산
-→ Current Stat
-```
-
-즉, 최근 기록 하나 때문에 스탯이 크게 떨어지지 않도록 한다.
+사용자에게는 Raw Record와 Personal Best만 보여준다.
 
 예:
 
 ```text
-Reaction
+⚡ 순발력
 
-Attempt 1: 72 percentile
-Attempt 2: 81 percentile
-Attempt 3: 76 percentile
+205 ms
 
-Current Reaction Stat
+현재 비교 데이터를 모으고 있어요.
+```
+
+---
+
+## MY STATUS 초기 상태
+
+유효 비교 데이터가 충분하지 않은 스탯은:
+
+```text
+--
+```
+
+또는:
+
+```text
+비교 중
+```
+
+으로 표시할 수 있다.
+
+Radar Chart는 해당 축을 미확정 상태로 보여주거나 초기 공개 전 내부 테스트에서는 숨길 수 있다.
+
+가짜 0~100 값을 생성하지 않는다.
+
+---
+
+## N >= 100
+
+임시 Percentile 제공 가능.
+
+표현:
+
+```text
+현재 Statling 참여자 기준
+베타 비교 결과
+```
+
+---
+
+## N >= 500
+
+분포가 충분히 안정적인지 확인한 후 일반 Stat으로 제공한다.
+
+단, 100 / 500 기준은 제품 초기 운영 가이드이며 실제 데이터 분포에 따라 변경할 수 있다.
+
+---
+
+# 10. 향후 외부 기준 데이터
+
+가능한 경우 다음 분야의 공개 연구 및 대규모 데이터셋을 검토한다.
+
+```text
+Reaction Time
+
+Working Memory
+
+Attention
+
+Cognitive Flexibility
+
+Mental Rotation
+
+Reasoning
+```
+
+향후:
+
+```text
+공개 기준 데이터
+
++
+
+Statling 자체 사용자 데이터
+```
+
+를 함께 활용하는 방식을 검토할 수 있다.
+
+v1.0 기본 Stat은 Statling 사용자 Percentile을 기준으로 한다.
+
+---
+
+# 11. 첫 MY STATUS와 현재 MY STATUS 분리
+
+사용자의 최초 6게임 결과는 별도로 보존한다.
+
+```text
+INITIAL STATUS
+```
+
+이후 반복 플레이를 통해 변화하는 상태는:
+
+```text
+CURRENT STATUS
+```
+
+로 관리한다.
+
+예:
+
+```text
+처음의 나
+
+Reaction 62
+Memory   71
+Focus    68
+
+↓
+
+3개월 후
+
+Reaction 79
+Memory   84
+Focus    76
+```
+
+이를 통해 향후:
+
+```text
+처음의 나
+vs
+지금의 나
+```
+
+비교 기능을 제공할 수 있다.
+
+---
+
+# 12. 재도전과 Current Stat
+
+v1.0에서는 각 게임의:
+
+```text
+Best Valid Performance
+```
+
+를 Current Stat 계산 기준으로 사용한다.
+
+예:
+
+```text
+Attempt 1
+Percentile 72
+
+Attempt 2
+Percentile 81
+
+Attempt 3
+Percentile 76
+
+↓
+
+Current Stat
 81
 ```
 
-단, 향후 `최근 실력` 개념을 별도로 제공할 수 있다.
-
-```text
-BEST STAT
-CURRENT FORM
-```
-
-MVP에서는 구현하지 않는다.
+즉, 한 번 기록이 낮아졌다고 Stat이 바로 떨어지지 않는다.
 
 ---
 
-# 0.8 게임 공통 Flow
+# 13. 최근 컨디션 기능
 
-모든 게임은 가능한 한 아래 구조를 따른다.
+향후에는 별도로:
+
+```text
+BEST STAT
+
+CURRENT FORM
+```
+
+을 제공할 수 있다.
+
+예:
+
+```text
+BEST
+82
+
+최근 5회 평균
+76
+```
+
+v1.0에서는 구현하지 않는다.
+
+---
+
+# 14. 반복 플레이 학습 효과
+
+같은 게임을 반복하면:
+
+```text
+게임 구조 숙련
+
+문제 기억
+
+클릭 패턴 학습
+```
+
+등으로 실제 능력 변화가 아니더라도 기록이 향상될 수 있다.
+
+따라서:
+
+```text
+Personal Best
+```
+
+와:
+
+```text
+능력 성장
+```
+
+을 완전히 동일한 의미로 해석하지 않는다.
+
+---
+
+# 15. Stat 업데이트 제한 원칙
+
+Personal Best는 항상 저장한다.
+
+하지만 장기적으로 Final Stat 업데이트에는 별도의 보정 규칙을 적용할 수 있다.
+
+후보:
+
+```text
+일일 최고 기록
+
+최근 일정 기간 최고 기록
+
+난이도 보정
+
+반복 횟수 보정
+
+문제 중복 제거
+```
+
+v1.0에서는 Best Valid Score 기반으로 시작하되 Raw History를 모두 저장하여 추후 보정 가능하게 설계한다.
+
+---
+
+# 16. 첫 플레이와 Free Play
+
+## First Play
+
+처음에는 다음 순서로 고정 진행한다.
+
+```text
+Reaction
+↓
+Memory
+↓
+Focus
+↓
+Judgment
+↓
+Spatial
+↓
+Reasoning
+```
+
+---
+
+## Free Play
+
+Statling 부화 이후에는 사용자가 원하는 게임을 자유롭게 선택한다.
+
+기본 규칙은 첫 플레이와 동일하게 유지한다.
+
+다만 Free Play에서는:
+
+```text
+문제 랜덤화
+
+패턴 랜덤화
+
+오브젝트 랜덤화
+
+문제 Pool 변경
+```
+
+을 통해 반복성을 줄인다.
+
+---
+
+# 17. 난이도 정책
+
+v1.0에서는 모든 사용자가 동일한 난이도 구조를 경험한다.
+
+```text
+Fixed Difficulty Sequence
+```
+
+사용자별 Adaptive Difficulty는 적용하지 않는다.
+
+이유:
+
+```text
+사용자 간 비교 공정성
+
+Percentile 계산 단순화
+
+게임 버전 관리 용이
+
+점수 해석 용이
+```
+
+향후 충분한 데이터가 쌓이면 Adaptive Difficulty를 검토한다.
+
+---
+
+# 18. 게임 공통 Flow
 
 ```text
 GAME INTRO
 
 ↓
 
-간단한 Rule 설명
+짧은 규칙 설명
 
 ↓
 
-Practice 또는 Demo
+Practice
 
 ↓
 
-Countdown
-
-3
-2
-1
+START
 
 ↓
 
@@ -314,161 +663,200 @@ GAME COMPLETE
 
 ↓
 
-Raw Result
+Raw Record
 
 ↓
 
-Game Score
+Personal Best 비교
 
 ↓
 
-Best Record 비교
+짧은 Feedback
 
 ↓
 
-Stat 결과 또는 Stat 발견
+새로운 Stat 발견
 
 ↓
 
-다음 게임 CTA
+다음 Game
 ```
 
 ---
 
-# 0.9 Practice 정책
+# 19. Practice
 
-게임 규칙 이해 실패가 실제 능력 점수에 영향을 주지 않도록 한다.
+규칙 이해 여부가 실제 기록에 영향을 주지 않도록 필요한 게임에는 Practice를 제공한다.
 
-따라서 필요한 게임에는:
-
-```text
-Practice Round
-```
-
-를 제공한다.
-
-Practice 데이터는 실제 Score 계산에서 제외한다.
-
-특히:
-
-```text
-Judgment
-Spatial
-Reasoning
-```
-
-에는 Practice를 권장한다.
+Practice 결과는 Score 계산에서 제외한다.
 
 ---
 
-# 1. REACTION
+# 20. 결과 화면 공통 구조
 
-# 1.1 기본 정보
-
-```text
-ID
-reaction
-
-표시명
-순발력
-
-영문명
-Reaction
-
-MVP Game
-Catch the Signal
-
-목표 시간
-30~60초
-```
-
----
-
-# 1.2 측정 정의
-
-화면에 나타나는 시각 자극을 감지한 후 반응하는 속도를 측정한다.
-
-주의:
+기본:
 
 ```text
-신체 전체의 순발력
-운동 능력
-신경학적 능력
-```
+✨ 새로운 스탯 발견!
 
-을 직접 측정한다고 표현하지 않는다.
+[STAT ICON]
 
-사용자-facing 설명:
+스탯명
 
-```text
-화면에 나타나는 신호를 얼마나 빠르게 감지하고 반응하는지 확인합니다.
-```
+이번 기록
 
----
+개인 최고
 
-# 1.3 핵심 게임 컨셉
+짧은 Feedback
 
-단순 색 변화보다 게임처럼 표현한다.
-
-MVP 추천 Theme:
-
-```text
-⭐ Catch the Star
+X / 6 발견
 ```
 
 예:
 
 ```text
-화면
+✨ 새로운 스탯 발견!
 
-"준비..."
+⚡ 순발력
 
-↓
+이번 기록
+205 ms
 
-랜덤 Delay
+개인 최고
+198 ms
 
-↓
+"반응이 꽤 빠른 편이에요."
 
-⭐ 갑자기 별 등장
-
-↓
-
-사용자 Click / Tap
-
-↓
-
-231 ms
-```
-
-펫 세계관 적용 가능:
-
-```text
-떨어지는 별을 잡아주세요!
+1 / 6 발견
 ```
 
 ---
 
-# 1.4 Trial 수
+# 21. 짧은 Feedback
 
-총:
+Feedback은 과학적 진단처럼 표현하지 않는다.
+
+좋은 예:
 
 ```text
-7 Trials
+빠르고 안정적인 반응을 보여줬어요.
+
+높은 단계까지 패턴을 기억했어요.
+
+정확하게 목표를 찾아냈어요.
 ```
 
-권장.
-
-구성:
+지양:
 
 ```text
-Practice 1회
+당신은 집중력이 매우 뛰어난 사람입니다.
+
+당신은 천재적인 추리력을 가지고 있습니다.
+```
+
+Feedback이 억지스럽거나 의미 없는 경우에는 생략하고:
+
+```text
+Raw Record
 +
-실전 7회
+Personal Best
 ```
 
-Practice는 기록 미포함.
+만 표시해도 된다.
 
-예상 시간:
+---
+
+# 22. Personal Best 판정
+
+Personal Best는 게임마다 대표 성과 지표가 다르므로 게임 특성별 기준을 사용한다.
+
+Final Stat 자체를 신기록 판정 기준으로 사용하지 않는다.
+
+---
+
+# 23. Reaction — 순발력
+
+## Game ID
+
+```text
+reaction
+```
+
+## Game Name
+
+```text
+Catch the Signal
+```
+
+## 목표 시간
+
+```text
+30~60초
+```
+
+---
+
+# 24. Reaction 측정 정의
+
+화면에 나타나는 시각적 신호를 감지한 뒤 얼마나 빠르게 반응하는지 측정한다.
+
+신체 전체의 운동 순발력이나 신경학적 능력을 측정한다고 표현하지 않는다.
+
+---
+
+# 25. Reaction 게임 연출
+
+논리 구조는 단순 반응속도 테스트를 유지하되 게임적으로 표현한다.
+
+예:
+
+```text
+떨어지는 별
+
+빛나는 오브젝트
+
+Statling 세계관의 작은 에너지
+```
+
+등을 활용한다.
+
+게임 로직:
+
+```text
+WAIT
+
+↓
+
+Random Delay
+
+↓
+
+Target 등장
+
+↓
+
+Click / Tap
+
+↓
+
+Reaction Time 기록
+```
+
+---
+
+# 26. Reaction Trial
+
+```text
+Practice
+1회
+
++
+
+Real Trial
+7회
+```
+
+목표 시간:
 
 ```text
 약 35~50초
@@ -476,52 +864,33 @@ Practice는 기록 미포함.
 
 ---
 
-# 1.5 Trial Flow
+# 27. Reaction Random Delay
 
 ```text
-READY
-
-↓
-
-Random Delay
-1,500 ~ 4,000ms
-
-↓
-
-Target Spawn
-
-↓
-
-User Input
-
-↓
-
-reaction_ms 기록
-
-↓
-
-간단 Feedback
-
-↓
-
-Next Trial
+1,500ms
+~
+4,000ms
 ```
+
+사이에서 랜덤 설정.
+
+패턴 예측을 어렵게 한다.
 
 ---
 
-# 1.6 False Start
+# 28. Reaction False Start
 
-신호가 나오기 전에 클릭할 경우:
+Target 등장 전에 클릭하면:
 
 ```text
 FALSE START
 ```
 
-처리.
+처리한다.
 
 해당 Trial은 정상 Reaction 기록에서 제외한다.
 
-화면:
+예:
 
 ```text
 앗, 너무 빨랐어요!
@@ -529,39 +898,11 @@ FALSE START
 신호가 나타난 뒤 눌러주세요.
 ```
 
----
-
-## False Start 제한
-
-지나친 반복 클릭 방지를 위해:
-
-```text
-False Start 3회 이상
-```
-
-시 경고.
-
-필요하면 해당 Attempt를:
-
-```text
-invalid_attempt = true
-```
-
-처리할 수 있다.
-
-MVP에서는 3회 이상 시 게임을 종료하지 않고:
-
-```text
-Score Penalty
-```
-
-를 적용하는 방식을 권장한다.
+과도한 False Start는 Penalty 또는 Invalid Flag에 활용한다.
 
 ---
 
-# 1.7 저장 데이터
-
-Trial 단위:
+# 29. Reaction 저장 데이터
 
 ```ts
 {
@@ -569,199 +910,149 @@ Trial 단위:
   delayMs: number
   reactionMs: number | null
   isFalseStart: boolean
-  timestamp: string
+  createdAt: string
 }
 ```
 
-Session 결과:
+Session:
 
-```ts
-{
-  validTrials: number
-  falseStarts: number
-  averageReactionMs: number
-  medianReactionMs: number
-  bestReactionMs: number
-  consistency: number
-  gameScore: number
-}
+```text
+validTrials
+
+falseStarts
+
+averageReactionMs
+
+medianReactionMs
+
+bestReactionMs
+
+consistency
+
+gameScore
 ```
 
 ---
 
-# 1.8 결과 계산
+# 30. Reaction 핵심 지표
 
-단순 최고 기록만 사용하지 않는다.
-
-한 번의 우연한 클릭 영향을 줄이기 위해:
+핵심:
 
 ```text
 Median Reaction Time
 ```
 
-을 핵심 기준으로 사용한다.
-
-보조 데이터:
+보조:
 
 ```text
 Best Reaction
+
 Average Reaction
+
 Consistency
+
 False Starts
 ```
 
----
-
-## 권장 Score Formula
-
-개념적 구조:
-
-```text
-Reaction Score
-
-=
-Speed Score
-×
-Accuracy Modifier
-×
-Consistency Modifier
-```
-
-예:
-
-```text
-Speed Score
-Median Reaction 기반
-
-Accuracy Modifier
-False Start 반영
-
-Consistency Modifier
-Trial 간 변동성 반영
-```
-
-정확한 상수는 실제 Beta 데이터 확보 후 Calibration.
-
-초기 구현에서는 Score Formula를 별도 함수로 분리한다.
-
-```ts
-calculateReactionScore()
-```
-
-하드코딩 금지.
+단 한 번의 우연한 빠른 클릭이 결과 전체를 좌우하지 않도록 Median 중심으로 계산한다.
 
 ---
 
-# 1.9 결과 화면
+# 31. Reaction Personal Best
 
-예:
+대표 판정 기준:
 
 ```text
-⚡ REACTION COMPLETE
+가장 낮은 Valid Median Reaction Time
+```
 
-231 ms
-BEST REACTION
+동일할 경우:
 
-Median
-247 ms
+```text
+False Start 적음
+
+Consistency 높음
+```
+
+등을 Tie-breaker로 사용할 수 있다.
+
+---
+
+# 32. Reaction 결과 예시
+
+```text
+⚡ 새로운 스탯 발견!
+
+순발력
+
+이번 기록
+Median 231 ms
+
+Best Trial
+204 ms
 
 False Start
 1
 
-SCORE
-82,430
-
-NEW RECORD!
-```
-
-이후:
-
-```text
-⚡ REACTION STAT 발견
-
-현재 비교 데이터 수집 중
-```
-
-또는 표본 확보 후:
-
-```text
-서비스 사용자 기준
-상위 18%
-
-REACTION
-82
+개인 최고
+225 ms
 ```
 
 ---
 
-# 1.10 재도전 포인트
+# 33. Reaction Anti-cheat
 
-Reaction은 가장 재도전성이 높은 게임으로 설계한다.
-
-결과 화면:
+다음 기록은 Flag 가능.
 
 ```text
-231ms
+80ms 이하 반응 반복
 
-"200ms 벽까지 31ms!"
+비정상적으로 동일한 ms 반복
 
-[한 번 더]
+과도한 사전 클릭
+
+자동 입력 의심
 ```
 
-같은 개인 기록 중심 Motivation 사용 가능.
+Flag 기록은 Percentile 및 Ranking에서 제외 가능.
 
 ---
 
-# 2. MEMORY
+# 34. Memory — 기억력
 
-# 2.1 기본 정보
+## Game ID
 
 ```text
-ID
 memory
+```
 
-표시명
-기억력
+## Game Name
 
-영문명
-Memory
-
-MVP Game
+```text
 Memory Tiles
+```
 
-목표 시간
+## 목표 시간
+
+```text
 30~60초
 ```
 
 ---
 
-# 2.2 측정 정의
+# 35. Memory 측정 정의
 
-짧은 시간 동안 시각 정보를 유지하고 위치를 다시 재현하는 수행 능력을 측정한다.
-
-User-facing:
-
-```text
-잠시 나타난 위치와 패턴을 기억해보세요.
-```
+짧은 시간 동안 나타난 시각적 위치 정보를 유지하고 다시 재현하는 수행 능력을 측정한다.
 
 ---
 
-# 2.3 게임 컨셉
-
-추천 Theme:
+# 36. Memory MVP 방식
 
 ```text
-✨ Firefly Memory
+빛난 타일 위치 기억
 ```
 
-또는
-
-```text
-🌟 Star Memory
-```
-
-Grid 안에서 여러 칸이 일정 시간 빛난다.
+방식을 사용한다.
 
 예:
 
@@ -772,7 +1063,7 @@ Grid 안에서 여러 칸이 일정 시간 빛난다.
 
 ↓
 
-화면 숨김
+잠시 후 숨김
 
 ↓
 
@@ -780,196 +1071,100 @@ Grid 안에서 여러 칸이 일정 시간 빛난다.
 □ □ □
 □ □ □
 
-"빛났던 곳을 선택하세요."
+↓
+
+빛났던 위치 선택
 ```
 
 ---
 
-# 2.4 라운드 구성
+# 37. Memory Round
 
 ```text
-Practice 1
+Practice
+1회
+
 +
-실전 최대 8 Rounds
+
+Real
+최대 8 Rounds
 ```
-
-예상:
-
-```text
-30~60초
-```
-
-사용자가 실패하면 난이도 조정 또는 종료.
 
 ---
 
-# 2.5 난이도 구조
+# 38. Memory 난이도
 
-Difficulty는 다음 요소로 조절한다.
-
-```text
-Grid Size
-
-Target Count
-
-Exposure Time
-```
+고정된 난이도 순서를 사용한다.
 
 예:
 
-### Level 1
-
 ```text
+Level 1
 3x3
 3 Targets
 2.0 sec
-```
 
-### Level 2
-
-```text
+Level 2
 3x3
 4 Targets
 1.7 sec
-```
 
-### Level 3
-
-```text
+Level 3
 4x4
 5 Targets
 1.7 sec
-```
 
-### Level 4
-
-```text
+Level 4
 4x4
 6 Targets
 1.4 sec
-```
 
-### Level 5+
-
-```text
+Level 5+
 5x5
 Target 증가
 Exposure 감소
 ```
 
----
-
-# 2.6 Round Flow
-
-```text
-Grid 등장
-
-↓
-
-Targets Highlight
-
-↓
-
-Exposure Time
-
-↓
-
-Blank / Mask
-
-↓
-
-사용자가 기억한 칸 선택
-
-↓
-
-Submit
-
-↓
-
-Correct / Incorrect Feedback
-
-↓
-
-Next Difficulty
-```
+정확한 수치는 Beta 테스트 후 조정 가능하다.
 
 ---
 
-# 2.7 실패 정책
+# 39. Memory 실패
 
-한 번 틀렸다고 즉시 게임 종료하지 않는다.
-
-권장:
-
-```text
-Life = 2
-```
-
-완전히 정확하면:
-
-```text
-Difficulty +1
-```
-
-부분적으로 맞으면:
-
-```text
-동일 또는 소폭 상승
-```
-
-오답이 많으면:
-
-```text
-Life -1
-```
-
-Life 0:
-
-```text
-Game Complete
-```
-
-또는 최대 Round 도달 시 종료.
-
----
-
-# 2.8 Partial Accuracy
-
-전체 위치를 완벽히 맞히는 것만 평가하면 정보 손실이 크다.
-
-따라서:
-
-```text
-precision
-recall
-```
-
-개념을 사용할 수 있다.
+한 번 틀렸다고 즉시 종료하지 않는다.
 
 예:
 
-실제 Target:
-
 ```text
-5개
+Life
+2
 ```
 
-사용자가:
+또는 정해진 8 Round까지 진행할 수 있다.
 
-```text
-정답 4개
-오답 1개
-```
-
-선택.
-
-단순 0점 처리하지 않는다.
+v1.0 구현 시 전체 플레이 시간이 60초를 크게 넘지 않도록 조정한다.
 
 ---
 
-# 2.9 저장 데이터
+# 40. Memory Partial Accuracy
 
-Round:
+전체 위치를 모두 맞혀야만 점수를 받는 구조로 만들지 않는다.
+
+기록:
+
+```text
+Correct Selection
+
+Wrong Selection
+
+Missed Target
+```
+
+모두 저장한다.
+
+---
+
+# 41. Memory 저장 데이터
 
 ```ts
 {
@@ -987,131 +1182,117 @@ Round:
 }
 ```
 
-Session:
-
-```text
-maxDifficulty
-totalCorrect
-totalWrong
-totalMissed
-averageAccuracy
-perfectRounds
-gameScore
-```
-
 ---
 
-# 2.10 Score 구조
+# 42. Memory Game Score
 
-Memory Score는 다음을 반영한다.
+반영:
 
 ```text
 Difficulty
-+
+
 Accuracy
-+
+
 Perfect Recall
-+
+
 Response Efficiency
 ```
 
-단:
+우선순위:
 
 ```text
-속도 비중 < 정확도 비중
+Accuracy
+>
+Difficulty
+>
+Speed
 ```
 
-으로 설계한다.
-
-기억력 테스트에서 빠르게 찍는 행동이 높은 점수를 가져서는 안 된다.
-
-개념:
-
-```text
-Memory Score
-
-=
-Difficulty Score
-×
-Accuracy Modifier
-+
-Perfect Round Bonus
-```
+속도만 빠르게 찍는 행동이 높은 점수를 얻지 않도록 한다.
 
 ---
 
-# 2.11 결과
+# 43. Memory Personal Best
+
+대표 지표:
+
+```text
+최고 Difficulty
+
++
+
+Weighted Accuracy
+```
 
 예:
 
 ```text
-🧠 MEMORY COMPLETE
-
-최고 단계
-LEVEL 6
-
-정확도
-87%
-
-Perfect Round
-4
-
-SCORE
-7,820
-
-NEW RECORD!
+Level 7 / Accuracy 88%
 ```
+
+가:
+
+```text
+Level 5 / Accuracy 100%
+```
+
+보다 반드시 높은지 여부는 Score Formula로 결정한다.
+
+단순 Level 하나만으로 신기록을 판정하지 않는다.
 
 ---
 
-# 3. FOCUS
+# 44. Memory 문제 랜덤화
 
-# 3.1 기본 정보
+Free Play에서는 매번:
 
 ```text
-ID
+Target 위치
+
+Target 조합
+```
+
+을 랜덤 생성한다.
+
+같은 Pattern 반복을 방지한다.
+
+---
+
+# 45. Focus — 집중력
+
+## Game ID
+
+```text
 focus
+```
 
-표시명
-집중력
+## Game Name
 
-영문명
-Focus
-
-MVP Game
+```text
 Target Hunt
+```
 
-목표 시간
+## 목표 시간
+
+```text
 30~60초
 ```
 
 ---
 
-# 3.2 측정 정의
+# 46. Focus 측정 정의
 
-여러 방해 자극 사이에서 목표 자극을 선택적으로 찾아내고 지속적으로 주의를 유지하는 수행 능력을 측정한다.
-
-User-facing:
-
-```text
-비슷한 것들 사이에서 목표를 놓치지 마세요.
-```
+여러 방해 요소 사이에서 목표 자극을 빠르고 정확하게 찾아내는 선택적 주의 수행을 측정한다.
 
 ---
 
-# 3.3 MVP 게임 컨셉
-
-단순 `OOOOQOOOO`만 반복하지 않는다.
-
-MVP에서는:
+# 47. Focus MVP 방식
 
 ```text
-Target Hunt
+여러 요소 중 목표 빠르게 탐색
 ```
 
-구조로 구현.
-
-Round 시작 시 Target을 보여준다.
+구조를 사용한다.
 
 예:
 
@@ -1119,31 +1300,29 @@ Round 시작 시 Target을 보여준다.
 TARGET
 
 Q
+
+↓
+
+O O O O
+O O Q O
+O O O O
 ```
-
-이후 Grid:
-
-```text
-O O O O O
-O O O Q O
-O O O O O
-```
-
-빠르게 Target 클릭.
 
 ---
 
-# 3.4 Round 수
+# 48. Focus Round
 
 ```text
-Practice 1
+Practice
+1회
+
 +
-실전 12~15 Rounds
+
+Real
+약 12~15 Rounds
 ```
 
-각 Round는 짧게 진행.
-
-총:
+전체:
 
 ```text
 약 40~60초
@@ -1151,67 +1330,29 @@ Practice 1
 
 ---
 
-# 3.5 난이도
+# 49. Focus 난이도
 
-다음 요소로 조절:
+고정 난이도 순서.
 
-```text
-Grid Size 증가
-
-Target-Distractor Similarity 증가
-
-Target 수 변화
-
-제한시간 감소
-
-일부 Moving Element
-```
-
-MVP에서는 지나친 애니메이션은 제외 가능.
-
----
-
-## 예시 단계
-
-### Easy
+조절 요소:
 
 ```text
-Target: Q
-Distractor: O
-Grid 4x4
-```
+Grid Size
 
-### Normal
+Distractor 수
 
-```text
-Target: 6
-Distractor: 9
-Grid 5x5
-```
+Target-Distractor 유사도
 
-### Hard
+제한시간
 
-```text
-Target:
-미묘하게 다른 Shape
-
-Distractors:
-거의 동일한 Shape
+Target 존재 여부
 ```
 
 ---
 
-# 3.6 Catch Trial
+# 50. Focus No Target Round
 
-항상 Target이 있는 구조만 사용하면 무조건 클릭하는 전략이 생길 수 있다.
-
-일부 Round:
-
-```text
-NO TARGET
-```
-
-을 섞는다.
+일부 Round에는 Target이 존재하지 않는다.
 
 사용자는:
 
@@ -1219,19 +1360,13 @@ NO TARGET
 없음
 ```
 
-버튼을 선택해야 한다.
+을 선택해야 한다.
 
-이를 통해:
-
-```text
-False Detection
-```
-
-도 측정한다.
+이를 통해 무조건 빠르게 클릭하는 전략을 방지한다.
 
 ---
 
-# 3.7 저장 데이터
+# 51. Focus 저장 데이터
 
 ```ts
 {
@@ -1246,150 +1381,107 @@ False Detection
 }
 ```
 
-Session:
-
-```text
-accuracy
-falsePositiveRate
-missRate
-averageResponseTime
-highDifficultyAccuracy
-gameScore
-```
-
 ---
 
-# 3.8 Score 구조
+# 52. Focus Game Score
 
-Focus에서는:
+반영:
 
 ```text
 Accuracy
+
+Difficulty
+
+Response Time
+
+False Positive
+
+Miss
 ```
 
-가 가장 중요하다.
-
-그다음:
+우선순위:
 
 ```text
+Accuracy
+>
+Difficulty
+>
 Speed
 ```
 
-를 반영.
+---
 
-개념:
+# 53. Focus Personal Best
 
-```text
-Focus Score
+복합 점수를 기준으로 한다.
 
-=
-Accuracy Base
-×
-Difficulty Modifier
-×
-Speed Modifier
-```
-
-오답 페널티를 충분히 적용해:
+단순:
 
 ```text
-무작정 빠르게 클릭
+가장 빠른 클릭
 ```
 
-하는 전략을 방지한다.
+만으로 판정하지 않는다.
+
+대표:
+
+```text
+Accuracy-weighted Composite Score
+```
+
+기준.
 
 ---
 
-# 3.9 결과 화면
+# 54. Focus 랜덤화
+
+게임마다:
 
 ```text
-🎯 FOCUS COMPLETE
+Target 위치
 
-정확도
-92%
+Distractor 위치
 
-평균 탐색
-1.28 sec
+Target 존재 여부
 
-오탐
-1
-
-최고 난이도
-LEVEL 5
-
-SCORE
-9,140
+문자 / Shape 조합
 ```
+
+을 랜덤화한다.
 
 ---
 
-# 4. JUDGMENT
+# 55. Judgment — 판단력
 
-# 4.1 기본 정보
+## Game ID
 
 ```text
-ID
 judgment
+```
 
-표시명
-판단력
+## Game Name
 
-영문명
-Judgment
-
-MVP Game
+```text
 Rule Switch
+```
 
-목표 시간
+## 목표 시간
+
+```text
 30~60초
 ```
 
 ---
 
-# 4.2 측정 정의
+# 56. Judgment 측정 정의
 
-주어진 규칙을 빠르게 이해하고 적용하며, 규칙이 바뀌었을 때 새로운 규칙으로 전환하는 수행 능력을 측정한다.
+주어진 규칙을 빠르게 적용하고, 규칙이 변경되었을 때 새로운 기준으로 전환하는 수행 능력을 측정한다.
 
-주의:
-
-```text
-인생의 좋은 판단
-의사결정의 질
-도덕적 판단
-```
-
-등을 측정하는 게임이 아니다.
+일반적인 인생 판단력이나 의사결정의 질을 의미하지 않는다.
 
 ---
 
-# 4.3 Reaction과의 차이
-
-Reaction:
-
-```text
-자극
-→ 즉시 반응
-```
-
-Judgment:
-
-```text
-자극
-→ 규칙 확인
-→ 선택
-```
-
-따라서 반드시:
-
-```text
-Rule Processing
-```
-
-이 포함되어야 한다.
-
----
-
-# 4.4 게임 컨셉
+# 57. Judgment 기본 게임
 
 예:
 
@@ -1399,59 +1491,78 @@ RULE
 🔴 → LEFT
 🔵 → RIGHT
 
-START
-```
+↓
 
-이후:
-
-```text
 🔴
 
-LEFT / RIGHT
+↓
+
+LEFT
 ```
 
-선택.
-
-중간에:
+중간:
 
 ```text
-⚠ RULE CHANGED
+RULE CHANGED
 
 🔴 → RIGHT
 🔵 → LEFT
 ```
 
-규칙 변경.
+---
+
+# 58. Reaction과 Judgment 차이
+
+Reaction:
+
+```text
+Stimulus
+↓
+Immediate Response
+```
+
+Judgment:
+
+```text
+Stimulus
+↓
+Rule Processing
+↓
+Choice
+```
+
+반드시 Rule Interpretation이 포함된다.
 
 ---
 
-# 4.5 Trial 구성
+# 59. Judgment Trial
 
 ```text
-Practice 4 Trials
+Practice
+약 4 Trials
 
 +
 
-실전 24~30 Trials
+Real
+약 24~30 Trials
 ```
 
-각 Trial은 매우 짧음.
+각 Trial은 매우 짧게 진행한다.
 
-총:
+전체:
 
 ```text
-약 40~60초
+40~60초
 ```
 
 ---
 
-# 4.6 Block 구조
+# 60. Judgment Block
 
 예:
 
 ```text
 Block A
-8 Trials
 기본 Rule
 
 ↓
@@ -1461,7 +1572,6 @@ Rule Switch
 ↓
 
 Block B
-8 Trials
 
 ↓
 
@@ -1470,73 +1580,11 @@ Rule Complexity Increase
 ↓
 
 Block C
-8 Trials
 ```
 
 ---
 
-# 4.7 난이도
-
-초기:
-
-```text
-2 Choices
-2 Stimuli
-```
-
-중간:
-
-```text
-Rule Reverse
-```
-
-후반:
-
-```text
-Context Rule
-```
-
-예:
-
-```text
-Shape가 ○이면
-색상 기준
-
-Shape가 △이면
-방향 기준
-```
-
-단, MVP에서 지나치게 복잡하게 만들지 않는다.
-
----
-
-# 4.8 핵심 측정값
-
-```text
-overallAccuracy
-
-overallReactionTime
-
-switchAccuracy
-
-switchReactionTime
-
-postSwitchErrors
-
-adaptationSpeed
-```
-
-특히:
-
-```text
-Rule Switch 직후 성능
-```
-
-을 중요하게 본다.
-
----
-
-# 4.9 저장 데이터
+# 61. Judgment 저장 데이터
 
 ```ts
 {
@@ -1555,231 +1603,146 @@ Rule Switch 직후 성능
 
 ---
 
-# 4.10 Score 구조
+# 62. Judgment Game Score
+
+반영:
 
 ```text
-Judgment Score
+Overall Accuracy
 
-=
-Accuracy
-+
 Response Efficiency
-+
-Switch Adaptation
+
+Switch Accuracy
+
+Switch Cost
+
+Post-switch Adaptation
 ```
 
-추천 가중 방향:
+우선순위:
 
 ```text
 Accuracy
-높음
 
 Switch Adaptation
-높음
 
-Raw Speed
-중간
+Speed
 ```
 
-빠르기만 하고 오답이 많으면 낮은 점수.
+순.
 
 ---
 
-# 4.11 결과
+# 63. Judgment Personal Best
+
+복합 Game Score 기준.
+
+특히:
 
 ```text
-⚖ JUDGMENT COMPLETE
+규칙 변경 직후 정확도
 
-정확도
-89%
++
 
-규칙 변경 후 정확도
-83%
-
-평균 판단 시간
-624 ms
-
-SCORE
-8,630
+응답 시간
 ```
+
+을 중요하게 반영한다.
 
 ---
 
-# 5. SPATIAL
+# 64. Spatial — 공간감각
 
-# 5.1 기본 정보
+## Game ID
 
 ```text
-ID
 spatial
+```
 
-표시명
-공간감각
+## Game Name
 
-영문명
-Spatial
-
-MVP Game
+```text
 Rotate It
+```
 
-목표 시간
+## 목표 시간
+
+```text
 1~2분
 ```
 
 ---
 
-# 5.2 측정 정의
+# 65. Spatial 측정 정의
 
-도형이나 물체의 회전, 방향, 위치 관계를 머릿속에서 파악하는 수행 능력을 측정한다.
-
-User-facing:
-
-```text
-머릿속으로 도형을 돌려보고 같은 모양을 찾아보세요.
-```
+도형의 방향과 회전을 머릿속에서 변환하여 동일한 형태를 식별하는 수행 능력을 측정한다.
 
 ---
 
-# 5.3 게임 컨셉
-
-화면에 기준 Shape를 보여준다.
+# 66. Spatial MVP 방식
 
 ```text
-REFERENCE
-
-   ■
- ■ ■
-   ■
+2D Mental Rotation
 ```
 
-질문:
+을 사용한다.
 
-```text
-이 도형을 회전했을 때
-같은 모양은 무엇일까요?
-```
-
-4개 선택지.
+기준 Shape를 보여주고 회전된 동일 Shape를 선택한다.
 
 ---
 
-# 5.4 문제 수
+# 67. Spatial Question
 
 ```text
-Practice 2
+Practice
+2문제
 
 +
 
-실전 10~12 Questions
-```
-
-목표:
-
-```text
-약 60~120초
+Real
+10~12문제
 ```
 
 ---
 
-# 5.5 문제 구성
+# 68. Spatial 난이도
 
-초반:
-
-```text
-2D Rotation
-```
-
-중반:
+고정 난이도 순서.
 
 ```text
-Complex 2D Rotation
-```
-
-후반:
-
-```text
-Mirror Distractor
-```
-
-선택지 중:
-
-```text
-Rotation은 같지만 Reflection은 다른 것
-```
-
-을 섞는다.
-
----
-
-# 5.6 난이도
-
-난이도 요소:
-
-```text
-Shape Complexity
-
-Rotation Angle
-
-Distractor Similarity
-
-Mirror Confusion
-
-Time Limit
-```
-
-예:
-
-### Level 1
-
-```text
+Level 1
 간단한 Shape
 90° Rotation
-```
 
-### Level 2
-
-```text
+Level 2
 복합 Shape
 90° / 180°
-```
 
-### Level 3
+Level 3
+Mirror Distractor 포함
 
-```text
-유사 Distractor
-Mirror 포함
-```
-
-### Level 4
-
-```text
-더 복잡한 Shape
-Multiple Rotation
+Level 4
+복잡한 Shape
+유사 Distractor 증가
 ```
 
 ---
 
-# 5.7 제한시간
+# 69. Spatial 제한시간
 
-문제별 제한시간:
+문제당:
 
 ```text
 약 8~12초
 ```
 
-난이도별 조정 가능.
+난이도에 따라 조정한다.
 
-시간 초과:
-
-```text
-incorrect
-```
-
-처리.
+시간 초과는 오답으로 처리한다.
 
 ---
 
-# 5.8 저장 데이터
+# 70. Spatial 저장 데이터
 
 ```ts
 {
@@ -1797,216 +1760,149 @@ incorrect
 
 ---
 
-# 5.9 Score 구조
+# 71. Spatial Game Score
+
+반영:
 
 ```text
-Spatial Score
-
-=
 Correctness
-×
+
 Difficulty
-+
-Efficiency Bonus
+
+Efficiency
 ```
 
-정확도가 핵심.
-
-속도는 보조 요소.
+우선순위:
 
 ```text
-Accuracy > Speed
-```
-
----
-
-# 5.10 Adaptive 가능성
-
-향후:
-
-```text
-초반 3문제 결과
-↓
-난이도 자동 조정
-```
-
-가능.
-
-MVP에서는 사전 정의된 난이도 순서로 진행해도 됨.
-
----
-
-# 5.11 결과
-
-```text
-🧊 SPATIAL COMPLETE
-
-9 / 12 Correct
-
-정확도
-75%
-
-최고 난이도
-LEVEL 4
-
-평균 풀이
-6.8 sec
-
-SCORE
-7,450
+Accuracy
+>
+Difficulty
+>
+Speed
 ```
 
 ---
 
-# 6. REASONING
-
-# 6.1 기본 정보
+# 72. Spatial Personal Best
 
 ```text
-ID
+Difficulty-weighted Correct Score
+```
+
+를 기준으로 한다.
+
+정답 개수만 동일해도 더 어려운 문제를 맞힌 세션을 더 높은 기록으로 인정할 수 있다.
+
+---
+
+# 73. Spatial 문제 생성
+
+v1.0에서는 검증된 문제 Pool을 사용한다.
+
+절차적으로 무작위 생성한 도형이:
+
+```text
+중복 정답
+
+잘못된 Mirror
+
+의도하지 않은 동일 Shape
+```
+
+를 만들 수 있기 때문이다.
+
+문제 Pool을 충분히 확보하고 Session마다 랜덤 샘플링한다.
+
+---
+
+# 74. Reasoning — 추리력
+
+## Game ID
+
+```text
 reasoning
+```
 
-표시명
-추리력
+## Game Name
 
-영문명
-Reasoning
-
-MVP Game
+```text
 Pattern Reasoning
+```
 
-목표 시간
+## 목표 시간
+
+```text
 1~2분
 ```
 
 ---
 
-# 6.2 측정 정의
+# 75. Reasoning 측정 정의
 
-주어진 정보에서 규칙, 관계 또는 조건을 찾아 적절한 답을 도출하는 수행 능력을 측정한다.
+주어진 시각적 정보에서 규칙이나 관계를 찾아 적절한 답을 도출하는 수행 능력을 측정한다.
 
-주의:
-
-```text
-IQ
-전체 지능
-학업 능력
-```
-
-을 직접 측정한다고 표현하지 않는다.
+IQ 전체를 측정한다고 표현하지 않는다.
 
 ---
 
-# 6.3 MVP 방향
-
-초기 MVP는 공정한 채점과 구현 난이도를 위해:
+# 76. Reasoning MVP 방식
 
 ```text
-Visual / Logical Pattern Reasoning
+Visual Pattern Reasoning
 ```
 
-으로 시작한다.
+을 사용한다.
 
-향후:
-
-```text
-Mini Mystery
-Deduction Puzzle
-Code Breaking
-Logic Story
-```
-
-등으로 확장한다.
-
----
-
-# 6.4 문제 예시
-
-### Sequence Pattern
+예:
 
 ```text
 ○ △ ○ △ ?
 
-① ○
-② △
-```
+또는
 
----
-
-### Matrix Pattern
-
-```text
 ▲ ● ▲
 ● ▲ ●
 ▲ ● ?
-
-?
 ```
 
 ---
 
-### Attribute Pattern
+# 77. Reasoning Question
 
 ```text
-색상
-방향
-개수
-회전
-
-규칙을 조합
-```
-
----
-
-# 6.5 문제 수
-
-```text
-Practice 2
+Practice
+2문제
 
 +
 
-실전 10~12 Questions
-```
-
-목표:
-
-```text
-60~120초
+Real
+10~12문제
 ```
 
 ---
 
-# 6.6 난이도
+# 78. Reasoning 난이도
 
-난이도는 규칙 수로 증가.
-
-### Level 1
+고정 난이도 순서.
 
 ```text
+Level 1
 Single Rule
-```
 
-### Level 2
-
-```text
+Level 2
 Two-step Pattern
-```
 
-### Level 3
-
-```text
+Level 3
 Multiple Attribute
-```
 
-### Level 4
-
-```text
+Level 4
 Compound Rule
 ```
 
 ---
 
-# 6.7 문제 제한시간
+# 79. Reasoning 제한시간
 
 예:
 
@@ -2021,31 +1917,11 @@ Hard
 12~15초
 ```
 
-전체 시간이 2분을 크게 넘지 않도록 한다.
+전체 게임이 2분을 크게 넘지 않도록 조절한다.
 
 ---
 
-# 6.8 Hint
-
-MVP에서는 Hint 기능을 넣지 않는 것을 권장.
-
-이유:
-
-```text
-Hint 사용 여부가 Score 비교를 복잡하게 만듦
-```
-
-향후 추가 시 반드시:
-
-```text
-hint_used
-```
-
-저장 및 Score Penalty 적용.
-
----
-
-# 6.9 저장 데이터
+# 80. Reasoning 저장 데이터
 
 ```ts
 {
@@ -2063,666 +1939,868 @@ hint_used
 
 ---
 
-# 6.10 Score 구조
+# 81. Reasoning Game Score
 
-Reasoning에서는:
+반영:
 
 ```text
 Accuracy
+
 Difficulty
+
+Efficiency
 ```
 
-가 핵심.
-
-Speed는 보조.
-
-개념:
+우선순위:
 
 ```text
-Reasoning Score
+Accuracy
 
-=
-Difficulty Weighted Correct Score
-+
-Efficiency Bonus
+Difficulty
+
+Speed
 ```
 
 ---
 
-# 6.11 결과
+# 82. Reasoning Personal Best
 
 ```text
-🔍 REASONING COMPLETE
-
-8 / 10 Correct
-
-최고 난이도
-LEVEL 4
-
-평균 풀이
-7.4 sec
-
-SCORE
-8,120
+Difficulty-weighted Correct Score
 ```
+
+기준.
 
 ---
 
-# 7. 6개 게임 요약
+# 83. Reasoning 문제 Pool
 
-| Stat      | MVP Game          |     시간 | 핵심 측정    | 속도 비중 | 정확도 비중 |
-| --------- | ----------------- | -----: | -------- | ----: | -----: |
-| Reaction  | Catch the Signal  | 30~60초 | 반응시간     | 매우 높음 |     중간 |
-| Memory    | Memory Tiles      | 30~60초 | 단기 위치 기억 |    낮음 |  매우 높음 |
-| Focus     | Target Hunt       | 30~60초 | 목표 탐지    |    중간 |  매우 높음 |
-| Judgment  | Rule Switch       | 30~60초 | 규칙 적용·전환 |    높음 |  매우 높음 |
-| Spatial   | Rotate It         |   1~2분 | 정신적 회전   | 낮음~중간 |  매우 높음 |
-| Reasoning | Pattern Reasoning |   1~2분 | 규칙 추론    | 낮음~중간 |  매우 높음 |
+Spatial과 마찬가지로 검증된 문제 Pool을 사용한다.
+
+문제마다:
+
+```text
+question_id
+
+difficulty
+
+correct_answer
+
+rule_type
+```
+
+을 관리한다.
+
+Free Play에서는 랜덤 샘플링하여 문제 암기를 줄인다.
 
 ---
 
-# 8. 게임별 권장 진행 순서
+# 84. 향후 Reasoning 확장
 
-첫 사용자에게 반드시 아래 순서를 강제할 필요는 없다.
-
-다만 Onboarding 기본 순서는 추천:
+추후 게임 다양화를 위해:
 
 ```text
-1. Reaction
-↓
-2. Memory
-↓
-3. Focus
-↓
-4. Judgment
-↓
-5. Spatial
-↓
-6. Reasoning
+Mini Mystery
+
+Logic Puzzle
+
+Code Breaking
+
+Deduction
 ```
 
-이유:
+등을 추가할 수 있다.
 
-```text
-Reaction
-가장 즉각적이고 설명이 적음
+단, 다른 게임 유형은 별도 `game_id` 또는 Mode로 관리한다.
 
-↓
-
-Memory / Focus
-직관적인 게임
-
-↓
-
-Judgment
-규칙 이해 필요
-
-↓
-
-Spatial / Reasoning
-상대적으로 생각할 시간이 필요
-```
-
-따라서 점차 깊어지는 구조.
+같은 Percentile 분포에 무조건 섞지 않는다.
 
 ---
 
-# 9. 첫 세션 피로도 관리
+# 85. 게임별 기록 요약
 
-총 예상:
+| Stat | MVP Game | 주요 Raw Record | Personal Best 기준 |
+|---|---|---|---|
+| Reaction | Catch the Signal | Median ms | 낮은 Valid Median + 보조지표 |
+| Memory | Memory Tiles | Level + Accuracy | Difficulty-weighted Memory Score |
+| Focus | Target Hunt | Accuracy + Response | Accuracy-weighted Composite |
+| Judgment | Rule Switch | Accuracy + Switch Response | Rule-switch Composite |
+| Spatial | Rotate It | Correct + Difficulty | Difficulty-weighted Score |
+| Reasoning | Pattern Reasoning | Correct + Difficulty | Difficulty-weighted Score |
 
-```text
-Reaction
-~45초
+---
 
-Memory
-~45초
+# 86. 게임별 플레이 시간
 
-Focus
-~45초
+| Stat | 목표 시간 |
+|---|---:|
+| Reaction | 30~60초 |
+| Memory | 30~60초 |
+| Focus | 30~60초 |
+| Judgment | 30~60초 |
+| Spatial | 1~2분 |
+| Reasoning | 1~2분 |
 
-Judgment
-~50초
-
-Spatial
-~90초
-
-Reasoning
-~90초
-```
-
-순수 게임 시간:
-
-```text
-약 6분
-```
-
-Intro / Result / 전환 포함:
+전체 첫 플레이:
 
 ```text
 약 7~10분
 ```
 
-전체 6개를 반드시 한 번에 완료하도록 강제하지 않는다.
+을 목표로 한다.
 
 ---
 
-# 10. 중간 저장
+# 87. 문제 반복 방지 전략
 
-사용자가 중간에 나갈 수 있으므로:
-
-```text
-completedStats
-```
-
-를 저장한다.
-
-예:
-
-```ts
-{
-  reaction: true,
-  memory: true,
-  focus: false,
-  judgment: false,
-  spatial: false,
-  reasoning: false
-}
-```
-
-재방문:
-
-```text
-2 / 6 DISCOVERED
-
-이어서 발견하기
-```
-
----
-
-# 11. Egg Progress 연결
-
-각 게임 완료 시:
-
-```text
-Stat Discovered
-↓
-Egg Progress +1
-```
-
-예:
-
-첫 게임:
-
-```text
-⚡ REACTION 발견!
-
-🥚
-
-1 / 6 DISCOVERED
-```
-
-3개:
-
-```text
-🥚✨
-
-3 / 6 DISCOVERED
-```
-
-5개:
-
-```text
-🥚💥
-
-"알에 금이 가기 시작했어요."
-
-5 / 6
-```
-
-6개:
-
-```text
-✨ HATCHING ✨
-```
-
----
-
-# 12. 재도전 정책
-
-각 게임은 자유롭게 재도전 가능.
-
-하지만:
-
-```text
-Stat
-=
-Best Valid Score Percentile
-```
-
-을 MVP 기본값으로 한다.
-
-재도전 시:
-
-```text
-Current Attempt
-vs
-Personal Best
-```
-
-표시.
-
-예:
-
-```text
-REACTION
-
-이번 기록
-238ms
-
-BEST
-225ms
-
-13ms 차이
-
-[다시 도전]
-```
-
----
-
-# 13. Anti-Cheat / 데이터 품질
-
-완벽한 Anti-Cheat는 MVP 범위 밖이지만 최소한 아래를 고려한다.
-
----
+게임마다 다른 방식을 사용한다.
 
 ## Reaction
 
 ```text
-비정상적으로 빠른 반응
-예: < 80ms
+Random Delay
 
-반복 동일 값
-
-과도한 False Start
+Random Target Position / Visual
 ```
 
-Flag 가능.
-
----
-
-## 다른 게임
+## Memory
 
 ```text
-비정상적으로 짧은 응답시간
-
-반복 자동 입력
-
-Session 중단
-
-문제 데이터 미완료
+Random Tile Pattern
 ```
 
-검증.
-
----
-
-## 저장 필드
+## Focus
 
 ```text
-is_valid_attempt
-invalid_reason
+Random Target Position
+
+Random Distractor Placement
 ```
 
-권장.
+## Judgment
+
+```text
+Stimulus Order Randomization
+
+Rule Block Variation
+```
+
+## Spatial
+
+```text
+Validated Problem Pool
++
+Random Sampling
+```
+
+## Reasoning
+
+```text
+Validated Problem Pool
++
+Random Sampling
+```
 
 ---
 
-# 14. Device 차이
+# 88. Game Version
 
-Reaction은 특히:
+게임 규칙이나 난이도가 변경될 경우 반드시:
+
+```text
+game_version
+```
+
+을 저장한다.
+
+예:
+
+```text
+reaction_v1
+
+reaction_v2
+```
+
+다른 Version의 Score를 동일한 Percentile Distribution에 무조건 섞지 않는다.
+
+---
+
+# 89. Device 정보
+
+특히 Reaction은 다음 요소의 영향을 받을 수 있다.
 
 ```text
 Mouse
+
 Touch
+
 Display Refresh Rate
+
 Browser
+
 Device Performance
 ```
 
-의 영향을 받을 수 있다.
-
-따라서 가능하면:
+가능한 범위에서 다음을 저장한다.
 
 ```text
 device_type
+
 input_type
+
 browser
-screen_refresh_rate // 가능할 경우
+
+screen_size
 ```
 
-를 기록한다.
+---
 
-향후 Percentile에서:
+# 90. 모바일 / PC Percentile
+
+v1.0 초기에는:
+
+```text
+기기 정보는 저장
+
+Percentile은 통합
+```
+
+한다.
+
+사용자 데이터가 충분히 쌓이면:
 
 ```text
 Mobile
+
 Desktop
 ```
 
-을 별도로 비교할 가능성도 고려한다.
-
-초기에는 전체 통합 결과를 보여주더라도 원본 데이터는 남긴다.
+분포 차이를 분석하여 별도 Percentile이 필요한지 검토한다.
 
 ---
 
-# 15. Percentile 최소 표본 정책
+# 91. XP 지급
 
-정확한 기준은 실제 데이터 확인 후 결정.
+게임 완료 시 XP를 지급한다.
 
-초기 권장:
-
-```text
-N < 100
-
-"비교 데이터 수집 중"
-```
+기본 구조:
 
 ```text
-N >= 100
+Completion XP
 
-Experimental Percentile
++
+
+Performance Bonus
+
++
+
+New Record Bonus
+
+↓
+
+Recommended Game Multiplier
 ```
-
-```text
-N >= 500
-
-일반 Percentile 표시 고려
-```
-
-단, 이 수치는 통계적 품질 보장 기준이 아니라 제품 표시 정책의 초기 가이드다.
-
-분포 안정성을 확인 후 변경 가능.
 
 ---
 
-# 16. Percentile 표시 문구
+# 92. XP 예시
 
-금지:
+초기 예시:
 
 ```text
-당신의 기억력은 상위 8%입니다.
+게임 완료
++100 XP
+
+성적 Bonus
++0~30 XP
+
+NEW RECORD
++30 XP
 ```
 
-이 표현은 실제 인간 전체의 능력을 의미하는 것처럼 보일 수 있다.
+추천 게임인 경우:
+
+```text
+Total Earned XP
+×1.5
+```
+
+정확한 XP 수치는 Balance Test 후 조정한다.
+
+---
+
+# 93. XP와 Stat 분리
+
+```text
+STAT
+=
+게임에서 얼마나 좋은 기록을 만들었는가
+
+XP
+=
+얼마나 플레이하고 활동했는가
+```
+
+따라서 기록이 낮더라도 플레이하면 XP를 받을 수 있다.
+
+이는 실력이 낮은 사용자가 성장 시스템에서 소외되지 않도록 하기 위함이다.
+
+---
+
+# 94. New Record Bonus
+
+Personal Best를 갱신하면 추가 보상을 제공한다.
+
+예:
+
+```text
+NEW RECORD!
+
++30 XP
+```
+
+추천 게임이었다면 전체 XP에 추천 배율을 적용한다.
+
+정확한 계산 순서는 구현 시 하나로 고정한다.
 
 권장:
 
 ```text
-현재 Brain_Pet 사용자 기록 기준
-상위 8%
-```
+Base
++
+Performance
++
+New Record
 
-또는:
+↓
 
-```text
-이 게임 수행 기록 기준
-상위 8%
+× Recommended Multiplier
 ```
 
 ---
 
-# 17. Stat 표시
+# 95. Anti-cheat
+
+v1.0에서는 복잡한 Anti-cheat 시스템을 구현하지 않는다.
+
+명백한 비정상 기록만 Flag한다.
 
 예:
 
 ```text
-MEMORY
+Reaction 80ms 이하 반복
 
-STAT
-82
+비정상적으로 짧은 Session
 
-Brain_Pet 사용자 기록 기준
-상위 18%
+Trial 없이 완료 요청
+
+API 직접 조작 의심
+
+불가능한 점수
 ```
-
-즉:
-
-```text
-82 STAT
-≈
-82nd Percentile
-```
-
-로 이해할 수 있도록 한다.
 
 ---
 
-# 18. Game Score vs Stat 예시
+# 96. Invalid Attempt
 
-사용자 A:
+기록에:
+
+```text
+is_valid_attempt
+
+invalid_reason
+```
+
+을 저장할 수 있도록 한다.
+
+Invalid 기록은:
+
+```text
+Percentile
+
+Ranking
+
+Personal Best
+```
+
+계산에서 제외한다.
+
+---
+
+# 97. 날짜별 History
+
+각 Attempt를 삭제하지 않고 기록한다.
+
+예:
+
+```text
+2026-07-20
+
+Reaction
+231ms
+
+Score
+XXX
+
+Percentile
+68
+```
+
+```text
+2026-07-27
+
+Reaction
+205ms
+
+Score
+XXX
+
+Percentile
+82
+
+NEW RECORD
+```
+
+---
+
+# 98. Initial vs Current
+
+최초 완료한 6개 게임은:
+
+```text
+Initial Status
+```
+
+로 별도 저장한다.
+
+현재 최고 기록 기준 스탯은:
+
+```text
+Current Status
+```
+
+로 관리한다.
+
+향후:
+
+```text
+처음의 나
+
+vs
+
+지금의 나
+```
+
+를 시각화한다.
+
+---
+
+# 99. Statling과 기록 연결
+
+게임 기록 향상은 Statling의 Species 자체를 변경하지 않는다.
+
+대신 향후 다음 요소에 반영할 수 있다.
+
+```text
+표정
+
+대사
+
+애니메이션
+
+행동
+
+작은 성장 효과
+```
+
+예:
+
+```text
+Reaction NEW RECORD
+
+↓
+
+Statling이 빠르게 뛰어다님
+
+"오늘 정말 빨랐어!"
+```
+
+---
+
+# 100. Recommended Game
+
+부화 이후 Free Play에서 Statling이 원하는 게임 하나를 추천할 수 있다.
+
+예:
+
+```text
+🧠 기억력
+
+오늘 이 게임이 하고 싶어!
+
+EXP ×1.5
+```
+
+게임 자체의 Score나 Stat 계산 방식은 일반 플레이와 동일하다.
+
+Bonus는 XP에만 적용한다.
+
+즉 추천 게임이라고 Stat이 더 많이 올라가지는 않는다.
+
+---
+
+# 101. Ranking과 Game Score
+
+향후 Ranking을 구현할 경우:
+
+```text
+Raw Record
+```
+
+를 그대로 비교하기 어려운 게임은:
+
+```text
+Game Score
+```
+
+를 사용한다.
+
+예:
 
 ```text
 Reaction
+Median ms 기준
 
-Median
-247ms
-
-Game Score
-81,840
-
-Percentile
-76.2
-
-Stat
-76
-```
-
-사용자 B:
-
-```text
 Memory
+Composite Score
 
-Max Level
-7
-
-Accuracy
-91%
-
-Game Score
-8,720
-
-Percentile
-88.7
-
-Stat
-89
+Focus
+Composite Score
 ```
 
-Game Score 단위는 게임마다 다르지만:
+Ranking은 Game별로 별도 관리한다.
 
-```text
-Stat
-```
-
-은 모두 Percentile 기반 0~100 범위이므로 Radar Chart에서 비교 가능하다.
+6개 게임을 하나의 점수로 억지로 합친 `능력 순위`는 초기에는 만들지 않는다.
 
 ---
 
-# 19. 향후 게임 확장 구조
+# 102. MY STATUS와 Ranking 차이
 
-하나의 Stat에 여러 게임을 연결할 수 있어야 한다.
+```text
+MY STATUS
+=
+6개 게임에서 나의 상대적 위치
+
+Ranking
+=
+특정 게임 또는 XP에서 사용자 간 순위
+```
+
+둘을 혼동하지 않는다.
+
+---
+
+# 103. Percentile 계산 예시
+
+유효 사용자 1,000명.
+
+내 Reaction Game Score보다 낮은 기록:
+
+```text
+820명
+```
+
+이면:
+
+```text
+Percentile Rank
+82
+```
+
+따라서:
+
+```text
+Reaction Stat
+82
+```
+
+표현:
+
+```text
+현재 Statling 사용자 기준
+상위 약 18%
+```
+
+---
+
+# 104. 동점 처리
+
+Percentile 계산에서 동일 Score가 다수 존재할 수 있다.
+
+구체적인 Rank 계산 방식은 DB 구현 시 확정한다.
 
 예:
 
 ```text
-MEMORY
+Percent Rank
 
-├ Memory Tiles
-├ Sequence Memory
-├ Room Changes
-└ Number Memory
+CUME_DIST
+
+Average Rank
 ```
 
-단, 서로 다른 게임 Score를 곧바로 같은 Percentile에 섞지 않는다.
+중 하나를 선택한다.
 
-각 게임별:
+모든 게임에서 동일한 정책을 사용한다.
+
+---
+
+# 105. 스탯 값 반올림
+
+사용자-facing Stat은 기본적으로 정수:
 
 ```text
-game_id
-game_version
-score_distribution
+82
 ```
 
-을 별도 관리.
+로 표시한다.
 
-향후 Stat 통합 방식은:
+내부 Percentile은:
 
 ```text
-게임별 Percentile
-→ Composite Stat
+82.37
 ```
 
-방식으로 별도 설계한다.
+처럼 소수점으로 저장 가능.
 
-MVP에서는:
+---
+
+# 106. 짧은 Feedback 생성 방식
+
+v1.0에서는 AI를 사용하지 않는다.
+
+Rule-based Feedback을 사용한다.
+
+예:
 
 ```text
-1 Stat = 1 Game
+Accuracy >= 90%
+
+→
+"높은 정확도로 마무리했어요."
 ```
-
-이므로 단순화 가능.
-
----
-
-# 20. MVP 구현 우선순위
-
-## STEP 1
-
-Reaction 완성.
 
 ```text
-Intro
+New Record
 
-Practice
-
-7 Trials
-
-False Start
-
-Result
-
-Trial Data
+→
+"지난 기록을 넘어섰어요!"
 ```
 
----
-
-## STEP 2
-
-Memory.
+의미 있는 Rule을 만들기 어려운 경우 Feedback을 생략한다.
 
 ---
 
-## STEP 3
+# 107. 게임 설명 문구 원칙
 
-Focus.
+사용자에게 다음과 같이 설명한다.
 
----
-
-## STEP 4
-
-Judgment.
-
----
-
-## STEP 5
-
-Spatial.
-
----
-
-## STEP 6
-
-Reasoning.
-
----
-
-## STEP 7
-
-공통 구조 통합.
+좋은 예:
 
 ```text
-GameResult
+빛난 위치를 기억해보세요.
 
-GameSession
+목표를 최대한 빠르게 찾아보세요.
 
-Trial
+규칙이 바뀌면 새로운 기준에 맞춰 선택하세요.
+```
 
-Score
+피해야 할 표현:
 
-Best Record
+```text
+당신의 진짜 기억력을 측정합니다.
+
+당신의 지능을 평가합니다.
+
+당신의 뇌 능력을 정확하게 진단합니다.
 ```
 
 ---
 
-# 21. 추천 Type 구조
+# 108. 게임 UI 원칙
 
-초안:
+게임은:
+
+```text
+시험
+```
+
+보다:
+
+```text
+미니게임
+```
+
+처럼 느껴져야 한다.
+
+사용:
+
+```text
+ROUND
+
+LEVEL
+
+COMBO
+
+NEW RECORD
+
+PERFECT
+
+MISS
+```
+
+등.
+
+하지만 게임 UI가 측정 자체를 방해해서는 안 된다.
+
+---
+
+# 109. 첫 플레이 게임 완료 Flow
+
+예:
+
+```text
+GAME COMPLETE
+
+↓
+
+Raw Record
+
+↓
+
+Personal Best 비교
+
+↓
+
+새로운 스탯 발견
+
+↓
+
+Egg / Progress 변화
+
+↓
+
+다음 Game
+```
+
+---
+
+# 110. Free Play 완료 Flow
+
+```text
+GAME COMPLETE
+
+↓
+
+이번 기록
+
+↓
+
+Personal Best
+
+↓
+
+NEW RECORD 여부
+
+↓
+
+XP 획득
+
+↓
+
+추천 Bonus
+
+↓
+
+Stat 업데이트 가능 여부
+
+↓
+
+Room 복귀
+```
+
+---
+
+# 111. 저장해야 할 공통 Session 데이터
 
 ```ts
-type StatType =
-  | 'memory'
-  | 'focus'
-  | 'reaction'
-  | 'judgment'
-  | 'spatial'
-  | 'reasoning';
-
 interface GameSession {
-  id: string;
-  gameId: string;
-  gameVersion: string;
-  statType: StatType;
+  id: string
+  userId: string
+  gameId: string
+  gameVersion: string
 
-  startedAt: string;
-  completedAt?: string;
+  startedAt: string
+  completedAt?: string
 
-  isCompleted: boolean;
-  isValidAttempt: boolean;
+  durationMs?: number
 
-  gameScore?: number;
+  isCompleted: boolean
+  isValidAttempt: boolean
 
-  deviceType?: 'mobile' | 'desktop' | 'tablet';
-  inputType?: 'mouse' | 'touch' | 'keyboard';
-}
+  gameScore?: number
 
-interface StatResult {
-  statType: StatType;
+  percentile?: number
 
-  gameScore: number;
+  finalStat?: number
 
-  percentile?: number;
+  isPersonalBest?: boolean
 
-  statScore?: number;
-
-  sampleSize?: number;
-
-  isPersonalBest: boolean;
+  deviceType?: string
+  inputType?: string
 }
 ```
 
-게임별 Trial Type은 별도로 만든다.
+---
+
+# 112. Stat Result 구조
+
+```ts
+interface StatResult {
+  statType:
+    | "memory"
+    | "focus"
+    | "reaction"
+    | "judgment"
+    | "spatial"
+    | "reasoning"
+
+  rawSummary: unknown
+
+  gameScore: number
+
+  percentile?: number
+
+  finalStat?: number
+
+  sampleSize?: number
+
+  isPersonalBest: boolean
+
+  playedAt: string
+}
+```
 
 ---
 
-# 22. Score 함수 원칙
+# 113. Score Logic 위치
 
-각 Score 계산은 UI Component 내부에 작성하지 않는다.
+Score 계산을 UI Component 안에 넣지 않는다.
 
-예:
+권장:
 
 ```text
-/lib/scoring/
+src/lib/scoring/
 
 reaction.ts
 memory.ts
@@ -2732,72 +2810,83 @@ spatial.ts
 reasoning.ts
 ```
 
-예:
+함수:
 
-```ts
+```text
 calculateReactionScore()
+
 calculateMemoryScore()
+
 calculateFocusScore()
+
 calculateJudgmentScore()
+
 calculateSpatialScore()
+
 calculateReasoningScore()
 ```
 
-목적:
-
-```text
-UI와 Scoring Logic 분리
-
-추후 Formula 변경 용이
-
-A/B Test 가능
-
-Unit Test 가능
-```
-
 ---
 
-# 23. 난이도 설정 파일
+# 114. Difficulty Config
 
-난이도 역시 Component에 하드코딩하지 않는 것을 권장.
+난이도 역시 UI에서 하드코딩하지 않는다.
 
-예:
+권장:
 
 ```text
-/config/games/
+src/config/games/
 
 reaction.config.ts
+
 memory.config.ts
+
 focus.config.ts
+
 judgment.config.ts
+
 spatial.config.ts
+
 reasoning.config.ts
 ```
 
+---
+
+# 115. Question Pool
+
+Spatial / Reasoning은 별도 문제 데이터를 사용한다.
+
 예:
 
-```ts
-export const MEMORY_LEVELS = [
-  {
-    level: 1,
-    gridSize: 3,
-    targetCount: 3,
-    exposureMs: 2000,
-  },
-  {
-    level: 2,
-    gridSize: 3,
-    targetCount: 4,
-    exposureMs: 1700,
-  },
-];
+```text
+src/data/games/
+
+spatial/
+
+reasoning/
+```
+
+각 문제:
+
+```text
+id
+
+difficulty
+
+asset
+
+options
+
+correct_answer
+
+metadata
 ```
 
 ---
 
-# 24. Analytics Event
+# 116. Analytics Event 후보
 
-게임 공통:
+게임 관련 주요 Event:
 
 ```text
 game_intro_view
@@ -2806,8 +2895,6 @@ game_practice_start
 
 game_start
 
-game_round_complete
-
 game_complete
 
 game_retry
@@ -2815,121 +2902,99 @@ game_retry
 personal_best
 
 stat_discovered
-```
 
-Properties:
+free_play_start
 
-```text
-game_id
-stat_type
-game_version
-difficulty
-game_score
-duration
-attempt_number
+recommended_game_start
+
+xp_earned
 ```
 
 ---
 
-# 25. 게임별 특수 Event
+# 117. GA4와 DB 역할 분리
 
-Reaction:
-
-```text
-reaction_false_start
-```
-
-Memory:
+GA4:
 
 ```text
-memory_perfect_round
+사용자 행동 이벤트
 ```
 
-Focus:
+DB:
 
 ```text
-focus_false_detection
+Trial Raw Data
+
+Game Result
+
+Score
+
+History
+
+Percentile
 ```
 
-Judgment:
-
-```text
-judgment_rule_switch
-```
-
-Spatial:
-
-```text
-spatial_timeout
-```
-
-Reasoning:
-
-```text
-reasoning_timeout
-```
-
-모든 Trial Event를 GA4에 전송할 필요는 없다.
-
-세부 Trial Raw Data는 DB에 저장하고 GA4에는 주요 행동 이벤트만 보낸다.
+모든 Trial을 GA4에 전송하지 않는다.
 
 ---
 
-# 26. 핵심 성공 지표
-
-각 게임에서 최소 다음을 측정한다.
+# 118. 주요 게임 분석 지표
 
 ```text
-Start Rate
+Game Start Rate
 
-Completion Rate
+Game Completion Rate
 
 Average Duration
 
-Retry Rate
-
 Drop-off
 
+Retry Rate
+
+Personal Best Rate
+
 Score Distribution
+
+Stat Distribution
+
+Free Play Rate
 ```
 
 ---
 
-# 27. 게임 품질 판단 기준
+# 119. 게임 품질 검증 질문
 
-Beta 이후 아래 질문에 답한다.
-
-### Reaction
+## Reaction
 
 ```text
-한 번 더 하고 싶은가?
+한 번 더 도전하고 싶은가?
 ```
 
-### Memory
+## Memory
 
 ```text
 난이도 상승이 자연스러운가?
 ```
 
-### Focus
+## Focus
 
 ```text
-오답보다 실제 집중 차이를 측정하는가?
+빠른 클릭보다 실제 정확도가 반영되는가?
 ```
 
-### Judgment
+## Judgment
 
 ```text
-Reaction과 다른 경험으로 느껴지는가?
+Reaction과 다른 게임으로 느껴지는가?
 ```
 
-### Spatial
+## Spatial
 
 ```text
-문제가 반복적으로 느껴지지 않는가?
+문제 품질에 오류가 없는가?
 ```
 
-### Reasoning
+## Reasoning
 
 ```text
 학교 시험처럼 느껴지지 않는가?
@@ -2937,255 +3002,356 @@ Reaction과 다른 경험으로 느껴지는가?
 
 ---
 
-# 28. 가장 중요한 MVP 원칙
+# 120. Closed Beta에서 반드시 확인할 항목
 
 ```text
-테스트를 받는다
+전체 6게임 시간이 적절한가?
+
+어느 게임이 가장 지루한가?
+
+어느 게임이 가장 어렵나?
+
+결과가 납득되는가?
+
+다시 해보고 싶은 게임은 무엇인가?
+
+설명이 없어도 플레이 가능한가?
+
+모바일에서도 불편하지 않은가?
+
+신기록이 동기부여가 되는가?
 ```
 
-라는 느낌보다:
+---
+
+# 121. v1.0 게임 구조 요약
 
 ```text
-짧은 게임을 플레이한다
+Reaction
+Catch the Signal
+
+Memory
+Memory Tiles
+
+Focus
+Target Hunt
+
+Judgment
+Rule Switch
+
+Spatial
+Rotate It
+
+Reasoning
+Pattern Reasoning
 ```
 
-는 느낌이 우선되어야 한다.
+---
+
+# 122. v1.0 Score 정책 요약
+
+```text
+Raw Record
+게임별 실제 기록
+
+↓
+
+Game Score
+내부 Composite Score
+
+↓
+
+Percentile
+Statling 유효 사용자 기준
+
+↓
+
+Final Stat
+0~100
+```
+
+---
+
+# 123. v1.0 기록 정책 요약
+
+```text
+첫 6개 결과
+→ Initial Status 보존
+
+재도전
+→ 모든 History 저장
+
+신기록
+→ Personal Best 갱신
+
+Current Status
+→ Best Valid Performance 기반
+
+Stat
+→ Percentile 기반
+```
+
+---
+
+# 124. v1.0 XP 정책 요약
+
+```text
+Game Complete
+→ Base XP
+
+Performance
+→ Bonus XP
+
+NEW RECORD
+→ Additional XP
+
+Recommended Game
+→ Final XP ×1.5
+```
+
+Stat 자체에는 XP 배율을 적용하지 않는다.
+
+---
+
+# 125. 가장 중요한 게임 설계 원칙
+
+Statling의 게임은:
+
+```text
+"정확한 의학적 능력 검사"
+```
+
+를 목표로 하지 않는다.
+
+하지만:
+
+```text
+무작위 숫자 놀이
+```
+
+가 되어서도 안 된다.
 
 따라서:
 
 ```text
-문제 1 / 10
+측정 대상이 명확한 게임 규칙
+
+일관된 난이도
+
+Raw Data 저장
+
+동일 Version 비교
+
+충분한 사용자 데이터 기반 Percentile
 ```
 
-보다는:
-
-```text
-ROUND 3
-LEVEL UP!
-COMBO
-NEW RECORD
-```
-
-같은 게임 UI를 적극적으로 활용한다.
-
-단:
-
-```text
-게임 UI가 측정 정확성을 방해해서는 안 된다.
-```
+을 유지한다.
 
 ---
 
-# 29. 최종 플레이 경험
-
-사용자는 다음 경험을 하게 된다.
+# 126. 최종 사용자 경험
 
 ```text
-REACTION PLAY
+GAME PLAY
+
 ↓
-"231ms!"
+
+"205ms!"
+
 ↓
-⚡ 첫 Stat 발견
+
+NEW STAT DISCOVERED
+
 ↓
-🥚 1/6
+
+6 Stats Complete
+
 ↓
-MEMORY PLAY
-↓
-🧠 두 번째 Stat 발견
-↓
-🥚✨ 2/6
-↓
-...
-↓
-6개 완료
-↓
+
 MY STATUS
+
 ↓
-Egg Hatch
+
+HATCH
+
 ↓
-Personalized Pet
-```
 
----
+STATLING
 
-# 30. 현재 확정 사항
+↓
 
-```text
-6 Stats
+FREE PLAY
 
-Memory
-Focus
-Reaction
-Judgment
-Spatial
-Reasoning
-```
+↓
 
-플레이 시간:
+NEW RECORD
 
-```text
-Reaction
-Judgment
-Memory
-Focus
-
-→ 30~60초
-
-Spatial
-Reasoning
-
-→ 1~2분
-```
-
-시도/문제 수:
-
-```text
-게임마다 별도 설계
-```
-
-점수:
-
-```text
-Game Score / Record 방식
-```
-
-Stat:
-
-```text
-상대 Percentile 기반
-```
-
-MVP:
-
-```text
-1 Stat = 1 대표 Game
-```
-
----
-
-# 31. 현재 권장 MVP Game
-
-```text
-Reaction
-→ Catch the Signal
-
-Memory
-→ Memory Tiles
-
-Focus
-→ Target Hunt
-
-Judgment
-→ Rule Switch
-
-Spatial
-→ Rotate It
-
-Reasoning
-→ Pattern Reasoning
-```
-
-이 구성을 v0.1 기본안으로 사용한다.
-
----
-
-# 32. 개발 시 Claude Code 지침
-
-Claude Code는 이 문서를 구현 기준으로 참고한다.
-
-단:
-
-```text
-1. Score Formula의 세부 상수는 임의로 확정하지 않는다.
-
-2. Percentile 데이터를 임의로 생성하지 않는다.
-
-3. 실제 사용자 데이터가 부족한 상태에서
-   "상위 X%"를 가짜로 표시하지 않는다.
-
-4. 게임 로직과 UI를 분리한다.
-
-5. Trial 단위 Raw Data 구조를 유지한다.
-
-6. game_version을 저장할 수 있도록 설계한다.
-
-7. 모바일과 데스크톱을 모두 고려한다.
-
-8. 첫 개발은 Reaction Game부터 시작한다.
-
-9. 처음부터 6개 게임 전체를 한 번에 구현하지 않는다.
-
-10. 각 게임 구현 후 실제 플레이 검증을 거친다.
-```
-
----
-
-# 33. 다음 개발 작업
-
-첫 구현 대상:
-
-```text
-REACTION — Catch the Signal
-```
-
-범위:
-
-```text
-1. Game Intro
-
-2. Practice Trial 1회
-
-3. Real Trial 7회
-
-4. Random Delay
-
-5. False Start 처리
-
-6. Reaction ms 기록
-
-7. Trial Data 저장
-
-8. Median / Average / Best 계산
-
-9. Game Score 계산 Interface
-
-10. Result 화면
-
-11. Retry
-
-12. Personal Best 비교
-```
-
-아직 구현하지 않는 것:
-
-```text
-Percentile 실제 계산
-
-Ranking
+↓
 
 XP
 
-Pet
+↓
 
-Supabase
+STAT GROWTH
 
-Auth
+↓
 
-Daily Challenge
+STATLING REACTION
+
+↓
+
+RETURN
 ```
 
-Reaction Prototype을 먼저 플레이해본 후:
+---
+
+# 127. 핵심 문장
+
+> **게임 기록은 숫자로 남고,  
+> 그 기록의 변화는 나와 Statling의 성장으로 이어진다.**
+
+---
+
+# 128. 개발 시 주의사항
+
+Claude Code는 다음 원칙을 따른다.
 
 ```text
-재미
+1. Game Score의 세부 상수를 임의로 정하지 않는다.
 
-길이
+2. Fake Percentile을 생성하지 않는다.
 
-False Start UX
+3. Raw Record와 Final Stat을 혼용하지 않는다.
 
-결과 화면
+4. UI에 의미 없는 pts를 임의로 추가하지 않는다.
 
-재도전 욕구
+5. Score Logic을 UI Component와 분리한다.
+
+6. Trial 단위 데이터를 저장할 수 있는 구조를 유지한다.
+
+7. game_version을 반드시 고려한다.
+
+8. Spatial / Reasoning 문제는 검증 가능한 Problem Pool을 사용한다.
+
+9. Personal Best와 모든 Attempt History를 둘 다 저장한다.
+
+10. Initial Status와 Current Status를 구분한다.
+
+11. 추천 게임 XP Bonus가 Stat Score에 영향을 주지 않도록 한다.
+
+12. 모바일과 데스크톱 Device 정보를 기록할 수 있게 한다.
+
+13. 명백한 비정상 기록을 Flag할 수 있는 구조를 둔다.
+
+14. 각 게임의 정확한 Score Formula는 실제 테스트 및 데이터 확보 후 보정 가능하도록 구성한다.
 ```
 
-를 확인하고 다음 게임 개발로 넘어간다.
+---
+
+# 129. 현재 확정 사항
+
+```text
+Final Stat
+=
+Statling 사용자 Percentile Rank 0~100
+
+재도전 Stat
+=
+Best Valid Performance 기준
+
+난이도
+=
+모든 사용자 동일한 Fixed Sequence
+
+Reaction
+=
+기존 Reaction Logic + 게임적 연출
+
+Memory
+=
+빛난 타일 위치 기억
+
+Focus
+=
+Target Hunt
+
+Judgment
+=
+Rule Switch
+
+Spatial
+=
+2D Mental Rotation
+
+Reasoning
+=
+Visual Pattern Reasoning
+
+결과 화면
+=
+Raw Record + Personal Best + 가능한 경우 짧은 Feedback
+
+Game Score
+=
+내부 계산용
+
+신기록
+=
+게임별 대표 지표 기준
+
+Free Play
+=
+기본 룰 동일 + 랜덤화
+
+문제 반복 방지
+=
+게임별 다른 전략
+
+XP
+=
+기본 XP + 성적 Bonus + 신기록 Bonus + 추천 게임 ×1.5
+
+Anti-cheat
+=
+명백한 비정상 기록 Flag
+
+Device
+=
+기록하되 초기 Percentile은 통합
+
+Initial Status
+=
+별도 보존
+
+Current Status
+=
+성장하며 변화
+
+반복 학습 효과
+=
+History를 보존하고 향후 Stat 업데이트 보정 가능 구조
+```
+
+---
+
+# 130. 다음 단계
+
+이 문서를 기준으로 실제 개발 전 다음 작업을 진행한다.
+
+```text
+1. 현재 v0 코드 Audit
+
+2. 게임별 Placeholder와 실제 GAME_SPEC 비교
+
+3. Raw Data Type 정의
+
+4. 공통 Game Session 구조 정의
+
+5. 6개 게임 기본 Logic 구현
+
+6. Score Function Interface 구현
+
+7. Personal Best / History 구조 구현
+
+8. 사용자 데이터 축적 후 Percentile 시스템 연결
+```

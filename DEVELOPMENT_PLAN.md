@@ -1,26 +1,157 @@
-# Brain_Pet — DEVELOPMENT_PLAN
+# Statling — DEVELOPMENT_PLAN
 
-> Version: v0.1
-> 목적: Brain_Pet MVP의 실제 개발 순서, 단계별 완료 조건, 작업 우선순위를 정의한다.
+> Version: v1.0
+> 목적: 현재 v0 기반 UI 코드를 출발점으로 Statling 공개 MVP v1.0을 완성하기 위한 실제 개발 순서와 단계별 완료 조건을 정의한다.
 > 대상: Claude Code 및 개발 참고용
-> 상태: v0.1 개발 계획 확정안
+> 상태: v1.0 개발 계획 확정안
 
 ---
 
-# 1. 개발 목표
+# 1. 현재 프로젝트 상태
 
-Brain_Pet v0.1의 개발 목표는 가능한 빠르게 다음 핵심 경험을 완성하고 배포하는 것이다.
+현재 Statling 프로젝트에는 v0를 통해 생성된 초기 UI 코드가 존재한다.
+
+현재 구현된 주요 화면 및 흐름:
 
 ```text
 Landing
 
 ↓
 
-6개 게임 연속 플레이
+Reaction UI
 
 ↓
 
-6개 스탯 완성
+Memory UI
+
+↓
+
+Focus UI
+
+↓
+
+Judgment UI
+
+↓
+
+Spatial UI
+
+↓
+
+Reasoning UI
+
+↓
+
+Stat Discovery UI
+
+↓
+
+MY STATUS
+
+↓
+
+Radar Chart
+```
+
+현재 코드는 완성된 제품이 아니라:
+
+```text
+UI Prototype
++
+초기 사용자 Flow
+```
+
+단계로 간주한다.
+
+---
+
+# 2. 현재 코드에서 유지할 것
+
+현재 v0 디자인의 전체 구조와 디자인 언어는 최대한 활용한다.
+
+유지:
+
+```text
+Cream 계열 배경
+
+Brown 계열 Outline
+
+Orange Main Accent
+
+6개 Stat별 고유 색상
+
+둥근 UI
+
+Casual Game 느낌
+
+Landing 기본 구조
+
+Game Progress 구조
+
+Stat Discovery 구조
+
+MY STATUS 구조
+
+Radar Chart 구조
+```
+
+---
+
+# 3. 현재 코드에서 개선할 것
+
+현재 UI를 그대로 확정하지 않는다.
+
+다음 요소를 개선한다.
+
+```text
+너무 강한 Outline
+
+강한 Offset Shadow
+
+과도한 빈 공간
+
+한국어 줄바꿈 오류
+
+Statling 세계관 부족
+
+Test Site처럼 보이는 일부 UI
+
+Raw Record / Final Stat 혼용
+
+MY STATUS 이후 Flow 부재
+```
+
+전체 목표:
+
+```text
+현재 디자인 60~70% 유지
+
++
+
+더 편안하고 아기자기한
+Casual Pet Game UI
+```
+
+---
+
+# 4. 개발 최종 목표
+
+Statling v1.0의 전체 Flow:
+
+```text
+Landing
+
+↓
+
+Anonymous User 생성
+
+↓
+
+6개 Sequential Games
+
+↓
+
+6 Stat Discovery
 
 ↓
 
@@ -32,700 +163,644 @@ Radar Chart
 
 ↓
 
-익명 사용자 기록 DB 저장
+Egg
 
 ↓
 
-GA4 행동 데이터 수집
+Hatch
 
 ↓
 
-배포
-```
+Statling Reveal
 
-v0.1에서는:
+↓
 
-```text
-Pet
+Save / Share
+
+↓
+
+Login / Signup
+
+↓
+
+Naming
+
+↓
+
+Statling Room
+
+↓
+
+Care
+
+↓
+
+Grow
+
+↓
+
+Free Play
+
+↓
+
+Game Record Update
+
+↓
+
 XP
-Level
-Ranking
-Daily Challenge
-```
-
-등의 확장 기능보다,
-
-```text
-게임 자체가 실제로 동작하는가
-
-6개 게임 흐름이 자연스러운가
-
-사용자 행동 데이터가 정상 수집되는가
-```
-
-를 우선 검증한다.
-
----
-
-# 2. 개발 기본 전략
-
-Brain_Pet v0.1은 다음 방식으로 개발한다.
-
-```text
-전체 UI 구조 먼저 설계
 
 ↓
 
-와이어프레임 수준 전체 화면 구현
-
-↓
-
-6개 게임 기본 로직 동시 구현
-
-↓
-
-게임 간 연결
-
-↓
-
-점수 및 스탯 로직 정제
-
-↓
-
-최종 MVP 직전 DB 연결
-
-↓
-
-GA4 연결
-
-↓
-
-개발자 단독 테스트
-
-↓
-
-배포
+Return to Room
 ```
 
 ---
 
-# 3. 핵심 개발 원칙
+# 5. 전체 개발 전략
 
-## 3.1 빠른 MVP 완성 우선
-
-완벽한 디자인보다:
+기본 개발 순서:
 
 ```text
-전체 Flow가 먼저 작동하는 것
-```
-
-을 우선한다.
-
-초기 목표는:
-
-```text
-예쁘지만 일부만 동작하는 서비스
-```
-
-가 아니라:
-
-```text
-6개 게임을 처음부터 끝까지 실제로 플레이할 수 있는 서비스
-```
-
-이다.
-
----
-
-## 3.2 UI 먼저, 로직은 이후
-
-처음부터 각 게임의 세부 알고리즘을 완성하지 않는다.
-
-먼저:
-
-```text
-Landing
+현재 코드 분석
 
 ↓
 
-Game Intro
+전체 v1.0 UI Flow 연결
 
 ↓
 
-Game Screen
+6개 Game 기본 Logic
 
 ↓
 
-Transition
+Score / Stat
 
 ↓
 
-Next Game
+Egg / Hatch / Statling
 
 ↓
 
-Final Status
-```
-
-전체 UI 흐름을 와이어프레임 수준으로 연결한다.
-
-그다음 실제 게임 로직을 삽입한다.
-
----
-
-## 3.3 6개 게임을 동시에 기본 구현
-
-Reaction 하나를 완벽하게 만든 후 다음 게임으로 넘어가는 방식보다:
-
-```text
-6개 게임 모두
-기본적으로 플레이 가능한 상태
-```
-
-를 먼저 만든다.
-
-목적:
-
-```text
-전체 Flow 빠른 검증
-
-게임별 개발 난이도 조기 확인
-
-전체 플레이 시간 확인
-
-UI 구조 문제 조기 발견
-```
-
----
-
-## 3.4 DB는 후반에 연결
-
-초기 UI 및 게임 개발 단계에서는 DB 의존도를 최소화한다.
-
-초기에는:
-
-```text
-Mock Data
-
-Local State
-
-Temporary State
-```
-
-를 사용한다.
-
-게임 전체가 정상 작동한 이후 최종 MVP 직전에 DB를 연결한다.
-
----
-
-## 3.5 Web First
-
-초기 개발은 웹 환경을 우선한다.
-
-우선:
-
-```text
-Desktop Web
-```
-
-에서 전체 기능을 완성한다.
-
-그다음:
-
-```text
-Responsive Web
-
-Mobile Browser
-```
-
-를 최적화한다.
-
-별도의 Native Mobile App은 v0.1 범위에 포함하지 않는다.
-
----
-
-# 4. 문서 기준
-
-개발 시 다음 문서를 기준으로 사용한다.
-
-```text
-기획.md
-→ 서비스 전체 방향
-
-GAME_SPEC.md
-→ 6개 게임 규칙
-
-MVP_SCOPE.md
-→ 현재 구현 범위
-
-DEVELOPMENT_PLAN.md
-→ 실제 개발 순서
-```
-
-충돌 시 우선순위:
-
-```text
-현재 Scope
-→ MVP_SCOPE.md
-
-게임 규칙
-→ GAME_SPEC.md
-
-개발 순서
-→ DEVELOPMENT_PLAN.md
-
-장기 방향
-→ 기획.md
-```
-
----
-
-# 5. 전체 개발 Phase
-
-```text
-PHASE 0
-Project Setup
+DB / Anonymous User
 
 ↓
 
-PHASE 1
-전체 Wireframe UI
+Login / Signup
 
 ↓
 
-PHASE 2
-6개 게임 기본 구현
+Room
 
 ↓
 
-PHASE 3
-게임 흐름 연결
+Care
 
 ↓
 
-PHASE 4
-Scoring / Stat
+Free Play
 
 ↓
 
-PHASE 5
-Final Status / Radar Chart
+XP
 
 ↓
 
-PHASE 6
-UX 정제
+History
 
 ↓
 
-PHASE 7
-DB 연결
+QA
 
 ↓
 
-PHASE 8
+Closed Beta
+
+↓
+
 GA4 / GTM
 
 ↓
 
-PHASE 9
-Developer QA
-
-↓
-
-PHASE 10
-Web / Mobile Optimization
-
-↓
-
-PHASE 11
-Production Deployment
+Production
 ```
 
 ---
 
-# 6. PHASE 0 — Project Setup
+# 6. 핵심 개발 원칙
+
+## 6.1 빠른 MVP 우선
+
+완벽한 기능보다:
+
+```text
+End-to-End Flow
+```
+
+를 먼저 완성한다.
+
+첫 목표:
+
+```text
+Landing에서 시작해서
+
+Room까지
+
+끊김 없이 도달 가능
+```
+
+하도록 만드는 것.
+
+---
+
+# 6.2 UI 전체 Flow를 먼저 연결
+
+본격적인 세부 로직 구현 전에:
+
+```text
+MY STATUS
+
+↓
+
+Egg
+
+↓
+
+Hatch
+
+↓
+
+Statling Reveal
+
+↓
+
+Login
+
+↓
+
+Naming
+
+↓
+
+Room
+
+↓
+
+Grow
+
+↓
+
+Free Play
+```
+
+까지 Placeholder 기반으로 연결한다.
+
+---
+
+# 6.3 기존 코드 재사용
+
+v0 코드를 무조건 다시 작성하지 않는다.
+
+먼저:
+
+```text
+현재 Component 구조 분석
+
+재사용 가능 Component 확인
+
+중복 확인
+
+Route 구조 확인
+```
+
+후 필요한 부분만 수정한다.
+
+---
+
+# 6.4 Scope 밖 기능을 선제 구현하지 않는다
+
+다음 기능은 v1.0 필수 아님.
+
+```text
+Evolution
+
+Shop
+
+Inventory
+
+Furniture Editing
+
+Friend
+
+Guild
+
+Chat
+
+Season Ranking
+
+AI Conversation
+
+KakaoTalk Analysis
+
+Complex Theme System
+```
+
+---
+
+# 7. PHASE 0 — 현재 코드 Audit
 
 ## 목표
 
-개발에 필요한 기본 프로젝트 환경을 구성한다.
+Claude Code가 기존 v0 코드를 이해한 뒤 수정하도록 한다.
+
+바로 대규모 리팩터링하지 않는다.
 
 ---
 
-## 권장 기술
+## 확인 항목
 
 ```text
-Next.js
+현재 Route
 
-TypeScript
+Component 구조
 
-Tailwind CSS
-```
+State 구조
 
-추후:
+6개 Game Placeholder 구조
 
-```text
-Supabase
-PostgreSQL
+Radar Chart
 
-GA4
-GTM
+Responsive 상태
 
-Vercel
+사용 Package
+
+CSS / Tailwind 구조
+
+중복 Component
+
+Hardcoded Data
 ```
 
 ---
 
-## 기본 구조 예시
+## 산출물
+
+Claude Code는 먼저 다음을 보고한다.
 
 ```text
-Brain_Pet/
+현재 구현된 화면
 
-├ docs/
-│
-│  ├ 기획.md
-│  ├ GAME_SPEC.md
-│  ├ MVP_SCOPE.md
-│  └ DEVELOPMENT_PLAN.md
-│
-├ src/
-│
-│  ├ app/
-│
-│  ├ components/
-│
-│  ├ games/
-│  │
-│  ├ lib/
-│
-│  ├ config/
-│
-│  ├ types/
-│
-│  └ data/
-│
-└ README.md
+재사용 가능한 Component
+
+수정 필요한 구조
+
+삭제하면 안 되는 파일
+
+기술적 위험 요소
+
+추천 작업 순서
 ```
-
-문서가 현재 프로젝트 Root에 있다면 이동은 필수가 아니다.
 
 ---
 
 ## 완료 조건
 
-```text
-Next.js 정상 실행
-
-TypeScript 설정
-
-Tailwind 적용
-
-기본 Routing 가능
-
-Git 초기화
-
-개발 서버 정상 실행
-```
+현재 코드를 이해하지 않은 상태에서 구현을 시작하지 않는다.
 
 ---
 
-# 7. PHASE 1 — 전체 Wireframe UI
+# 8. PHASE 1 — v1.0 전체 UI Flow 연결
 
 ## 목표
 
-게임 로직보다 먼저 Brain_Pet 전체 사용자 흐름을 화면으로 연결한다.
-
-디자인 완성도가 아니라:
-
-```text
-전체 Flow 구조
-```
-
-를 검증한다.
+실제 기능 구현 전에 v1.0 전체 화면을 클릭 가능한 상태로 만든다.
 
 ---
 
-# 7.1 구현 화면
-
-최소 다음 화면을 만든다.
+## 기존 화면
 
 ```text
-1. Landing
+Landing
 
-2. Game Intro
+6 Game Screen
 
-3. Game Play
+Stat Discovery
 
-4. Game Complete / Transition
-
-5. Progress
-
-6. Final Status
-
-7. Radar Chart
-```
-
----
-
-# 7.2 Landing Wireframe
-
-필수:
-
-```text
-서비스 이름
-
-간단한 설명
-
-6개 능력 아이콘
-
-예상 플레이 시간
-
-START 버튼
-```
-
-CTA:
-
-```text
-Start
-```
-
-클릭 시 첫 게임으로 이동.
-
----
-
-# 7.3 Game Intro Template
-
-각 게임 공통 구조를 먼저 만든다.
-
-```text
-STAT ICON
-
-게임 이름
-
-짧은 설명
-
-How To Play
-
-START
-```
-
-6개 게임 모두 동일 Layout 기반으로 재사용 가능하게 한다.
-
----
-
-# 7.4 Game Screen Template
-
-공통 영역:
-
-```text
-Progress
-
-Current Game
-
-Round / Level
-
-Game Area
-
-Feedback
-```
-
-각 게임별 Game Area만 교체할 수 있도록 구조화한다.
-
----
-
-# 7.5 Game Complete / Transition
-
-각 게임 완료 후:
-
-```text
-GAME COMPLETE
-
-현재 기록
-
-Progress
-
-다음 게임 CTA
-```
-
-예:
-
-```text
-1 / 6 COMPLETE
-
-[다음 능력 확인하기]
-```
-
----
-
-# 7.6 Final Status Wireframe
-
-구조:
-
-```text
 MY STATUS
-
-Memory
-Focus
-Reaction
-Judgment
-Spatial
-Reasoning
-
-↓
-
-Radar Chart
 ```
-
-초기에는 임시 Mock Score를 사용한다.
 
 ---
 
-# 7.7 Phase 1 완료 조건
+## 신규 화면
 
-다음 Flow를 클릭만으로 끝까지 진행할 수 있어야 한다.
+```text
+Egg State
+
+Hatch
+
+Statling Reveal
+
+Save / Share
+
+Login / Signup
+
+Naming
+
+Room
+
+My Stats
+
+Ranking Placeholder
+
+My Page
+
+Theme Placeholder
+
+Grow
+
+Free Play Selection
+```
+
+---
+
+## 전체 클릭 Flow
 
 ```text
 Landing
 
 ↓
 
-Reaction
+6 Games Placeholder
 
 ↓
 
-Memory
+MY STATUS
 
 ↓
 
-Focus
+Meet My Statling
 
 ↓
 
-Judgment
+Egg
 
 ↓
 
-Spatial
+Hatch
 
 ↓
 
-Reasoning
+Reveal
 
 ↓
 
-Final Status
+Save / Login
+
+↓
+
+Naming
+
+↓
+
+Room
+
+↓
+
+Grow
+
+↓
+
+Free Play
+
+↓
+
+Game
+
+↓
+
+Room
 ```
-
-아직 실제 게임 로직이 없어도 된다.
 
 ---
 
-# 8. PHASE 2 — 6개 게임 기본 구현
+## 완료 조건
+
+실제 Game Logic이나 DB 없이도 전체 Flow를 클릭으로 확인 가능해야 한다.
+
+---
+
+# 9. PHASE 2 — 디자인 정제
 
 ## 목표
 
-6개 게임 모두 최소한 플레이 가능한 상태로 만든다.
-
-이 단계에서는:
-
-```text
-완벽한 점수 시스템
-
-DB
-
-Percentile
-
-최종 디자인
-```
-
-은 구현하지 않는다.
+현재 v0 UI를 Statling의 브랜드에 맞게 다듬는다.
 
 ---
 
-# 8.1 Reaction
-
-구현:
+## 수정 방향
 
 ```text
-Practice
+Outline 조금 얇게
 
+Shadow 강도 완화
+
+Pastel Tone 보조색
+
+한국어 Typography 개선
+
+과도한 빈 공간 정리
+
+작은 World 요소 추가
+
+Game Screen은 상대적으로 Clean 유지
+```
+
+---
+
+## 특히 수정할 항목
+
+### Stat Discovery
+
+기존:
+
+```text
+좋아요!
+순발력 스탯을 발견했어요.
+```
+
+권장:
+
+```text
+✨ 새로운 스탯 발견!
+
+⚡ 순발력
+
+이번 기록
+205 ms
+
+1 / 6 발견
+```
+
+---
+
+### 한국어 줄바꿈
+
+금지:
+
+```text
+순발력 스
+탯
+```
+
+한국어 단어 중간 줄바꿈을 방지한다.
+
+---
+
+### Landing
+
+다음을 더 명확하게 노출:
+
+```text
+6개의 게임
+
+↓
+
+6개의 스탯
+
+↓
+
+나만의 Statling 탄생
+```
+
+---
+
+# 10. PHASE 3 — 6개 Game 기본 Logic
+
+## 목표
+
+6개 게임을 실제 플레이 가능한 상태로 만든다.
+
+---
+
+# 10.1 개발 방식
+
+기본 전략:
+
+```text
+6개 게임 모두 기본 구현
+```
+
+을 우선한다.
+
+이유:
+
+```text
+전체 Flow 빠른 검증
+
+전체 플레이 시간 확인
+
+난이도 비교
+
+개발 난이도 조기 파악
+```
+
+---
+
+## 안전장치
+
+다음 문제가 발생하면:
+
+```text
+공통 State 구조가 불안정
+
+게임별 버그가 동시에 증가
+
+Scoring Logic 충돌
+
+개발 복잡성 급증
+```
+
+개발 방식을:
+
+```text
+Reaction 완성
+
+↓
+
+공통 구조 검증
+
+↓
+
+나머지 5개 순차 구현
+```
+
+으로 변경할 수 있다.
+
+즉:
+
+```text
+기본 전략 = 6개 동시 기본 구현
+
+Fallback = Reaction 우선 안정화
+```
+
+---
+
+# 11. Game 구현 목록
+
+## Reaction
+
+```text
 Random Delay
 
 Target Spawn
-
-User Click
 
 Reaction Time
 
 False Start
 
-Trial 반복
-```
-
-GAME_SPEC 기준:
-
-```text
-Practice 1
-
-Real Trial 7
+Multiple Trials
 ```
 
 ---
 
-# 8.2 Memory
-
-구현:
+## Memory
 
 ```text
 Grid
 
-Highlighted Cells
-
-Exposure
+Highlight
 
 Hide
 
-User Selection
+Recall
 
-Submit
-
-Correct / Incorrect
-
-Difficulty Change
+Difficulty
 ```
 
 ---
 
-# 8.3 Focus
-
-구현:
+## Focus
 
 ```text
-Target Display
+Target
 
-Distractor Grid
+Distractor
 
-Target Search
+Target Absent
 
-Target Absent Round
+Accuracy
 
-User Selection
-
-Result
+Response Time
 ```
 
 ---
 
-# 8.4 Judgment
-
-구현:
+## Judgment
 
 ```text
-Rule Display
+Rule
 
-Stimulus
-
-Left / Right Choice
+Choice
 
 Rule Switch
 
@@ -736,210 +811,64 @@ Response Time
 
 ---
 
-# 8.5 Spatial
-
-구현:
+## Spatial
 
 ```text
-Reference Shape
+Shape
 
-Rotation Question
+Rotation
 
 Multiple Choice
-
-Answer Check
 
 Difficulty
 ```
 
 ---
 
-# 8.6 Reasoning
-
-구현:
+## Reasoning
 
 ```text
-Pattern Problem
+Pattern
+
+Rule
 
 Multiple Choice
-
-Answer Check
 
 Difficulty
 ```
 
----
-
-# 8.7 Phase 2 우선 목표
-
-모든 게임에서:
+세부 규칙은:
 
 ```text
-Start
-
-↓
-
-Play
-
-↓
-
-Complete
-
-↓
-
-Result
+GAME_SPEC.md
 ```
 
-가 가능해야 한다.
-
-이 단계에서는 Score Formula는 임시 Interface만 있어도 된다.
+를 우선한다.
 
 ---
 
-# 8.8 완료 조건
-
-```text
-6개 게임 모두 시작 가능
-
-게임 중 오류 없음
-
-각 게임 완료 가능
-
-기본 Raw Data 생성 가능
-
-게임 상태 초기화 가능
-
-재시작 가능
-```
-
----
-
-# 9. PHASE 3 — 게임 Flow 연결
+# 12. PHASE 4 — Raw Record / Score / Stat
 
 ## 목표
 
-6개의 독립 게임을 하나의 연속 사용자 경험으로 연결한다.
-
----
-
-## 기본 Flow
+현재 UI에서 혼용되는:
 
 ```text
-Reaction Complete
+ms
 
-↓
+LV
 
-Transition
-
-↓
-
-Memory
-
-↓
-
-Focus
-
-↓
-
-Judgment
-
-↓
-
-Spatial
-
-↓
-
-Reasoning
-
-↓
-
-Final Status
+pts
 ```
 
----
-
-# 9.1 Global Progress
-
-예:
-
-```text
-1 / 6
-
-2 / 6
-
-3 / 6
-```
-
-또는:
-
-```text
-⚡ ✓
-
-🧠 ✓
-
-🎯 ●
-
-⚖ ○
-
-🧊 ○
-
-🔍 ○
-```
+문제를 명확히 분리한다.
 
 ---
 
-# 9.2 중간 이탈 고려
-
-DB 연결 전에는 Local State 또는 Browser Storage를 임시 사용한다.
-
-저장:
+# 12.1 구조
 
 ```text
-currentGame
-
-completedGames
-
-temporaryResults
-```
-
-목적:
-
-페이지 새로고침 시 개발 테스트 편의성 확보.
-
----
-
-# 9.3 완료 조건
-
-한 번 Start하면:
-
-```text
-6개 Game
-
-↓
-
-Final Result
-```
-
-까지 중간 Home 이동 없이 완주 가능해야 한다.
-
----
-
-# 10. PHASE 4 — Scoring / Stat Logic
-
-## 목표
-
-각 게임의 Raw Data를 Game Score로 변환한다.
-
----
-
-# 10.1 구조
-
-```text
-Trial Raw Data
-
-↓
-
-Game Aggregation
+Raw Record
 
 ↓
 
@@ -947,28 +876,54 @@ Game Score
 
 ↓
 
-Personal Best
-
-↓
-
 Percentile
 
 ↓
 
-Stat
+Final Stat
 ```
 
 ---
 
-# 10.2 Score Logic 분리
+## Raw Record
 
-경로 권장:
+게임별 고유 단위 사용 가능.
+
+```text
+Reaction
+205ms
+
+Memory
+Level 8
+
+Focus
+Accuracy 92%
+
+Spatial
+9/12
+```
+
+---
+
+## Final Stat
+
+```text
+0~100
+```
+
+동일 Scale.
+
+MY STATUS와 Radar Chart에서는 Final Stat만 사용한다.
+
+---
+
+# 12.2 Score 함수 분리
 
 ```text
 src/lib/scoring/
 ```
 
-파일:
+권장:
 
 ```text
 reaction.ts
@@ -986,98 +941,721 @@ reasoning.ts
 
 ---
 
-## 예
+# 12.3 Percentile
+
+실제 사용자 데이터가 부족한 상태에서:
 
 ```text
-calculateReactionScore()
-
-calculateMemoryScore()
-
-calculateFocusScore()
-
-calculateJudgmentScore()
-
-calculateSpatialScore()
-
-calculateReasoningScore()
+Fake Percentile 금지
 ```
 
-UI Component 내부에서 점수 Formula를 계산하지 않는다.
-
----
-
-# 10.3 Percentile
-
-이 단계에서는 실제 사용자 분포가 없으므로:
-
-```text
-Fake Percentile 생성 금지
-```
-
-개발 상태에서는:
-
-```text
-percentile = null
-```
-
-처리 가능.
-
-개발용 Mock Percentile을 사용할 경우 반드시:
-
-```text
-development-only
-```
-
-로 분리한다.
-
-Production에는 노출하지 않는다.
-
----
-
-# 10.4 Stat
-
-실제 Percentile 데이터가 없을 경우 최종 UI에서는:
+초기에는:
 
 ```text
 비교 데이터 수집 중
 ```
 
-또는 개발 정책에 맞는 Placeholder를 사용한다.
+표시 가능.
 
 ---
 
-# 10.5 완료 조건
+# 13. PHASE 5 — Egg / Hatch / Reveal
+
+## 목표
+
+Statling 서비스의 핵심 감정 보상을 구현한다.
+
+---
+
+## Flow
 
 ```text
-모든 게임 Score 계산 가능
+MY STATUS
 
-동일 입력 → 동일 Score
+↓
 
-Scoring Logic UI와 분리
+나의 Statling 만나러 가기
 
-Unit Test 가능 구조
+↓
 
-Game Version 관리 가능
+Egg Idle
+
+↓
+
+Egg Move
+
+↓
+
+Crack
+
+↓
+
+HATCH
+
+↓
+
+Statling Reveal
 ```
 
 ---
 
-# 11. PHASE 5 — Final Status / Radar Chart
+## Hatch 길이
 
-## 목표
+약:
 
-6개 게임 결과를 최종 화면에서 통합한다.
+```text
+3~5초
+```
+
+권장.
+
+Skip 가능성은 추후 검토.
 
 ---
 
-# 11.1 최종 데이터
+# 14. PHASE 6 — Statling Character System
+
+## 목표
+
+처음에는 대표 1종으로 시스템을 구현하고 이후 확장 가능한 구조를 만든다.
+
+---
+
+# 14.1 초기 전략
 
 ```text
+대표 Statling 1종
+
+↓
+
+Character System 정상 동작 검증
+
+↓
+
+6개 Primary Type
+
+↓
+
+향후 다수 Species 확장
+```
+
+---
+
+# 14.2 중요한 구조 원칙
+
+Statling을:
+
+```text
+6종 고정 시스템
+```
+
+으로 설계하지 않는다.
+
+향후:
+
+```text
+수십 종
+
+수백 종
+```
+
+까지 확장할 수 있어야 한다.
+
+---
+
+## 데이터 구조 예시
+
+```text
+species_id
+
+species_name
+
+base_asset
+
+primary_stat_affinity
+
+rarity
+
+available_variations
+```
+
+---
+
+## User Statling
+
+```text
+user_statling_id
+
+species_id
+
+primary_stat
+
+name
+
+created_at
+
+current_state
+```
+
+---
+
+# 14.3 v1.0 Type
+
+Primary Stat 기준:
+
+```text
+Reaction
+
 Memory
 
 Focus
 
+Judgment
+
+Spatial
+
+Reasoning
+```
+
+6개 기본 타입 가능.
+
+하지만:
+
+```text
+Type
+≠
+Species
+```
+
+로 설계한다.
+
+즉 하나의 Type에 향후 여러 Species가 들어갈 수 있도록 한다.
+
+예:
+
+```text
+Focus Type
+
+├ Species A
+├ Species B
+├ Species C
+└ ...
+```
+
+이 구조를 권장한다.
+
+---
+
+# 15. PHASE 7 — Anonymous DB 연결
+
+## 목표
+
+게임 기록과 Hatch 결과를 실제 DB에 저장한다.
+
+DB를 프로젝트 마지막까지 미루지 않는다.
+
+Egg/Hatch와 Login 개발 이전에 기본 구조를 연결한다.
+
+---
+
+## 권장
+
+```text
+Supabase
+
+PostgreSQL
+```
+
+---
+
+# 15.1 저장 시작 시점
+
+Landing 최초 진입:
+
+```text
+Anonymous ID 생성
+```
+
+게임 플레이 중:
+
+```text
+Game Session
+
+Trial
+
+Result
+```
+
+저장.
+
+---
+
+## 이유
+
+사용자가:
+
+```text
+6게임 도중 이탈
+
+새로고침
+
+네트워크 오류
+```
+
+가 발생해도 기록 보호.
+
+---
+
+# 15.2 최소 Table
+
+```text
+users
+
+anonymous_sessions
+
+game_sessions
+
+game_trials
+
+game_results
+
+user_stats
+
+statlings
+
+statling_states
+
+xp_history
+```
+
+구체적인 Schema는 구현 전 별도 설계.
+
+---
+
+# 16. PHASE 8 — Auth
+
+## 목표
+
+부화 후 자연스럽게 계정 저장을 유도한다.
+
+---
+
+# 16.1 로그인 시점
+
+```text
+Hatch
+
+↓
+
+Statling Reveal
+
+↓
+
+"이 아이를 잃어버리지 않도록 저장할까요?"
+
+↓
+
+Login / Signup
+```
+
+---
+
+# 16.2 로그인 방식
+
+v1.0:
+
+```text
+Google OAuth
+
++
+
+Email / Password
+```
+
+둘 다 지원.
+
+---
+
+## 이유
+
+Google 계정을 사용하지 않거나 OAuth를 원하지 않는 사용자를 고려한다.
+
+---
+
+# 16.3 Flow
+
+```text
+Anonymous User
+
+↓
+
+Sign Up / Login
+
+↓
+
+Authenticated User
+
+↓
+
+Anonymous Data 연결
+
+↓
+
+Statling 유지
+
+↓
+
+Room
+```
+
+---
+
+# 16.4 로그인 Skip
+
+로그인을 강제하지 않는다.
+
+```text
+나중에 하기
+```
+
+가능.
+
+단 익명 사용자 데이터 유실 가능성에 대한 안내를 제공할 수 있다.
+
+---
+
+# 17. PHASE 9 — Naming
+
+## 목표
+
+Statling 부화 후 애착 형성.
+
+---
+
+## Flow
+
+```text
+Statling Reveal
+
+↓
+
+Save / Login
+
+↓
+
+Naming
+
+↓
+
+Room
+```
+
+---
+
+## 기능
+
+```text
+이름 입력
+
+길이 제한
+
+금칙어 기본 검증
+
+저장
+```
+
+---
+
+# 18. PHASE 10 — Statling Room
+
+## 목표
+
+부화 후 서비스의 메인 Home을 구현한다.
+
+---
+
+## 기본 구조
+
+```text
+Left Navigation
+
++
+
+Statling Room
+
++
+
+Status
+
++
+
+Care Actions
+
++
+
+Grow CTA
+```
+
+---
+
+# 18.1 Navigation
+
+```text
+홈
+
+내 스탯
+
+랭킹
+
+마이페이지
+
+테마
+```
+
+---
+
+## 실제 기능
+
+```text
+홈
+
+내 스탯
+
+마이페이지
+```
+
+---
+
+## Placeholder 가능
+
+```text
+랭킹
+
+테마
+```
+
+---
+
+# 19. PHASE 11 — Pet State
+
+v1.0 상태:
+
+```text
+포만감
+
+청결도
+
+애정도
+```
+
+---
+
+# 19.1 감소 로직
+
+v1.0에서는:
+
+```text
+시간 기반 자동 감소
+```
+
+를 구현하지 않는다.
+
+초기에는:
+
+```text
+Interaction을 통한 증가
+```
+
+중심.
+
+---
+
+## 이유
+
+실시간 다마고치 State 감소는:
+
+```text
+시간 계산
+
+Offline 처리
+
+Timezone
+
+재접속
+
+Balance
+
+Notification
+```
+
+등 복잡도가 높음.
+
+후속 버전으로 이동.
+
+---
+
+# 20. PHASE 12 — Care Actions
+
+## v1.0 실제 작동
+
+동시에 기본 구현:
+
+```text
+밥 주기
+
+놀아주기
+
+쓰다듬기
+```
+
+---
+
+## 결과
+
+### 밥
+
+```text
+포만감 증가
+```
+
+### 놀기
+
+```text
+애정도 증가
+```
+
+### 쓰다듬기
+
+```text
+애정도 증가
+```
+
+---
+
+# 20.1 UI 표시
+
+다음 메뉴도 Front에는 표시:
+
+```text
+샤워
+
+청소하기
+
+대화하기
+```
+
+---
+
+## 샤워 / 청소
+
+초기:
+
+```text
+준비 중
+```
+
+또는 단순 UI Feedback.
+
+---
+
+# 21. PHASE 13 — 대화하기
+
+v1.0에서는 단순 구현.
+
+---
+
+## 방식
+
+사용자가 짧은 말을 입력.
+
+예:
+
+```text
+오늘도 귀여워
+
+잘했어
+
+같이 놀자
+```
+
+---
+
+## 결과
+
+```text
+애정도 +1
+```
+
+---
+
+## 제한
+
+v1.0에서는:
+
+```text
+AI 의미 분석 X
+
+감정 분석 X
+
+KakaoTalk 연동 X
+```
+
+---
+
+# 22. PHASE 14 — Grow / Free Play
+
+## 목표
+
+Room에서 실제 게임으로 다시 연결한다.
+
+---
+
+## Flow
+
+```text
+Room
+
+↓
+
+성장시키기
+
+↓
+
+6 Game Selection
+
+↓
+
+Game
+
+↓
+
+Result
+
+↓
+
+Record Update
+
+↓
+
+XP
+
+↓
+
+Room
+```
+
+---
+
+# 23. Free Play
+
+6개 게임 개별 선택.
+
+```text
 Reaction
+
+Memory
+
+Focus
 
 Judgment
 
@@ -1088,153 +1666,614 @@ Reasoning
 
 ---
 
-# 11.2 화면
+## 각 카드
 
 ```text
-MY STATUS
+Stat Icon
 
-↓
+Game Name
 
-6 Stat
+Personal Best
 
-↓
+Recent Record
 
-Radar Chart
+Recommended Badge
 ```
 
 ---
 
-# 11.3 Radar Chart Library
+# 24. Statling Recommended Game
 
-가벼운 Chart Library 사용 가능.
+Statling이 원하는 게임 하나를 표시한다.
 
 예:
 
 ```text
-Recharts
+🧠 MEMORY
+
+오늘 이 게임이 하고 싶어!
+
+EXP ×1.5
 ```
-
-또는 적절한 대체 Library.
-
-불필요하게 무거운 시각화 Library는 피한다.
 
 ---
 
-# 11.4 완료 조건
+## UI
+
+추천 게임은:
 
 ```text
-6개 게임 완료 후 자동 이동
+다른 Border
 
-6 Stat 정상 전달
+Glow
 
-Radar Chart 렌더링
+Badge
 
-Responsive 가능
+Statling Icon
 
-값 누락 처리
+색상 강조
+```
+
+등으로 명확히 구분.
+
+---
+
+# 24.1 추천 알고리즘
+
+v1.0에서는 복잡하게 하지 않는다.
+
+예:
+
+```text
+Daily Random
+
+또는
+
+Lowest Stat
+
+또는
+
+간단 Rule
+```
+
+세부 규칙은 별도 결정 가능.
+
+임의로 AI 추천 시스템을 구현하지 않는다.
+
+---
+
+# 25. PHASE 15 — XP
+
+## v1.0 범위
+
+구현:
+
+```text
+Game Complete XP
+
+Recommended Game ×1.5
+
+Total XP
 ```
 
 ---
 
-# 12. PHASE 6 — UX 정제
+## 아직 구현하지 않아도 되는 것
+
+```text
+Complex Level Curve
+
+Evolution
+
+XP Ranking
+
+Season XP
+
+Skill Tree
+```
+
+---
+
+# 25.1 기본 Flow
+
+```text
+Game Complete
+
+↓
+
+Base XP
+
+↓
+
+추천 게임 여부 확인
+
+↓
+
+Normal
+×1.0
+
+Recommended
+×1.5
+
+↓
+
+Total XP Update
+```
+
+---
+
+# 25.2 XP History
+
+가능하면:
+
+```text
+xp_history
+```
+
+에 저장.
+
+```text
+user
+
+game
+
+base_xp
+
+multiplier
+
+final_xp
+
+created_at
+```
+
+---
+
+# 26. PHASE 16 — Record / History
 
 ## 목표
 
-기능은 모두 존재하는 상태에서 사용자 흐름을 자연스럽게 만든다.
+사용자의 성장 데이터를 축적한다.
 
 ---
 
-# 12.1 주요 확인
+## 저장
+
+각 Attempt:
 
 ```text
-게임 설명 길이
+Date
 
-Start CTA 위치
+Game
 
-게임 간 Transition
+Raw Record
 
-Progress 표시
+Game Score
 
-Feedback 속도
+Stat
 
-전체 플레이 시간
-
-Game Over 느낌 여부
-
-Final Result 도달감
+Personal Best 여부
 ```
 
 ---
 
-# 12.2 게임성 요소
-
-필요한 수준에서:
+## 신기록
 
 ```text
-ROUND
-
-LEVEL
-
-COMBO
-
 NEW RECORD
-
-CORRECT
-
-MISS
 ```
 
-등을 추가할 수 있다.
-
-단:
-
-```text
-과도한 애니메이션
-
-긴 Transition
-
-게임 측정 방해
-```
-
-는 피한다.
+표시.
 
 ---
 
-# 12.3 디자인 수준
+## 최고 기록
 
-v0.1에서는:
+기존보다 좋은 기록일 때만 갱신.
 
-```text
-완전한 최종 브랜드 디자인
-```
-
-보다:
-
-```text
-일관된 기본 UI
-
-읽기 쉬운 Typography
-
-명확한 CTA
-
-직관적인 Feedback
-```
-
-을 우선한다.
+하지만 과거 기록은 삭제하지 않는다.
 
 ---
 
-# 13. PHASE 7 — DB 연결
+# 26.1 향후 분석
 
-## 목표
+```text
+Before / After
 
-최종 MVP 직전에 실제 데이터 저장 구조를 연결한다.
+Growth Trend
+
+Day-by-Day
+
+Retry Effect
+
+Pet Request Effect
+```
+
+가능하도록 설계.
 
 ---
 
-# 13.1 Backend
+# 27. PHASE 17 — My Stats
 
-권장:
+## 화면
+
+```text
+Radar Chart
+
+6 Final Stats
+
+Personal Best
+
+Latest Record
+
+History
+```
+
+---
+
+## v1.0
+
+간단한 기록 리스트 또는 Trend만 구현 가능.
+
+복잡한 Analytics Dashboard는 제외.
+
+---
+
+# 28. PHASE 18 — Ranking Placeholder
+
+Navigation에는:
+
+```text
+랭킹
+```
+
+표시.
+
+---
+
+## v1.0
+
+실제 Ranking Backend 없음.
+
+예:
+
+```text
+🏆 랭킹
+
+더 많은 Statling이 모이면
+랭킹이 열려요.
+
+Coming Soon
+```
+
+---
+
+# 29. PHASE 19 — Theme Placeholder
+
+Navigation:
+
+```text
+테마
+```
+
+표시 가능.
+
+실제 테마 변경 기능은 후속.
+
+---
+
+# 30. PHASE 20 — Share
+
+Statling Reveal에서:
+
+```text
+공유하기
+```
+
+표시.
+
+---
+
+## v1.0 최소 구현 후보
+
+Web Share API 가능 시:
+
+```text
+기본 링크 공유
+```
+
+지원.
+
+지원하지 않는 브라우저:
+
+```text
+링크 복사
+```
+
+---
+
+## 향후
+
+```text
+MY STATUS
+
+Radar
+
+Statling
+
+Type
+```
+
+이 포함된 Share Card 생성.
+
+---
+
+# 31. PHASE 21 — Developer QA
+
+개발자 단독 테스트.
+
+---
+
+## 전체 Flow
+
+```text
+Landing
+
+→ 6 Game
+
+→ MY STATUS
+
+→ Hatch
+
+→ Login
+
+→ Naming
+
+→ Room
+
+→ Care
+
+→ Grow
+
+→ Free Play
+
+→ XP
+
+→ Record
+```
+
+---
+
+## Edge Cases
+
+```text
+새로고침
+
+뒤로가기
+
+게임 중 이탈
+
+로그인 취소
+
+Anonymous 유지
+
+중복 Hatch
+
+중복 Naming
+
+DB 실패
+
+Network 실패
+
+Duplicate XP
+
+Duplicate Result
+
+Mobile
+```
+
+---
+
+# 32. PHASE 22 — Closed Beta
+
+Production 공개 전:
+
+```text
+지인 5~10명
+```
+
+대상.
+
+---
+
+## 확인 질문
+
+```text
+서비스를 설명 없이 이해했는가?
+
+6게임이 너무 긴가?
+
+어느 게임에서 지루했는가?
+
+Statling을 만나고 싶어서 끝까지 했는가?
+
+Hatch가 만족스러웠는가?
+
+로그인 시점이 자연스러운가?
+
+Room에서 무엇을 해야 할지 이해되는가?
+
+다시 게임하고 싶은가?
+
+Statling에 애착이 생기는가?
+```
+
+---
+
+# 32.1 Beta 측정
+
+가능하면:
+
+```text
+Completion
+
+시간
+
+이탈 지점
+
+버그
+
+정성 피드백
+```
+
+수집.
+
+---
+
+# 33. PHASE 23 — Beta 수정
+
+Closed Beta 결과에 따라:
+
+```text
+Game Length
+
+Difficulty
+
+UI
+
+Copy
+
+Login Timing
+
+Hatch
+
+Room
+
+Care
+```
+
+수정.
+
+---
+
+# 34. PHASE 24 — GA4 / GTM
+
+핵심 기능이 완성되고 Beta 수정 이후 연결한다.
+
+---
+
+## 이유
+
+UI와 Flow가 계속 바뀌는 동안 Analytics를 먼저 깊게 연결하면:
+
+```text
+Event 수정
+
+중복 Event
+
+Naming 불일치
+```
+
+가 발생할 수 있음.
+
+---
+
+# 34.1 하지만 개발 중 Event Plan은 유지
+
+미리 정의:
+
+```text
+landing_view
+
+first_game_start
+
+game_start
+
+game_complete
+
+stat_discovered
+
+all_stats_complete
+
+status_view
+
+hatch_start
+
+statling_hatched
+
+share_click
+
+signup_start
+
+signup_complete
+
+statling_named
+
+room_view
+
+care_action
+
+grow_click
+
+free_game_start
+
+new_record
+
+xp_earned
+```
+
+---
+
+# 35. PHASE 25 — Production Deploy
+
+배포 기준:
+
+```text
+Core Flow 정상
+
+6 Games 정상
+
+DB 정상
+
+Auth 정상
+
+Hatch 정상
+
+Room 정상
+
+Care 정상
+
+Free Play 정상
+
+XP 정상
+
+Record 정상
+
+Closed Beta 수정 완료
+
+GA4 정상
+
+Mobile 기본 대응
+```
+
+---
+
+# 36. 권장 기술 스택
+
+## Frontend
+
+```text
+Next.js
+
+TypeScript
+
+Tailwind CSS
+```
+
+현재 v0 코드 기반 유지.
+
+---
+
+## Backend
 
 ```text
 Supabase
@@ -1244,472 +2283,29 @@ PostgreSQL
 
 ---
 
-# 13.2 Anonymous User
-
-로그인 없이:
+## Auth
 
 ```text
-anonymous_user_id
-```
+Supabase Auth
 
-생성.
+Google OAuth
 
-Browser에 식별자를 저장하고 DB와 연결한다.
-
----
-
-# 13.3 최소 Table
-
-```text
-anonymous_users
-
-game_sessions
-
-game_trials
-
-game_results
-
-user_stats
-```
-
-필요 시 구조 확장.
-
----
-
-# 13.4 저장 시점
-
-게임 시작:
-
-```text
-Game Session 생성
-```
-
-Trial:
-
-```text
-필요 Raw Data 저장
-```
-
-게임 완료:
-
-```text
-Game Result 저장
-```
-
-전체 완료:
-
-```text
-Final Stat 저장
+Email / Password
 ```
 
 ---
 
-# 13.5 DB 실패 처리
-
-DB 저장 실패가 게임 진행 자체를 완전히 막지 않도록 고려한다.
-
-예:
+## Analytics
 
 ```text
-Temporary Local Queue
+GA4
 
-Retry Save
-```
-
-MVP에서는 최소한:
-
-```text
-에러 처리
-
-사용자 진행 보호
-```
-
-가 필요하다.
-
----
-
-# 13.6 완료 조건
-
-```text
-익명 사용자 생성
-
-6개 게임 Session 저장
-
-Trial 저장
-
-Game Result 저장
-
-Completion 저장
-
-Final Result 저장
-
-새로고침 시 기록 불러오기 가능
+GTM
 ```
 
 ---
 
-# 14. PHASE 8 — GA4 / GTM
-
-## 목표
-
-첫 Production 배포 전에 사용자 행동 추적을 연결한다.
-
-첫 배포 기준에는 반드시 GA4 연결이 포함된다.
-
----
-
-# 14.1 기본 이벤트
-
-```text
-landing_view
-
-game_start
-
-game_complete
-
-game_exit
-
-next_game_start
-
-all_games_complete
-
-final_status_view
-```
-
----
-
-# 14.2 Properties
-
-가능한 항목:
-
-```text
-game_id
-
-game_order
-
-game_version
-
-game_score
-
-duration
-
-attempt_number
-```
-
----
-
-# 14.3 GA4에 저장하지 않을 데이터
-
-Trial 단위 상세 Raw Data는:
-
-```text
-DB
-```
-
-에 저장한다.
-
-GA4는:
-
-```text
-사용자 행동 분석
-```
-
-용으로 사용한다.
-
----
-
-# 14.4 개인정보 원칙
-
-다음은 GA4 Event Property로 보내지 않는다.
-
-```text
-Email
-
-실명
-
-직접적인 사용자 식별 정보
-
-DB Primary Key 그대로
-```
-
----
-
-# 14.5 Debug
-
-배포 전:
-
-```text
-GA4 DebugView
-
-GTM Preview
-```
-
-등으로 이벤트를 검증한다.
-
----
-
-# 14.6 완료 조건
-
-실제 플레이 1회에서:
-
-```text
-Landing
-
-↓
-
-Game Start
-
-↓
-
-6 Game Complete
-
-↓
-
-Final Status
-```
-
-각 핵심 이벤트가 정상 수집되는 것을 확인한다.
-
----
-
-# 15. PHASE 9 — Developer QA
-
-## 테스트 방식
-
-v0.1 첫 배포 전 테스트는:
-
-```text
-개발자 단독 테스트
-```
-
-로 진행한다.
-
-외부 Closed Beta는 첫 배포 이후 단계로 미룬다.
-
----
-
-# 15.1 Functional QA
-
-확인:
-
-```text
-Landing 정상
-
-6개 Game 정상
-
-게임 순서 정상
-
-Progress 정상
-
-Result 정상
-
-Radar Chart 정상
-
-DB 정상
-
-GA4 정상
-```
-
----
-
-# 15.2 Edge Case
-
-확인:
-
-```text
-새로고침
-
-뒤로가기
-
-게임 중 이탈
-
-빠른 연타
-
-잘못된 클릭
-
-시간 초과
-
-네트워크 실패
-
-DB 저장 실패
-
-중복 제출
-
-게임 재시작
-```
-
----
-
-# 15.3 Game QA
-
-Reaction:
-
-```text
-False Start
-
-Timer 정확도
-```
-
-Memory:
-
-```text
-Grid Selection
-
-Difficulty
-```
-
-Focus:
-
-```text
-No Target
-
-False Click
-```
-
-Judgment:
-
-```text
-Rule Switch
-```
-
-Spatial:
-
-```text
-정답 Rotation
-```
-
-Reasoning:
-
-```text
-문제 정답 정확성
-```
-
----
-
-# 16. PHASE 10 — Web / Mobile Optimization
-
-## 우선순위
-
-```text
-Web First
-```
-
-후:
-
-```text
-Mobile Web
-```
-
-최적화.
-
----
-
-# 16.1 Desktop
-
-우선 확인:
-
-```text
-Chrome
-
-Edge
-```
-
-필요 시 다른 Browser 추가.
-
----
-
-# 16.2 Mobile
-
-확인:
-
-```text
-Touch Input
-
-Viewport
-
-Button Size
-
-Game Area
-
-Reaction Timing
-
-Orientation
-
-Scroll 방지
-```
-
----
-
-# 16.3 Reaction 특별 주의
-
-Reaction Game은:
-
-```text
-Mouse
-
-Touch
-```
-
-입력 차이가 있으므로 Device 정보를 기록한다.
-
-가능하면:
-
-```text
-input_type
-device_type
-```
-
-저장.
-
----
-
-# 17. PHASE 11 — Production Deployment
-
-## 배포 기준
-
-다음이 모두 완료된 이후 첫 Production 배포를 진행한다.
-
-```text
-6개 Game 정상 동작
-
-↓
-
-연속 Flow 정상
-
-↓
-
-Scoring 정상
-
-↓
-
-Final Stat 정상
-
-↓
-
-Radar Chart 정상
-
-↓
-
-DB 저장 정상
-
-↓
-
-GA4 정상
-
-↓
-
-Developer QA 완료
-
-↓
-
-Web / Mobile 기본 대응
-```
-
----
-
-# 17.1 Hosting
-
-권장:
+## Deploy
 
 ```text
 Vercel
@@ -1717,62 +2313,16 @@ Vercel
 
 ---
 
-# 17.2 Production 환경
+# 37. 구현 우선순위
 
-분리:
-
-```text
-Development
-
-Production
-```
-
-환경 변수:
+## P0
 
 ```text
-Supabase URL
+현재 코드 Audit
 
-Supabase Key
+v1.0 전체 UI Flow
 
-GA Measurement ID
-
-기타 설정
-```
-
-Git에 직접 노출하지 않는다.
-
----
-
-# 17.3 첫 배포 후 바로 확인
-
-Production에서 직접:
-
-```text
-처음부터 6게임 완주
-
-DB 확인
-
-GA4 확인
-
-Mobile 확인
-
-Console Error 확인
-```
-
-을 진행한다.
-
----
-
-# 18. 개발 우선순위
-
-## P0 — 반드시 먼저
-
-```text
-전체 Wireframe
-
-6개 게임 기본 플레이
-
-연속 Flow
+6개 Game Logic
 ```
 
 ---
@@ -1780,11 +2330,13 @@ Console Error 확인
 ## P1
 
 ```text
-Game Score
+Score
 
-Final Stat
+Stat
 
-Radar Chart
+MY STATUS
+
+Hatch
 ```
 
 ---
@@ -1792,9 +2344,13 @@ Radar Chart
 ## P2
 
 ```text
-UX 정제
+DB
 
-오류 처리
+Anonymous User
+
+Auth
+
+Naming
 ```
 
 ---
@@ -1802,7 +2358,13 @@ UX 정제
 ## P3
 
 ```text
-DB
+Room
+
+Care
+
+Grow
+
+Free Play
 ```
 
 ---
@@ -1810,7 +2372,11 @@ DB
 ## P4
 
 ```text
-GA4
+XP
+
+Record History
+
+My Stats
 ```
 
 ---
@@ -1818,91 +2384,166 @@ GA4
 ## P5
 
 ```text
-Mobile Optimization
+Share
 
-Deployment
+Ranking Placeholder
+
+Theme Placeholder
 ```
-
-단:
-
-```text
-첫 배포는 GA4 완료 이후
-```
-
-에만 진행한다.
 
 ---
 
-# 19. 개발 중 하지 않을 것
-
-v0.1 개발 도중 다음 기능을 발견 즉시 추가하지 않는다.
+## P6
 
 ```text
-Pet
+QA
 
-Egg
+Closed Beta
 
-XP
+GA4
 
-Level
-
-Ranking
-
-Daily Challenge
-
-Shop
-
-Inventory
-
-Friend
-
-Chat
-
-Share Card
-
-AI Feature
-
-Complex Account
+Deploy
 ```
-
-아이디어가 생기면:
-
-```text
-기획.md 또는 Backlog
-```
-
-에만 기록한다.
-
-현재 개발 Scope를 변경하지 않는다.
 
 ---
 
-# 20. Claude Code 작업 방식
+# 38. Git 개발 방식
 
-Claude Code는 한 번에 전체 MVP를 구현하지 않는다.
+`main`에서 모든 작업을 직접 하지 않는 것을 권장한다.
 
-각 Phase 단위로 작업한다.
+---
 
-권장 흐름:
+## Branch 예시
 
 ```text
-Phase 설명 전달
+main
 
 ↓
 
-Claude가 작업 계획 제시
+develop/v1.0
+```
+
+기능 단위 필요 시:
+
+```text
+feature/full-flow
+
+feature/game-logic
+
+feature/hatch
+
+feature/auth
+
+feature/room
+
+feature/free-play
+```
+
+---
+
+# 38.1 빠른 MVP를 위한 현실적 방식
+
+너무 많은 Branch 관리가 부담이라면:
+
+```text
+main
 
 ↓
 
-해당 Phase 구현
+develop/v1.0
+```
+
+하나에서 Phase별 Commit 후,
+
+안정 시:
+
+```text
+Pull Request
+→ main
+```
+
+방식도 가능.
+
+---
+
+# 39. Commit 기준
+
+예:
+
+```text
+refactor: Statling v1.0 UI 구조 정리
+
+feat: v1.0 전체 화면 플로우 추가
+
+feat: 6개 미니게임 기본 로직 구현
+
+feat: 게임 점수 및 스탯 계산 구조 추가
+
+feat: Statling 부화 플로우 구현
+
+feat: 익명 사용자 데이터 저장 연결
+
+feat: Google 및 이메일 로그인 추가
+
+feat: Statling 이름 설정 기능 추가
+
+feat: Statling Room 구현
+
+feat: 기본 돌보기 기능 구현
+
+feat: 자유 플레이 및 추천 게임 추가
+
+feat: 게임 경험치 시스템 추가
+
+feat: 날짜별 플레이 기록 저장
+
+test: v1.0 사용자 흐름 QA
+
+feat: GA4 이벤트 추적 추가
+```
+
+---
+
+# 40. Claude Code 작업 방식
+
+Claude Code에게:
+
+```text
+"v1.0 전체 구현해줘"
+```
+
+라고 한 번에 요청하지 않는다.
+
+---
+
+## 권장
+
+```text
+Phase 하나 지정
 
 ↓
 
-실행 확인
+현재 코드 분석
 
 ↓
 
-오류 수정
+작업 계획
+
+↓
+
+검토
+
+↓
+
+구현
+
+↓
+
+로컬 실행
+
+↓
+
+QA
 
 ↓
 
@@ -1915,491 +2556,9 @@ Commit
 
 ---
 
-# 21. 첫 Claude Code Task
+# 41. Claude Code 첫 작업
 
-첫 작업은:
-
-```text
-PHASE 0 + PHASE 1
-```
-
-까지만 진행한다.
-
-즉:
-
-```text
-Project Setup
-
-+
-
-전체 Wireframe UI
-```
-
----
-
-## 첫 작업 범위
-
-```text
-Landing
-
-Reaction Intro
-
-Reaction Placeholder
-
-Memory Intro / Placeholder
-
-Focus Intro / Placeholder
-
-Judgment Intro / Placeholder
-
-Spatial Intro / Placeholder
-
-Reasoning Intro / Placeholder
-
-Final Status Placeholder
-
-Radar Chart Placeholder
-```
-
----
-
-## 목표
-
-아직 실제 게임 로직 없이:
-
-```text
-Landing
-
-↓
-
-6 Game
-
-↓
-
-Final Status
-```
-
-전체 Flow를 클릭으로 확인한다.
-
----
-
-# 22. 첫 Claude Code 지침 예시
-
-```text
-기획.md
-GAME_SPEC.md
-MVP_SCOPE.md
-DEVELOPMENT_PLAN.md
-
-이 네 문서를 프로젝트 기준으로 사용해줘.
-
-현재는 DEVELOPMENT_PLAN.md의
-PHASE 0과 PHASE 1만 진행한다.
-
-목표:
-전체 서비스를 와이어프레임 수준으로 먼저 구성하고,
-Landing부터 6개 게임을 거쳐 Final Status까지
-클릭 가능한 전체 Flow를 만든다.
-
-중요:
-- 실제 게임 로직은 아직 구현하지 않는다.
-- DB를 연결하지 않는다.
-- GA4를 연결하지 않는다.
-- Pet, XP, Ranking 기능을 만들지 않는다.
-- 각 Game은 Placeholder 상태로 둔다.
-- 향후 실제 게임 로직을 쉽게 삽입할 수 있도록 구조화한다.
-- Web First로 구현한다.
-- 과도한 디자인 작업은 하지 않는다.
-- 구현 전 예상 파일 구조와 작업 계획을 먼저 제시한다.
-```
-
----
-
-# 23. Phase별 완료 체크
-
-## Phase 0
-
-```text
-[ ] Project 실행
-[ ] TypeScript
-[ ] Tailwind
-[ ] Git
-```
-
-## Phase 1
-
-```text
-[ ] Landing
-[ ] Game Intro
-[ ] 6 Game Placeholder
-[ ] Progress
-[ ] Final Status
-[ ] Radar Placeholder
-[ ] 전체 클릭 Flow
-```
-
-## Phase 2
-
-```text
-[ ] Reaction 기본 구현
-[ ] Memory 기본 구현
-[ ] Focus 기본 구현
-[ ] Judgment 기본 구현
-[ ] Spatial 기본 구현
-[ ] Reasoning 기본 구현
-```
-
-## Phase 3
-
-```text
-[ ] 6 Game 연속 연결
-[ ] Progress
-[ ] Transition
-[ ] 중간 상태 유지
-```
-
-## Phase 4
-
-```text
-[ ] 6 Score Logic
-[ ] Raw → Score
-[ ] Personal Best
-```
-
-## Phase 5
-
-```text
-[ ] 6 Stat
-[ ] Final Result
-[ ] Radar Chart
-```
-
-## Phase 6
-
-```text
-[ ] UX 정제
-[ ] Feedback
-[ ] Error State
-```
-
-## Phase 7
-
-```text
-[ ] Anonymous User
-[ ] DB Tables
-[ ] Trial Save
-[ ] Result Save
-```
-
-## Phase 8
-
-```text
-[ ] GA4
-[ ] GTM
-[ ] Event Debug
-```
-
-## Phase 9
-
-```text
-[ ] Developer QA
-[ ] Edge Cases
-```
-
-## Phase 10
-
-```text
-[ ] Desktop
-[ ] Mobile Web
-```
-
-## Phase 11
-
-```text
-[ ] Production Build
-[ ] Vercel
-[ ] Production Test
-```
-
----
-
-# 24. Git 작업 권장 방식
-
-Phase 단위 Commit을 권장한다.
-
-예:
-
-```text
-feat: initialize Brain_Pet project
-
-feat: add MVP wireframe flow
-
-feat: add six game prototypes
-
-feat: connect sequential game flow
-
-feat: implement scoring system
-
-feat: add final status radar chart
-
-feat: connect anonymous database storage
-
-feat: add GA4 tracking
-
-fix: resolve MVP QA issues
-
-chore: prepare production deployment
-```
-
----
-
-# 25. 첫 MVP 완료 정의
-
-다음 시나리오가 실제 Production 환경에서 성공하면 v0.1 첫 배포가 완료된 것으로 본다.
-
-```text
-사용자가 사이트 방문
-
-↓
-
-Landing 확인
-
-↓
-
-Start
-
-↓
-
-Reaction 완료
-
-↓
-
-Memory 완료
-
-↓
-
-Focus 완료
-
-↓
-
-Judgment 완료
-
-↓
-
-Spatial 완료
-
-↓
-
-Reasoning 완료
-
-↓
-
-6개의 결과 저장
-
-↓
-
-최종 Stat 생성
-
-↓
-
-Radar Chart 표시
-
-↓
-
-DB 정상 저장
-
-↓
-
-GA4 이벤트 정상 수집
-```
-
----
-
-# 26. v0.1 배포 이후
-
-첫 배포 이후 실제 사용자를 받기 시작한다.
-
-그다음 분석:
-
-```text
-Landing → Start
-
-Game별 Completion
-
-Game별 Drop-off
-
-전체 Completion
-
-평균 플레이 시간
-
-Final Status 도달률
-```
-
-이 데이터를 본 뒤:
-
-```text
-UI 개선
-
-게임 난이도 수정
-
-순서 변경
-
-게임 길이 수정
-```
-
-등을 결정한다.
-
----
-
-# 27. 이후 개발 Phase
-
-v0.1 안정화 이후:
-
-```text
-NEXT PHASE
-
-Egg Progress
-
-↓
-
-Hatching
-
-↓
-
-Personalized Pet
-```
-
-다음:
-
-```text
-Free Play
-
-↓
-
-XP
-
-↓
-
-Level
-
-↓
-
-Pet Request
-
-↓
-
-Bonus XP
-```
-
-다음:
-
-```text
-Daily Challenge
-
-↓
-
-Ranking
-
-↓
-
-Retention
-
-↓
-
-Share
-```
-
-현재 DEVELOPMENT_PLAN에서는 위 기능을 구현하지 않는다.
-
----
-
-# 28. 최종 개발 흐름 요약
-
-```text
-DOCUMENTS
-
-↓
-
-PROJECT SETUP
-
-↓
-
-WIREFRAME UI
-
-↓
-
-6 GAME BASIC LOGIC
-
-↓
-
-SEQUENTIAL FLOW
-
-↓
-
-SCORING
-
-↓
-
-6 STAT
-
-↓
-
-RADAR CHART
-
-↓
-
-UX POLISH
-
-↓
-
-DATABASE
-
-↓
-
-GA4 / GTM
-
-↓
-
-DEVELOPER QA
-
-↓
-
-WEB / MOBILE OPTIMIZATION
-
-↓
-
-DEPLOY
-
-↓
-
-REAL USER DATA
-
-↓
-
-ANALYSIS
-
-↓
-
-IMPROVEMENT
-```
-
----
-
-# 29. 현재 바로 시작할 작업
-
-현재 다음 문서가 준비되어 있다.
-
-```text
-기획.md
-
-GAME_SPEC.md
-
-MVP_SCOPE.md
-
-DEVELOPMENT_PLAN.md
-```
-
-따라서 다음 실제 작업은:
+현재 가장 먼저 해야 할 작업:
 
 ```text
 PHASE 0
@@ -2407,23 +2566,232 @@ PHASE 0
 PHASE 1
 ```
 
-이다.
+---
 
-즉:
+## 목표
 
 ```text
-프로젝트 초기화
+현재 v0 코드 분석
 
-↓
++
 
-전체 Wireframe UI
+현재 화면을 최대한 유지하면서
 
-↓
+MY STATUS 이후
 
-Landing부터 Final Status까지
-클릭 가능한 전체 흐름 확인
+Egg
+Hatch
+Reveal
+Login
+Naming
+Room
+Grow
+Free Play
+
+까지 Placeholder Flow 연결
 ```
 
-까지만 먼저 진행한다.
+---
 
-게임 세부 로직은 이 단계가 완료된 뒤 구현한다.
+## 아직 구현 금지
+
+```text
+실제 DB
+
+실제 Auth
+
+실제 XP
+
+실제 Care Logic
+
+실제 Ranking
+
+실제 Theme
+
+AI
+
+KakaoTalk
+```
+
+---
+
+# 42. 첫 Claude Code 요청 범위
+
+Claude Code는 먼저:
+
+```text
+1. 기획.md
+
+2. GAME_SPEC.md
+
+3. MVP_SCOPE.md
+
+4. DEVELOPMENT_PLAN.md
+
+5. 현재 실제 코드
+```
+
+를 모두 확인한다.
+
+---
+
+## 먼저 보고할 것
+
+```text
+현재 구현 상태
+
+기획과 코드 차이
+
+재사용 가능한 Component
+
+필요한 신규 Route
+
+권장 Component 구조
+
+PHASE 0~1 작업 목록
+
+위험 요소
+```
+
+이후 사용자 승인 후 구현.
+
+---
+
+# 43. 개발 완료 판단 기준
+
+Statling v1.0은 단순히:
+
+```text
+6개 테스트가 작동한다
+```
+
+로 완료되지 않는다.
+
+다음 루프가 연결되어야 한다.
+
+```text
+DISCOVER
+
+↓
+
+HATCH
+
+↓
+
+CARE
+
+↓
+
+GROW
+
+↓
+
+PLAY AGAIN
+```
+
+이 루프가 Statling의 핵심 제품 구조다.
+
+---
+
+# 44. 최종 개발 Flow 요약
+
+```text
+CURRENT V0 UI
+
+↓
+
+CODE AUDIT
+
+↓
+
+FULL V1 UI FLOW
+
+↓
+
+6 GAME LOGIC
+
+↓
+
+SCORING / STAT
+
+↓
+
+HATCH
+
+↓
+
+DATABASE
+
+↓
+
+AUTH
+
+↓
+
+NAMING
+
+↓
+
+ROOM
+
+↓
+
+CARE
+
+↓
+
+GROW
+
+↓
+
+FREE PLAY
+
+↓
+
+XP
+
+↓
+
+RECORD HISTORY
+
+↓
+
+MY STATS
+
+↓
+
+QA
+
+↓
+
+CLOSED BETA
+
+↓
+
+IMPROVEMENT
+
+↓
+
+GA4 / GTM
+
+↓
+
+PRODUCTION
+```
+
+---
+
+# 45. 가장 중요한 원칙
+
+개발 과정에서 기능이 늘어날 때 항상 묻는다.
+
+```text
+이 기능이
+
+"내 스탯으로 태어난 Statling과
+함께 성장한다"
+
+는 핵심 경험을 강화하는가?
+```
+
+아니라면 v1.0에서 제외하거나 Backlog로 이동한다.
