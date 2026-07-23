@@ -5,6 +5,7 @@ import { Palette, Trophy } from 'lucide-react'
 import { LandingScreen } from '@/components/brain-bet/screens/landing-screen'
 import { GameScreen } from '@/components/brain-bet/screens/game-screen'
 import { ReactionGame } from '@/components/brain-bet/games/reaction-game'
+import { MemoryGame } from '@/components/brain-bet/games/memory-game'
 import { CompleteScreen } from '@/components/brain-bet/screens/complete-screen'
 import { FreePlayResultScreen } from '@/components/brain-bet/screens/free-play-result-screen'
 import { StatusScreen } from '@/components/brain-bet/screens/status-screen'
@@ -20,12 +21,16 @@ import { NavRail, type NavTab } from '@/components/brain-bet/nav-rail'
 import { PLAY_ORDER, TOTAL_GAMES, getTopStat, type StatId } from '@/lib/brain-bet'
 import { RECOMMENDED_STAT_PLACEHOLDER } from '@/lib/room'
 import { REACTION_GAME_VERSION } from '@/lib/config/reaction.config'
+import { MEMORY_GAME_VERSION } from '@/lib/config/memory.config'
 import { detectDevice } from '@/lib/game/device'
 import { generateSessionId } from '@/lib/game/id'
 import { buildPlaceholderResult } from '@/lib/game/placeholder-result'
 import { applyGameResult, emptyStatStatusMap } from '@/lib/game/stat-status'
 import type {
   GameResult,
+  MemoryGameResult,
+  MemoryRawSummary,
+  MemoryRoundTrial,
   ReactionGameResult,
   ReactionRawSummary,
   ReactionTrial,
@@ -36,6 +41,7 @@ import {
   formatReactionRawRecord,
   isBetterReactionResult,
 } from '@/lib/scoring/reaction'
+import { formatMemoryRawRecord, isBetterMemoryResult } from '@/lib/scoring/memory'
 
 type Phase =
   | 'landing'
@@ -96,9 +102,9 @@ export function GameFlow() {
     }
   }
 
-  /** Completion path for the 5 stats that are still Placeholder (memory/focus/judgment/spatial/reasoning). */
+  /** Completion path for the stats that are still Placeholder (focus/judgment/spatial/reasoning). */
   const finishPlaceholderRound = () => {
-    if (activeStatId === 'reaction') return // Reaction has its own real completion handler.
+    if (activeStatId === 'reaction' || activeStatId === 'memory') return // These have real completion handlers.
     const prevBest = statStatus[activeStatId].current
     const result = buildPlaceholderResult(activeStatId, flowMode, detectDevice(), prevBest)
     setStatStatus((map) => applyGameResult(activeStatId, map, result))
@@ -152,6 +158,50 @@ export function GameFlow() {
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
 
+  /** Completion path for the real Memory game. */
+  const onMemoryComplete = ({
+    rounds,
+    rawSummary,
+    gameScore,
+  }: {
+    rounds: MemoryRoundTrial[]
+    rawSummary: MemoryRawSummary
+    gameScore: number
+  }) => {
+    // Safe: this app only ever stores a MemoryGameResult under the 'memory' key.
+    const prevBest = statStatus.memory.current as MemoryGameResult | null
+    const isPersonalBest = isBetterMemoryResult(
+      { rawSummary },
+      prevBest ? { rawSummary: prevBest.rawSummary } : null,
+    )
+
+    const result: MemoryGameResult = {
+      sessionId: generateSessionId(),
+      gameId: 'memory',
+      gameVersion: MEMORY_GAME_VERSION,
+      mode: flowMode,
+      playedAt: new Date().toISOString(),
+      device: detectDevice(),
+      gameScore,
+      raw: formatMemoryRawRecord(rawSummary),
+      final: undefined,
+      isPersonalBest,
+      // Memory-specific anti-cheat isn't defined yet (GAME_SPEC has no Memory
+      // cheat criteria) — every completed attempt is valid for now.
+      isValidAttempt: true,
+      invalidReason: null,
+      rounds,
+      rawSummary,
+    }
+
+    setStatStatus((map) => applyGameResult('memory', map, result))
+    setLastResult(result)
+    // Radar/MY STATUS still shows a decoupled mock value — real Memory data
+    // is never converted into a fake Final Stat/Percentile.
+    setFinals((f) => ({ ...f, memory: Math.round(48 + Math.random() * 47) }))
+    setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
+  }
+
   const selectFreePlayGame = (statId: StatId) => {
     setActiveStatId(statId)
     setFlowMode('free')
@@ -173,6 +223,8 @@ export function GameFlow() {
         {phase === 'game' &&
           (activeStatId === 'reaction' ? (
             <ReactionGame index={index} mode={flowMode} onComplete={onReactionComplete} />
+          ) : activeStatId === 'memory' ? (
+            <MemoryGame index={index} mode={flowMode} onComplete={onMemoryComplete} />
           ) : (
             <GameScreen
               statId={activeStatId}

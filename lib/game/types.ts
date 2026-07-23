@@ -57,17 +57,52 @@ export interface ReactionGameResult extends BaseGameResult {
   rawSummary: ReactionRawSummary
 }
 
-/**
- * Temporary shape for the 5 stats without real game logic yet (memory/focus/
- * judgment/spatial/reasoning). Mirrors the PHASE 1 mock generator's output.
- * Replace with a dedicated *GameResult type per game as each one ships,
- * the same way Reaction just was promoted out of this shape.
- */
-export interface PlaceholderGameResult extends BaseGameResult {
-  gameId: Exclude<GameId, 'reaction'>
+export interface MemoryRoundTrial {
+  roundIndex: number
+  difficultyLevel: number
+  gridSize: number
+  targetCount: number
+  exposureMs: number
+  targetCells: string[]
+  selectedCells: string[]
+  correctSelections: number
+  wrongSelections: number
+  missedTargets: number
+  responseTimeMs: number
+  createdAt: string
 }
 
-export type GameResult = ReactionGameResult | PlaceholderGameResult
+export interface MemoryRawSummary {
+  /** Always MEMORY_REAL_ROUNDS on a normal completion (no Life system) — record-only, NOT a Personal Best axis. */
+  roundsCompleted: number
+  /** Difficulty-weighted average of per-round accuracy (0-1). Primary Personal Best axis. */
+  weightedAccuracy: number
+  /** Simple unweighted average accuracy (0-1), kept for reference/display. */
+  averageAccuracy: number
+  perfectRounds: number
+  /** Raw average selection time, unadjusted — kept for reference/display. */
+  averageResponseTimeMs: number
+  /** Average selection time with MEMORY_WRONG_TIME_PENALTY_MS added per wrong click. Used for scoring/Personal Best. */
+  averageAdjustedResponseTimeMs: number
+}
+
+export interface MemoryGameResult extends BaseGameResult {
+  gameId: 'memory'
+  rounds: MemoryRoundTrial[]
+  rawSummary: MemoryRawSummary
+}
+
+/**
+ * Temporary shape for the stats without real game logic yet (focus/judgment/
+ * spatial/reasoning). Mirrors the PHASE 1 mock generator's output. Replace
+ * with a dedicated *GameResult type per game as each one ships, the same way
+ * Reaction and Memory just were promoted out of this shape.
+ */
+export interface PlaceholderGameResult extends BaseGameResult {
+  gameId: Exclude<GameId, 'reaction' | 'memory'>
+}
+
+export type GameResult = ReactionGameResult | MemoryGameResult | PlaceholderGameResult
 
 export interface StatStatus {
   /** First-play result. Locked the first time this stat is ever completed; never overwritten after. */
