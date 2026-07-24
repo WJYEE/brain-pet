@@ -2,7 +2,7 @@
 export const MEMORY_GAME_VERSION = 'memory_v1'
 
 export const MEMORY_PRACTICE_ROUNDS = 1
-export const MEMORY_REAL_ROUNDS = 6
+export const MEMORY_REAL_ROUNDS = 5
 
 export interface MemoryDifficultyLevel {
   level: number
@@ -21,28 +21,31 @@ export const MEMORY_TUTORIAL_DIFFICULTY: MemoryDifficultyLevel = {
 }
 
 /**
- * Fixed difficulty sequence — every user plays the same 6 rounds regardless
+ * Fixed difficulty sequence — every user plays the same 5 rounds regardless
  * of performance (no Life system, no early termination). Values are a draft
  * per product decision; adjust here after Beta testing.
+ *
+ * Compressed from the original 6-round curve (First Play length reduction):
+ * the middle of the curve was thinned (the old level 5 — 5x5/8 targets/700ms
+ * — was dropped) rather than truncating the tail, so the final round still
+ * lands on the same hardest difficulty (6x6/9 targets/650ms) the old round 6
+ * used — "중간 난이도를 압축하되 최종 난이도는 유지".
  */
 export const MEMORY_DIFFICULTY_SEQUENCE: MemoryDifficultyLevel[] = [
   { level: 1, gridSize: 3, targetCount: 4, exposureMs: 900 },
   { level: 2, gridSize: 4, targetCount: 5, exposureMs: 850 },
   { level: 3, gridSize: 4, targetCount: 6, exposureMs: 800 },
   { level: 4, gridSize: 5, targetCount: 7, exposureMs: 750 },
-  { level: 5, gridSize: 5, targetCount: 8, exposureMs: 700 },
-  { level: 6, gridSize: 6, targetCount: 9, exposureMs: 650 },
+  { level: 5, gridSize: 6, targetCount: 9, exposureMs: 650 },
 ]
 
 /**
  * Per-round weight for Weighted Accuracy — harder rounds count slightly more.
  * Index matches MEMORY_DIFFICULTY_SEQUENCE (round 1 = index 0, ...). Kept
- * modest (1.0 → 1.25) so difficulty nudges the score without dominating it.
- * Reviewed after the difficulty increase — the spread still only affects the
- * accuracy fraction (0-1), not raw counts, so it stays proportionate and was
- * left unchanged.
+ * modest (1.0 → 1.25) so difficulty nudges the score without dominating it —
+ * re-spread across 5 entries (was 6) to match the compressed sequence above.
  */
-export const MEMORY_DIFFICULTY_ACCURACY_WEIGHTS = [1.0, 1.05, 1.1, 1.15, 1.2, 1.25]
+export const MEMORY_DIFFICULTY_ACCURACY_WEIGHTS = [1.0, 1.06, 1.12, 1.19, 1.25]
 
 /** Delay before the flash starts, so the grid doesn't flash the instant it appears. */
 export const MEMORY_PRE_FLASH_DELAY_MS = 150

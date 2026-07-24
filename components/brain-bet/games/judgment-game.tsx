@@ -17,7 +17,6 @@ import {
   JUDGMENT_MAX_COMBO_TIME_BONUSES,
   JUDGMENT_QUEUE_PREVIEW_COUNT,
   JUDGMENT_RULE_SWITCH_OVERLAY_MS,
-  JUDGMENT_SEGMENT_LENGTH,
   JUDGMENT_THIRD_OPTION_INTRO_MS,
   JUDGMENT_TUTORIAL_COUNT_STIMULI,
   JUDGMENT_TUTORIAL_SHAPE_STIMULI,
@@ -120,12 +119,12 @@ function buildSegmentBlocks(
   previousMapping: JudgmentRuleMapping | null,
   lastMappingForRule: JudgmentRuleMapping | null,
 ): { blocks: QueueBlock[]; nextKey: number; mapping: JudgmentRuleMapping } {
-  const { ruleId, choiceCount } = getSegmentConfig(segmentIndex)
+  const { ruleId, choiceCount, length, conflictRatioMin, conflictRatioMax } = getSegmentConfig(segmentIndex)
   const mapping = generateRuleMapping(ruleId, choiceCount, lastMappingForRule)
   const pool = choiceCount === 3 ? JUDGMENT_STIMULI_3WAY : JUDGMENT_STIMULI_2WAY
   const classify = (s: JudgmentStimulus) => isConflictStimulus(s, mapping, previousMapping)
-  const conflictCount = pickSegmentConflictCount(JUDGMENT_SEGMENT_LENGTH)
-  const stimuli = generateBlockStimuli(pool, JUDGMENT_SEGMENT_LENGTH, conflictCount, classify)
+  const conflictCount = pickSegmentConflictCount(length, conflictRatioMin, conflictRatioMax)
+  const stimuli = generateBlockStimuli(pool, length, conflictCount, classify)
   let key = startKey
   const blocks: QueueBlock[] = stimuli.map((stimulus, indexInSegment) => ({
     key: key++,
@@ -212,8 +211,9 @@ function withViewTransition(update: () => void) {
  * Attack rework. A continuous horizontal queue of Blocks is always visible;
  * the player clears the current (leftmost, highlighted) Block by choosing
  * Left/Down/Right, the queue shifts immediately (no blocking per-trial
- * feedback screen), and the rule changes every JUDGMENT_SEGMENT_LENGTH
- * Blocks processed. Each rule segment shuffles a fresh Left/Down/Right
+ * feedback screen), and the rule changes every segment's Block count (see
+ * getSegmentConfig — shorter for the early eased segments, JUDGMENT_SEGMENT_LENGTH
+ * once full difficulty is reached). Each rule segment shuffles a fresh Left/Down/Right
  * mapping (held fixed for that whole segment) so the direction can't be
  * memorized by button position — only actually read off the Rule Banner.
  * The whole session runs against one global JUDGMENT_GAME_DURATION_MS timer.

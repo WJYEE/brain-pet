@@ -1,8 +1,8 @@
 'use client'
 
 import { ArrowRight, Share2, Sparkles } from 'lucide-react'
+import { CharacterImage } from '@/components/brain-bet/character-image'
 import { Logo } from '@/components/brain-bet/logo'
-import { Statling } from '@/components/brain-bet/statling'
 import { ToyButton } from '@/components/brain-bet/toy-button'
 import { STATLING_TYPES, STATS, type StatId } from '@/lib/brain-bet'
 
@@ -28,8 +28,20 @@ export function RevealScreen({ topStat, onContinue }: RevealScreenProps) {
         나의 Statling이 태어났어요!
       </h1>
 
-      <div className="animate-pop-in mt-6">
-        <Statling type={topStat} size={180} mood="excited" />
+      <div className="relative mt-6">
+        <div className="animate-pop-in">
+          <CharacterImage type={topStat} size={180} />
+        </div>
+        {['-left-3 top-2', 'right-0 top-6', 'left-6 bottom-4'].map((pos, i) => (
+          <span
+            key={pos}
+            className={`animate-sparkle-burst absolute text-2xl ${pos}`}
+            style={{ animationDelay: `${300 + i * 130}ms` }}
+            aria-hidden="true"
+          >
+            ✨
+          </span>
+        ))}
       </div>
 
       <p className="mt-2 font-display text-xl font-extrabold text-foreground">{type.typeName}</p>

@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { ArrowRight, Sparkles } from 'lucide-react'
-import { Statling } from '@/components/brain-bet/statling'
+import { CharacterImage } from '@/components/brain-bet/character-image'
+import { RoomStage } from '@/components/brain-bet/room-stage'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { ToyButton } from '@/components/brain-bet/toy-button'
 import { STATS, type StatId } from '@/lib/brain-bet'
 import { CARE_ACTIONS, INITIAL_ROOM_STATUS, ROOM_STATUS_META, type CareActionId } from '@/lib/room'
+import { WARM_WOOD_PRESET } from '@/lib/room-presets'
 import { cn } from '@/lib/utils'
 
 interface RoomScreenProps {
@@ -45,27 +47,20 @@ export function RoomScreen({ statlingName, topStat, onGrow }: RoomScreenProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col px-5 pb-28 pt-8">
-      <header className="flex items-center justify-between">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">우리 방</p>
-          <h1 className="font-display text-2xl font-extrabold text-foreground">{statlingName}</h1>
-        </div>
+      <header className="flex items-center justify-between gap-3">
+        <h1 className="flex items-baseline gap-1.5 font-display text-xl font-extrabold text-foreground">
+          <span className="text-sm font-bold text-muted-foreground">우리 방 ·</span>
+          {statlingName}
+        </h1>
         <StatBadge stat={STATS[topStat]} size="sm" />
       </header>
 
-      {/* room stage */}
-      <div className="relative mt-6 flex flex-col items-center justify-center overflow-hidden rounded-3xl bg-card px-6 py-12 toy-border toy-shadow-lg">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-60"
-          style={{
-            background: 'radial-gradient(circle at 50% 20%, var(--pastel-mint), transparent 60%)',
-          }}
-        />
+      {/* room stage — the focal point of this screen */}
+      <RoomStage preset={WARM_WOOD_PRESET} className="mt-4 toy-border toy-shadow-lg">
         <div className="relative">
-          <Statling
+          <CharacterImage
             type={topStat}
             size={180}
-            mood={mood}
             className={mood === 'happy' ? 'animate-float' : 'animate-wobble'}
           />
           {feedbackId && (
@@ -77,23 +72,32 @@ export function RoomScreen({ statlingName, topStat, onGrow }: RoomScreenProps) {
             </span>
           )}
         </div>
+      </RoomStage>
+
+      {/* status HUD — compact rows (icon + label + number + bar), static display only, no decay/growth logic yet */}
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+        {ROOM_STATUS_META.map((meta) => {
+          const value = INITIAL_ROOM_STATUS[meta.id]
+          const Icon = meta.icon
+          return (
+            <div key={meta.id} className="flex items-center gap-2 rounded-xl bg-card px-3 py-2 toy-border">
+              <Icon size={20} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="text-[11px] font-bold text-muted-foreground">{meta.label}</span>
+                  <span className="font-display text-sm font-extrabold tabular-nums text-foreground">{value}</span>
+                </div>
+                <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${value}%` }} />
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
 
-      {/* status meters — static display only, no decay/growth logic yet */}
-      <div className="mt-5 grid grid-cols-3 gap-3">
-        {ROOM_STATUS_META.map((meta) => (
-          <div key={meta.id} className="rounded-2xl bg-card px-3 py-3 text-center toy-border">
-            <p className="text-lg">{meta.emoji}</p>
-            <p className="mt-1 text-xs font-bold text-muted-foreground">{meta.label}</p>
-            <p className="font-display text-lg font-extrabold text-foreground">
-              {INITIAL_ROOM_STATUS[meta.id]}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* care actions */}
-      <div className="mt-5 grid grid-cols-3 gap-3">
+      {/* care actions — compact icon buttons, 3x2 on mobile / one row on desktop */}
+      <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
         {CARE_ACTIONS.map((action) => {
           const Icon = action.icon
           return (
@@ -101,14 +105,14 @@ export function RoomScreen({ statlingName, topStat, onGrow }: RoomScreenProps) {
               key={action.id}
               type="button"
               onClick={() => handleCare(action)}
-              className="relative flex flex-col items-center gap-1.5 rounded-2xl bg-card px-2 py-3 toy-border transition-transform active:translate-y-0.5"
+              className="relative flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-card px-1 py-2.5 toy-border transition-transform active:translate-y-0.5"
             >
-              <Icon size={22} strokeWidth={2.2} className="text-foreground" />
-              <span className="text-xs font-bold text-foreground">{action.label}</span>
+              <Icon size={22} />
+              <span className="text-[11px] font-bold text-foreground">{action.shortLabel}</span>
               {comingSoonId === action.id && (
                 <span
                   className={cn(
-                    'animate-pop-in absolute -top-2 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-secondary-foreground toy-border',
+                    'animate-pop-in absolute -top-2 rounded-full bg-secondary px-2 py-0.5 text-[9px] font-bold text-secondary-foreground toy-border',
                   )}
                 >
                   준비 중
@@ -119,11 +123,11 @@ export function RoomScreen({ statlingName, topStat, onGrow }: RoomScreenProps) {
         })}
       </div>
 
-      {/* grow CTA */}
-      <ToyButton className="mt-6 w-full" onClick={onGrow}>
-        <Sparkles size={20} strokeWidth={2.6} />
+      {/* grow CTA — the one action on this screen meant to stand out more than the compact HUD above */}
+      <ToyButton className="mx-auto mt-4 w-full max-w-xs px-5 py-3" onClick={onGrow}>
+        <Sparkles size={18} strokeWidth={2.6} />
         성장시키기
-        <ArrowRight size={20} strokeWidth={2.8} />
+        <ArrowRight size={18} strokeWidth={2.8} />
       </ToyButton>
     </div>
   )

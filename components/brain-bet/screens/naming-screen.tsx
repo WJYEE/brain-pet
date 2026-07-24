@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { ArrowRight } from 'lucide-react'
+import { CharacterImage } from '@/components/brain-bet/character-image'
 import { Logo } from '@/components/brain-bet/logo'
-import { Statling } from '@/components/brain-bet/statling'
 import { ToyButton } from '@/components/brain-bet/toy-button'
 import type { StatId } from '@/lib/brain-bet'
 import { STATLING_NAME_MAX_LENGTH, STATLING_NAME_MIN_LENGTH, isValidStatlingName } from '@/lib/naming'
@@ -22,7 +22,7 @@ export function NamingScreen({ topStat, onConfirm }: NamingScreenProps) {
       <Logo size="sm" />
 
       <div className="mt-6">
-        <Statling type={topStat} size={140} mood="happy" className="animate-float" />
+        <CharacterImage type={topStat} size={140} className="animate-float" />
       </div>
 
       <h1 className="mt-6 text-balance font-display text-2xl font-extrabold leading-snug text-foreground">

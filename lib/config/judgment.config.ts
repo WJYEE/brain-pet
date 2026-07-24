@@ -11,18 +11,26 @@ import type { JudgmentRuleId, JudgmentStimulus } from '@/lib/game/types'
  */
 export const JUDGMENT_GAME_VERSION = 'judgment_v2'
 
-/** Total real-play session length. Draft value — easy to retune after Beta data. */
-export const JUDGMENT_GAME_DURATION_MS = 35_000
+/** Total real-play session length. Shortened from 35s (First Play length reduction) — see getSegmentConfig for how the Difficulty Ramp's segment lengths were compressed to still reach full 3-way/Conflict difficulty at least once inside this shorter window. Draft value — easy to retune after Beta data. */
+export const JUDGMENT_GAME_DURATION_MS = 25_000
 
-/** How many Blocks make up one fixed-rule segment before the rule changes. Processing-count-based switching (not time-based) keeps a fast player's extra throughput naturally reaching more/harder segments. */
+/** Default Block count per fixed-rule segment (used from segment index 3 onward — see getSegmentConfig for the shorter early-segment lengths). Processing-count-based switching (not time-based) keeps a fast player's extra throughput naturally reaching more/harder segments. */
 export const JUDGMENT_SEGMENT_LENGTH = 8
+
+/** Block count for segments 0-2 (the eased-difficulty ramp) — shortened from JUDGMENT_SEGMENT_LENGTH so the 25s session actually reaches segment 3 (3-way + full Conflict) at least once, without changing anything about how easy those early segments themselves are (same Conflict ratios, same 2-way choice count). */
+export const JUDGMENT_EARLY_SEGMENT_LENGTH = 5
 
 /** How many Blocks are visible in the queue at once (current + upcoming preview). */
 export const JUDGMENT_QUEUE_PREVIEW_COUNT = 6
 
-/** Target band for the share of Conflict-type stimuli within a segment; the actual ratio is randomized inside this band per segment. */
+/** Target band for the share of Conflict-type stimuli within a segment once the Difficulty Ramp reaches full difficulty (segment index 3+); the actual ratio is randomized inside this band per segment. */
 export const JUDGMENT_CONFLICT_RATIO_MIN = 0.4
 export const JUDGMENT_CONFLICT_RATIO_MAX = 0.6
+
+/** Conflict ratio ceiling for segment index 1 (the very first Rule Switch) — kept low so the switch itself is the only new thing a first-time player has to absorb. */
+export const JUDGMENT_EARLY_CONFLICT_RATIO_MAX = 0.15
+/** Conflict ratio ceiling for segment index 2 — ramps partway toward the full band before 3-way/full-Conflict difficulty begins at segment index 3. */
+export const JUDGMENT_MID_CONFLICT_RATIO_MAX = 0.35
 
 /** How long the departing Block's clear/shake + "+1"/"MISS" flourish stays visible. Purely cosmetic — input for the next Block is already accepted before this finishes. */
 export const JUDGMENT_BLOCK_EXIT_MS = 220
@@ -39,8 +47,9 @@ export const JUDGMENT_THIRD_OPTION_INTRO_MS = 900
  * Draft values, easy to retune after Beta data.
  */
 export const JUDGMENT_COMBO_BONUS_INTERVAL = 10
-export const JUDGMENT_COMBO_BONUS_TIME_MS = 2_000
-/** Caps total session length growth from Combo Bonuses (2 grants = max +4s). */
+/** Lowered from 2000ms alongside the 35s→25s session shortening, so a full 2-grant bonus (+3s) stays proportionate to the shorter base duration rather than ballooning to a bigger share of it. */
+export const JUDGMENT_COMBO_BONUS_TIME_MS = 1_500
+/** Caps total session length growth from Combo Bonuses (2 grants = max +3s). */
 export const JUDGMENT_MAX_COMBO_TIME_BONUSES = 2
 /** How long the "10 COMBO! +2초" pop-up stays visible. */
 export const JUDGMENT_COMBO_BONUS_FEEDBACK_MS = 700
@@ -60,16 +69,60 @@ export const JUDGMENT_TUTORIAL_COUNT_STIMULI: JudgmentStimulus[] = [
 
 /**
  * The fixed rule/difficulty progression by segment index. Rule strictly
- * alternates every segment (matching the game's only two rule identities);
- * choiceCount steps from 2-way to 3-way starting at segment index 2. Beyond
- * index 3 the pattern keeps alternating at 3-way indefinitely, so a fast
- * player who clears many segments keeps facing switches at the hardest
- * difficulty rather than the progression simply running out.
+ * alternates every segment (matching the game's only two rule identities).
+ *
+ * Difficulty Ramp (new-player onboarding fix): segment 0 is a pure first pass
+ * at the base rule (no switch yet, no Conflict possible anyway — nothing to
+ * conflict against). Segment 1 is the first-ever Rule Switch, still 2-way,
+ * with Conflict capped low so the switch itself is the only new thing to
+ * absorb ("어? 규칙 바뀌었네"). Segment 2 is a second switch, still 2-way,
+ * with Conflict ramped partway ("이제 좀 빨리 판단해야겠다"). 3-way and the
+ * full Conflict band only begin at segment index 3, continuing indefinitely
+ * beyond that so a fast player who clears many segments keeps facing
+ * switches at the hardest difficulty rather than the progression running out
+ * ("헷갈린다! 집중해야겠다"). Score/PB and Combo Bonus Time are untouched,
+ * since both read from per-trial flags computed generically regardless of
+ * which segment produced them.
+ *
+ * `length` is JUDGMENT_EARLY_SEGMENT_LENGTH (5, not the default 8) for
+ * segments 0-2 — purely a pacing change (fewer Blocks before the rule
+ * changes), not a difficulty change (same Conflict ratios/choiceCount as
+ * before) — so the shortened 25s Time Attack still reaches segment 3 (3-way
+ * + full Conflict) at least once for a normally-paced player, without
+ * touching how easy those early segments themselves feel.
  */
-export function getSegmentConfig(segmentIndex: number): { ruleId: JudgmentRuleId; choiceCount: 2 | 3 } {
+export function getSegmentConfig(
+  segmentIndex: number,
+): { ruleId: JudgmentRuleId; choiceCount: 2 | 3; length: number; conflictRatioMin: number; conflictRatioMax: number } {
   const ruleId: JudgmentRuleId = segmentIndex % 2 === 0 ? 'shape' : 'count'
-  const choiceCount: 2 | 3 = segmentIndex < 2 ? 2 : 3
-  return { ruleId, choiceCount }
+  if (segmentIndex === 0) {
+    return { ruleId, choiceCount: 2, length: JUDGMENT_EARLY_SEGMENT_LENGTH, conflictRatioMin: 0, conflictRatioMax: 0 }
+  }
+  if (segmentIndex === 1) {
+    return {
+      ruleId,
+      choiceCount: 2,
+      length: JUDGMENT_EARLY_SEGMENT_LENGTH,
+      conflictRatioMin: 0,
+      conflictRatioMax: JUDGMENT_EARLY_CONFLICT_RATIO_MAX,
+    }
+  }
+  if (segmentIndex === 2) {
+    return {
+      ruleId,
+      choiceCount: 2,
+      length: JUDGMENT_EARLY_SEGMENT_LENGTH,
+      conflictRatioMin: JUDGMENT_EARLY_CONFLICT_RATIO_MAX,
+      conflictRatioMax: JUDGMENT_MID_CONFLICT_RATIO_MAX,
+    }
+  }
+  return {
+    ruleId,
+    choiceCount: 3,
+    length: JUDGMENT_SEGMENT_LENGTH,
+    conflictRatioMin: JUDGMENT_CONFLICT_RATIO_MIN,
+    conflictRatioMax: JUDGMENT_CONFLICT_RATIO_MAX,
+  }
 }
 
 /**

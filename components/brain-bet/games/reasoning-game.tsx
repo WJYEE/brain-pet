@@ -336,6 +336,10 @@ export function ReasoningGame({ index, mode, onComplete }: ReasoningGameProps) {
             </p>
             {stage === 'feedback' && tutorialHint ? (
               <p className="text-[11px] font-semibold text-secondary-foreground">{tutorialHint}</p>
+            ) : stage === 'feedback' && round === 'real' && currentQuestion ? (
+              <p className="text-pretty text-[11px] font-semibold text-secondary-foreground">
+                {currentQuestion.ruleExplanation}
+              </p>
             ) : (
               <p className={cn('text-[11px] font-semibold text-muted-foreground', round === 'real' && 'invisible')}>
                 이 기록은 결과에 포함되지 않아요.

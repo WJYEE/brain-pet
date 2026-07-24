@@ -171,23 +171,31 @@ function buildQuestion(
 }
 
 /**
- * Builds the fixed 8-question real session: Level 1 draws both 'simple'
- * (tetromino) shapes; Levels 2-4 sample 6 distinct 'complex' (pentomino)
- * shapes without replacement across the whole session (2 per Level) — no
- * base shape is ever the correct answer twice in one session.
+ * Builds the fixed 5-question real session (SPATIAL_REAL_QUESTIONS): Level 1
+ * draws 1 'simple' (tetromino) shape; Levels 2-4 sample distinct 'complex'
+ * (pentomino) shapes without replacement across the whole session per each
+ * Level's own SPATIAL_QUESTIONS_PER_LEVEL count — no base shape is ever the
+ * correct answer twice in one session.
  */
 export function generateSpatialSession(): GeneratedSpatialQuestion[] {
   const simpleShapeIds = shuffled(shapeIdsInTier('simple'))
-  const complexShapeIds = shuffled(shapeIdsInTier('complex')).slice(0, SPATIAL_LEVELS.length * SPATIAL_QUESTIONS_PER_LEVEL - SPATIAL_QUESTIONS_PER_LEVEL)
+  const totalComplexNeeded = SPATIAL_LEVELS.filter((level) => level !== 1).reduce(
+    (sum, level) => sum + SPATIAL_QUESTIONS_PER_LEVEL[level],
+    0,
+  )
+  const complexShapeIds = shuffled(shapeIdsInTier('complex')).slice(0, totalComplexNeeded)
 
   const usedShapeIds = new Set<string>()
   const questions: GeneratedSpatialQuestion[] = []
   let complexCursor = 0
 
   for (const level of SPATIAL_LEVELS) {
+    const countForLevel = SPATIAL_QUESTIONS_PER_LEVEL[level]
     const shapeIdsForLevel =
-      level === 1 ? simpleShapeIds : complexShapeIds.slice(complexCursor, complexCursor + SPATIAL_QUESTIONS_PER_LEVEL)
-    if (level !== 1) complexCursor += SPATIAL_QUESTIONS_PER_LEVEL
+      level === 1
+        ? simpleShapeIds.slice(0, countForLevel)
+        : complexShapeIds.slice(complexCursor, complexCursor + countForLevel)
+    if (level !== 1) complexCursor += countForLevel
 
     for (const shapeId of shapeIdsForLevel) {
       usedShapeIds.add(shapeId)

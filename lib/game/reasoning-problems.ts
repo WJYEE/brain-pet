@@ -28,6 +28,8 @@ export interface GeneratedReasoningQuestion {
   sequence: ReasoningSymbolSpec[]
   options: GeneratedReasoningOption[]
   correctOptionIndex: number
+  /** One short, post-answer-only sentence explaining why the correct answer follows the sequence's rule. */
+  ruleExplanation: string
 }
 
 let questionSeedCounter = 0
@@ -82,6 +84,7 @@ function buildQuestionFromTemplate(template: ReasoningTemplate, instance: Reason
     sequence: instance.sequence,
     options,
     correctOptionIndex,
+    ruleExplanation: template.ruleExplanation,
   }
 
   validateQuestion(question)
@@ -89,14 +92,15 @@ function buildQuestionFromTemplate(template: ReasoningTemplate, instance: Reason
 }
 
 /**
- * Builds the fixed 8-question real session: 2 Templates per Level, sampled
+ * Builds the fixed REASONING_REAL_QUESTIONS-question real session: each
+ * Level's own REASONING_QUESTIONS_PER_LEVEL count of Templates, sampled
  * without replacement from that Level's 5 hand-authored Templates — no
- * Template is ever reused twice in one session (5 available, only 2 drawn).
+ * Template is ever reused twice in one session.
  */
 export function generateReasoningSession(): GeneratedReasoningQuestion[] {
   const questions: GeneratedReasoningQuestion[] = []
   for (const level of REASONING_LEVELS) {
-    const picked = shuffled(templatesForLevel(level)).slice(0, REASONING_QUESTIONS_PER_LEVEL)
+    const picked = shuffled(templatesForLevel(level)).slice(0, REASONING_QUESTIONS_PER_LEVEL[level])
     for (const template of picked) {
       questions.push(buildQuestionFromTemplate(template, template.generate()))
     }
@@ -107,7 +111,13 @@ export function generateReasoningSession(): GeneratedReasoningQuestion[] {
 /** Tutorial 1 — fixed ABAB shape alternation. Discarded from scoring. */
 export function buildTutorialQuestion1(): GeneratedReasoningQuestion {
   return buildQuestionFromTemplate(
-    { id: 'tutorial-1', reasoningType: 'alternation', difficultyLevel: 0, generate: buildTutorial1Instance },
+    {
+      id: 'tutorial-1',
+      reasoningType: 'alternation',
+      difficultyLevel: 0,
+      ruleExplanation: '두 모양이 번갈아 나오는 규칙이에요.',
+      generate: buildTutorial1Instance,
+    },
     buildTutorial1Instance(),
   )
 }
@@ -115,7 +125,13 @@ export function buildTutorialQuestion1(): GeneratedReasoningQuestion {
 /** Tutorial 2 — fixed count-increase sequence. Discarded from scoring. */
 export function buildTutorialQuestion2(): GeneratedReasoningQuestion {
   return buildQuestionFromTemplate(
-    { id: 'tutorial-2', reasoningType: 'count', difficultyLevel: 0, generate: buildTutorial2Instance },
+    {
+      id: 'tutorial-2',
+      reasoningType: 'count',
+      difficultyLevel: 0,
+      ruleExplanation: '한 단계마다 개수가 1개씩 늘어나요.',
+      generate: buildTutorial2Instance,
+    },
     buildTutorial2Instance(),
   )
 }

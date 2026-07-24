@@ -1,9 +1,14 @@
 'use client'
 
 import { ArrowRight, Check, PartyPopper, Trophy } from 'lucide-react'
+import { EggImage } from '@/components/brain-bet/egg-image'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { PLAY_ORDER, STATS, TOTAL_GAMES, type RawRecord, type StatId } from '@/lib/brain-bet'
+import { EGG_STAGE_MESSAGE, EGG_STAGE_MOTION } from '@/lib/egg-growth'
+
+/** Fixed set of small-sparkle positions, sliced to however many a stage's EGG_STAGE_MOTION calls for. */
+const SPARKLE_POSITIONS = ['-left-3 -top-1', 'right-0 top-0', 'left-4 bottom-0']
 
 interface CompleteScreenProps {
   statId: StatId
@@ -29,6 +34,9 @@ export function CompleteScreen({
   const stat = STATS[statId]
   const isLast = index === TOTAL_GAMES - 1
   const nextStat = isLast ? null : STATS[PLAY_ORDER[index + 1]]
+  /** How many of the 6 First Play games are done as of this screen — doubles as the Egg's growth stage. */
+  const eggStage = index + 1
+  const motion = EGG_STAGE_MOTION[eggStage] ?? EGG_STAGE_MOTION[1]
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-10 text-center">
@@ -76,6 +84,42 @@ export function CompleteScreen({
             </p>
           </div>
         )}
+      </div>
+
+      {/* egg growth teaser — one more of the 6 games done, one step closer to Hatch.
+          Card layout/size never changes across stages; only the egg's own
+          entrance motion (transform, not layout) and the decorative overlays
+          below vary, so nothing here ever shifts surrounding text/CTA. */}
+      <div className="mt-6 flex flex-col items-center gap-1.5 rounded-2xl bg-card px-6 py-4 toy-border toy-shadow-sm">
+        <div className="relative" style={{ width: 92, height: 92 }}>
+          {motion.glow && (
+            <span
+              className="animate-egg-glow-pulse pointer-events-none absolute inset-0 rounded-full"
+              style={{ boxShadow: '0 0 22px 8px var(--accent)' }}
+              aria-hidden="true"
+            />
+          )}
+          {motion.ring && (
+            <span
+              className="animate-egg-impact-ring pointer-events-none absolute inset-0 rounded-full"
+              style={{ boxShadow: '0 0 0 3px var(--accent)' }}
+              aria-hidden="true"
+            />
+          )}
+          <EggImage key={eggStage} stage={eggStage} size={92} className={motion.animationClass} />
+          {SPARKLE_POSITIONS.slice(0, motion.sparkles).map((pos, i) => (
+            <span
+              key={pos}
+              className={`animate-sparkle-burst pointer-events-none absolute text-lg ${pos}`}
+              style={{ animationDelay: `${420 + i * 150}ms` }}
+              aria-hidden="true"
+            >
+              ✨
+            </span>
+          ))}
+        </div>
+        <p className="text-pretty text-sm font-bold text-foreground">{EGG_STAGE_MESSAGE[eggStage]}</p>
+        <p className="text-xs font-semibold text-muted-foreground">알 성장 {eggStage}/{TOTAL_GAMES}</p>
       </div>
 
       {/* overall progress */}

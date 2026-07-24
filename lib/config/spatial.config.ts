@@ -4,8 +4,21 @@ import type { SpatialDistractorType } from '@/lib/game/types'
 export const SPATIAL_GAME_VERSION = 'spatial_v1'
 
 export const SPATIAL_LEVELS = [1, 2, 3, 4] as const
-export const SPATIAL_QUESTIONS_PER_LEVEL = 2
-export const SPATIAL_REAL_QUESTIONS = SPATIAL_LEVELS.length * SPATIAL_QUESTIONS_PER_LEVEL
+
+/**
+ * Real question count per Level — deliberately uneven rather than the
+ * original uniform 2/2/2/2 (8 total), for the First Play length reduction:
+ * Levels 1-3 (mostly "learn the mechanic") get 1 question each, Level 4
+ * (where the full distractor mix incl. Mirror lands) keeps 2, so early
+ * questions establish the format quickly while later questions still do the
+ * actual spatial-reasoning measurement — "초반 2문제로 방식 이해 → 중후반
+ * 3문제로 실제 공간감각 측정".
+ */
+export const SPATIAL_QUESTIONS_PER_LEVEL: Record<number, number> = { 1: 1, 2: 1, 3: 1, 4: 2 }
+export const SPATIAL_REAL_QUESTIONS = SPATIAL_LEVELS.reduce(
+  (sum, level) => sum + SPATIAL_QUESTIONS_PER_LEVEL[level],
+  0,
+)
 
 /**
  * Per-question time limit by Level — GAME_SPEC's "8~12초, 난이도에 따라 조정"

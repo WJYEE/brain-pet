@@ -453,7 +453,7 @@ export function GameFlow() {
           />
         )}
 
-        {phase === 'egg' && <EggScreen onHatched={() => setPhase('reveal')} />}
+        {phase === 'egg' && <EggScreen topStat={topStat} onHatched={() => setPhase('reveal')} />}
 
         {phase === 'reveal' && (
           <RevealScreen topStat={topStat} onContinue={() => setPhase('save')} />

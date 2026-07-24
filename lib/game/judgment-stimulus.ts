@@ -1,4 +1,3 @@
-import { JUDGMENT_CONFLICT_RATIO_MAX, JUDGMENT_CONFLICT_RATIO_MIN } from '@/lib/config/judgment.config'
 import type { JudgmentAnswer, JudgmentMappingValue, JudgmentRuleId, JudgmentRuleMapping, JudgmentStimulus } from '@/lib/game/types'
 
 /** Blocks 1-2 (2-way) draw only from this pool — no triangle, no 3rd dot. */
@@ -112,13 +111,17 @@ export function isConflictStimulus(
 
 /**
  * Picks a Conflict-stimulus count for one segment, targeting a random ratio
- * inside [JUDGMENT_CONFLICT_RATIO_MIN, JUDGMENT_CONFLICT_RATIO_MAX] rather
- * than a fixed share, so segments feel varied while staying in a controlled
- * band. Clamped to leave at least 1 Conflict and 1 Congruent stimulus.
+ * inside [ratioMin, ratioMax] rather than a fixed share, so segments feel
+ * varied while staying in a controlled band — the band itself narrows for
+ * early segments per the Difficulty Ramp in judgment.config.ts. Clamped to
+ * leave at least 1 Congruent stimulus always, and at least 1 Conflict
+ * stimulus unless ratioMax is 0 (segment 0, where Conflict is impossible
+ * anyway since there's no previous segment to conflict against).
  */
-export function pickSegmentConflictCount(segmentLength: number): number {
-  const ratio = JUDGMENT_CONFLICT_RATIO_MIN + Math.random() * (JUDGMENT_CONFLICT_RATIO_MAX - JUDGMENT_CONFLICT_RATIO_MIN)
-  return Math.min(segmentLength - 1, Math.max(1, Math.round(segmentLength * ratio)))
+export function pickSegmentConflictCount(segmentLength: number, ratioMin: number, ratioMax: number): number {
+  const ratio = ratioMin + Math.random() * (ratioMax - ratioMin)
+  const floor = ratioMax <= 0 ? 0 : 1
+  return Math.min(segmentLength - 1, Math.max(floor, Math.round(segmentLength * ratio)))
 }
 
 /**

@@ -73,6 +73,14 @@ export interface ReasoningTemplate {
   id: string
   reasoningType: ReasoningType
   difficultyLevel: number
+  /**
+   * One short sentence (readable in ~1-1.5s) explaining WHY the correct
+   * answer is correct, shown only after the player has already answered
+   * (never as a pre-answer hint). Static per Template rather than per
+   * instance since the underlying rule shape doesn't change between
+   * randomized instances of the same Template.
+   */
+  ruleExplanation: string
   generate: () => ReasoningTemplateInstance
 }
 
@@ -86,6 +94,7 @@ const shapeAlternation2: ReasoningTemplate = {
   id: 'shape-alternation-2',
   reasoningType: 'alternation',
   difficultyLevel: 1,
+  ruleExplanation: '두 모양이 번갈아 나오는 규칙이에요.',
   generate: () => {
     const [A, B, C, D] = shuffledShapes()
     return {
@@ -104,6 +113,7 @@ const countIncreaseBy1: ReasoningTemplate = {
   id: 'count-increase-by-1',
   reasoningType: 'count',
   difficultyLevel: 1,
+  ruleExplanation: '한 단계마다 개수가 1개씩 늘어나요.',
   generate: () => {
     const shape = pickOneShape()
     const start = randomInt(1, 4)
@@ -123,6 +133,7 @@ const countDecreaseBy1: ReasoningTemplate = {
   id: 'count-decrease-by-1',
   reasoningType: 'count',
   difficultyLevel: 1,
+  ruleExplanation: '한 단계마다 개수가 1개씩 줄어들어요.',
   generate: () => {
     const shape = pickOneShape()
     const start = randomInt(4, 7)
@@ -138,18 +149,27 @@ const countDecreaseBy1: ReasoningTemplate = {
   },
 }
 
+/**
+ * Revised (was ambiguous): the original 3-cell version showed only 3 distinct
+ * positions with no repetition, so "the answer loops back to the first
+ * position" was an unprovable assumption — nothing in the shown sequence
+ * demonstrated that it cycles at all. Now the known sequence is 4 cells,
+ * ending with a repeat of the first position, so the period-3 cycle is
+ * directly evidenced before the player has to predict the next step.
+ */
 const positionCycle3: ReasoningTemplate = {
   id: 'position-cycle-3',
   reasoningType: 'position',
   difficultyLevel: 1,
+  ruleExplanation: '세 위치가 순서대로 돌아가며 반복되는 규칙이에요.',
   generate: () => {
     const [p0, p1, p2, pUnused] = shuffled([0, 1, 2, 3]) as [0 | 1 | 2 | 3, 0 | 1 | 2 | 3, 0 | 1 | 2 | 3, 0 | 1 | 2 | 3]
     return {
-      sequence: [sym({ position: p0 }), sym({ position: p1 }), sym({ position: p2 })],
-      correctAnswer: sym({ position: p0 }),
+      sequence: [sym({ position: p0 }), sym({ position: p1 }), sym({ position: p2 }), sym({ position: p0 })],
+      correctAnswer: sym({ position: p1 }),
       distractors: [
-        { symbol: sym({ position: p2 }), type: 'repeat-previous' },
-        { symbol: sym({ position: p1 }), type: 'reverse-direction' },
+        { symbol: sym({ position: p0 }), type: 'repeat-previous' },
+        { symbol: sym({ position: p2 }), type: 'reverse-direction' },
         { symbol: sym({ position: pUnused }), type: null },
       ],
     }
@@ -160,6 +180,7 @@ const countToggle2: ReasoningTemplate = {
   id: 'count-toggle-2',
   reasoningType: 'alternation',
   difficultyLevel: 1,
+  ruleExplanation: '개수가 두 값을 번갈아 반복해요.',
   generate: () => {
     const shape = pickOneShape()
     const [a, b] = pickTwoDistinctCounts(2, 5)
@@ -185,28 +206,44 @@ const countToggle2: ReasoningTemplate = {
 // "rotate to match a reference" the way Spatial works.
 // ---------------------------------------------------------------------------
 
+/**
+ * Revised (was ambiguous): the original 4-cell "A B B C" version never
+ * showed the cycle repeating, so returning to A was an unproven guess.
+ * Extended to 5 known cells ("A B B C A") so the loop-back to A is directly
+ * observed before the player predicts the 6th cell.
+ */
 const shapeCycleAbbc: ReasoningTemplate = {
   id: 'shape-cycle-abbc',
   reasoningType: 'alternation',
   difficultyLevel: 2,
+  ruleExplanation: '모양 네 개가 한 묶음으로 반복되는 규칙이에요.',
   generate: () => {
     const [A, B, C, D] = shuffledShapes()
     return {
-      sequence: [sym({ shape: A }), sym({ shape: B }), sym({ shape: B }), sym({ shape: C })],
-      correctAnswer: sym({ shape: A }),
+      sequence: [sym({ shape: A }), sym({ shape: B }), sym({ shape: B }), sym({ shape: C }), sym({ shape: A })],
+      correctAnswer: sym({ shape: B }),
       distractors: [
-        { symbol: sym({ shape: C }), type: 'repeat-previous' },
-        { symbol: sym({ shape: B }), type: null },
+        { symbol: sym({ shape: A }), type: 'repeat-previous' },
+        { symbol: sym({ shape: C }), type: null },
         { symbol: sym({ shape: D }), type: null },
       ],
     }
   },
 }
 
+/**
+ * Revised (was ambiguous): the original 3-cell version showed only 2 diffs
+ * (+1, then +2) and assumed the player would guess the alternation continues
+ * with +1 — but 2 diffs alone don't distinguish "alternating +1/+2" from any
+ * other next step. Extended to 4 known cells (diffs +1, +2, +1) so the
+ * alternation is actually confirmed (the 1st and 3rd diffs match) before
+ * asking for the 4th.
+ */
 const countAlternatingIncrement: ReasoningTemplate = {
   id: 'count-alternating-increment',
   reasoningType: 'count',
   difficultyLevel: 2,
+  ruleExplanation: '개수가 늘어나는 폭이 1개, 2개씩 번갈아요.',
   generate: () => {
     const shape = pickOneShape()
     const start = randomInt(1, 3)
@@ -214,37 +251,43 @@ const countAlternatingIncrement: ReasoningTemplate = {
     const v1 = v0 + 1
     const v2 = v1 + 2
     const v3 = v2 + 1
+    const v4 = v3 + 2
     return {
-      sequence: [sym({ shape, count: v0 }), sym({ shape, count: v1 }), sym({ shape, count: v2 })],
-      correctAnswer: sym({ shape, count: v3 }),
+      sequence: [sym({ shape, count: v0 }), sym({ shape, count: v1 }), sym({ shape, count: v2 }), sym({ shape, count: v3 })],
+      correctAnswer: sym({ shape, count: v4 }),
       distractors: [
-        { symbol: sym({ shape, count: v2 }), type: 'repeat-previous' },
-        { symbol: sym({ shape, count: v2 + 2 }), type: 'reverse-direction' },
+        { symbol: sym({ shape, count: v3 }), type: 'repeat-previous' },
+        { symbol: sym({ shape, count: v3 + 1 }), type: 'reverse-direction' },
         { symbol: sym({ shape, count: v0 }), type: null },
       ],
     }
   },
 }
 
-const positionTwoStep: ReasoningTemplate = {
-  id: 'position-two-step',
+/**
+ * Revised (was ambiguous, and structurally unfixable in its original form):
+ * the original "position advances by +1, then +2" pattern lived in a 4-slot
+ * (mod 4) position space, where the "return to the start after 2 steps"
+ * coincidence made an alternating-step reading and a simple period-3 cycle
+ * reading fit the same evidence, with no way to tell them apart even with a
+ * longer sequence. Replaced with a full period-4 cycle (every quadrant used
+ * once, then repeated) — a pattern that can be directly verified from the
+ * shown cells rather than inferred from step arithmetic.
+ */
+const positionCycle4: ReasoningTemplate = {
+  id: 'position-cycle-4',
   reasoningType: 'position',
   difficultyLevel: 2,
+  ruleExplanation: '네 위치가 순서대로 돌아가며 반복되는 규칙이에요.',
   generate: () => {
-    const p0 = randomInt(0, 3) as 0 | 1 | 2 | 3
-    const p1 = (((p0 + 1) % 4) as 0 | 1 | 2 | 3)
-    const p2 = (((p1 + 2) % 4) as 0 | 1 | 2 | 3)
-    const p3 = (((p2 + 1) % 4) as 0 | 1 | 2 | 3)
-    const reverseGuess = ((p2 + 2) % 4) as 0 | 1 | 2 | 3
-    const usedInOptions = new Set([p3, p2, reverseGuess])
-    const remaining = ([0, 1, 2, 3] as const).find((p) => !usedInOptions.has(p)) ?? p2
+    const [p0, p1, p2, p3] = shuffled([0, 1, 2, 3]) as [0 | 1 | 2 | 3, 0 | 1 | 2 | 3, 0 | 1 | 2 | 3, 0 | 1 | 2 | 3]
     return {
-      sequence: [sym({ position: p0 }), sym({ position: p1 }), sym({ position: p2 })],
-      correctAnswer: sym({ position: p3 }),
+      sequence: [sym({ position: p0 }), sym({ position: p1 }), sym({ position: p2 }), sym({ position: p3 }), sym({ position: p0 })],
+      correctAnswer: sym({ position: p1 }),
       distractors: [
-        { symbol: sym({ position: p2 }), type: 'repeat-previous' },
-        { symbol: sym({ position: reverseGuess }), type: 'reverse-direction' },
-        { symbol: sym({ position: remaining }), type: null },
+        { symbol: sym({ position: p0 }), type: 'repeat-previous' },
+        { symbol: sym({ position: p2 }), type: null },
+        { symbol: sym({ position: p3 }), type: null },
       ],
     }
   },
@@ -254,6 +297,7 @@ const rotationToggle2: ReasoningTemplate = {
   id: 'rotation-toggle-2',
   reasoningType: 'alternation',
   difficultyLevel: 2,
+  ruleExplanation: '회전 방향이 두 각도를 번갈아요.',
   generate: () => {
     const [a, b, c, d] = shuffled(ANGLE_POOL)
     return {
@@ -277,6 +321,7 @@ const shapeCycle3Period: ReasoningTemplate = {
   id: 'shape-cycle-3period',
   reasoningType: 'alternation',
   difficultyLevel: 2,
+  ruleExplanation: '세 모양이 순서대로 돌아가며 반복되는 규칙이에요.',
   generate: () => {
     const [A, B, C, D] = shuffledShapes()
     return {
@@ -302,6 +347,7 @@ const shapeAltPlusCountIncrease: ReasoningTemplate = {
   id: 'shape-alt-plus-count-increase',
   reasoningType: 'compound',
   difficultyLevel: 3,
+  ruleExplanation: '모양은 번갈아 바뀌고, 개수는 하나씩 늘어나요.',
   generate: () => {
     const [A, B] = shuffledShapes()
     const start = randomInt(1, 4)
@@ -317,20 +363,33 @@ const shapeAltPlusCountIncrease: ReasoningTemplate = {
   },
 }
 
+/**
+ * Revised (was ambiguous): the original 3-cell version never showed the
+ * position cycle repeat back to its start, so "answer = p0" was an
+ * unproven guess (same root issue as Level 1's position-cycle-3 before its
+ * fix). Extended to 4 known cells so the shape alternation continues one
+ * more step AND the position cycle's return to its start is directly shown.
+ */
 const positionCyclePlusShapeAlt: ReasoningTemplate = {
   id: 'position-cycle-plus-shape-alt',
   reasoningType: 'compound',
   difficultyLevel: 3,
+  ruleExplanation: '모양은 두 가지가 번갈아 바뀌고, 위치는 세 곳을 돌아가며 반복돼요.',
   generate: () => {
     const [A, B] = shuffledShapes()
     const [p0, p1, p2] = shuffled([0, 1, 2, 3]).slice(0, 3) as [0 | 1 | 2 | 3, 0 | 1 | 2 | 3, 0 | 1 | 2 | 3]
     return {
-      sequence: [sym({ shape: A, position: p0 }), sym({ shape: B, position: p1 }), sym({ shape: A, position: p2 })],
-      correctAnswer: sym({ shape: B, position: p0 }),
+      sequence: [
+        sym({ shape: A, position: p0 }),
+        sym({ shape: B, position: p1 }),
+        sym({ shape: A, position: p2 }),
+        sym({ shape: B, position: p0 }),
+      ],
+      correctAnswer: sym({ shape: A, position: p1 }),
       distractors: [
-        { symbol: sym({ shape: A, position: p2 }), type: 'repeat-previous' },
+        { symbol: sym({ shape: B, position: p0 }), type: 'repeat-previous' },
         { symbol: sym({ shape: A, position: p0 }), type: 'partial-attribute' },
-        { symbol: sym({ shape: B, position: p2 }), type: 'partial-attribute' },
+        { symbol: sym({ shape: B, position: p1 }), type: 'partial-attribute' },
       ],
     }
   },
@@ -340,6 +399,7 @@ const rotationTogglePlusCountIncrease: ReasoningTemplate = {
   id: 'rotation-toggle-plus-count-increase',
   reasoningType: 'compound',
   difficultyLevel: 3,
+  ruleExplanation: '회전은 두 각도를 번갈고, 개수는 하나씩 늘어나요.',
   generate: () => {
     const [a, b] = shuffled(ANGLE_POOL).slice(0, 2) as [0 | 90 | 180 | 270, 0 | 90 | 180 | 270]
     const start = randomInt(1, 4)
@@ -359,20 +419,33 @@ const rotationTogglePlusCountIncrease: ReasoningTemplate = {
   },
 }
 
+/**
+ * Revised (was ambiguous): the original 3-cell version ("A B C") never
+ * showed the shape cycle loop back to A, so the answer's shape (A again)
+ * was an unproven guess. Extended to 4 known cells so the shape cycle's
+ * return to A is directly shown, and the position toggle gets one more
+ * confirming step too.
+ */
 const shapeCycle3PlusPositionToggle: ReasoningTemplate = {
   id: 'shape-cycle3-plus-position-toggle',
   reasoningType: 'compound',
   difficultyLevel: 3,
+  ruleExplanation: '모양은 세 가지가 순서대로 돌아가고, 위치는 두 곳을 번갈아요.',
   generate: () => {
     const [A, B, C] = shuffledShapes()
     const [q0, q1] = shuffled([0, 1, 2, 3]).slice(0, 2) as [0 | 1 | 2 | 3, 0 | 1 | 2 | 3]
     return {
-      sequence: [sym({ shape: A, position: q0 }), sym({ shape: B, position: q1 }), sym({ shape: C, position: q0 })],
-      correctAnswer: sym({ shape: A, position: q1 }),
+      sequence: [
+        sym({ shape: A, position: q0 }),
+        sym({ shape: B, position: q1 }),
+        sym({ shape: C, position: q0 }),
+        sym({ shape: A, position: q1 }),
+      ],
+      correctAnswer: sym({ shape: B, position: q0 }),
       distractors: [
-        { symbol: sym({ shape: C, position: q0 }), type: 'repeat-previous' },
+        { symbol: sym({ shape: A, position: q1 }), type: 'repeat-previous' },
+        { symbol: sym({ shape: B, position: q1 }), type: 'partial-attribute' },
         { symbol: sym({ shape: A, position: q0 }), type: 'partial-attribute' },
-        { symbol: sym({ shape: C, position: q1 }), type: 'partial-attribute' },
       ],
     }
   },
@@ -382,6 +455,7 @@ const countDecreasePlusShapeAlt: ReasoningTemplate = {
   id: 'count-decrease-plus-shape-alt',
   reasoningType: 'compound',
   difficultyLevel: 3,
+  ruleExplanation: '모양은 번갈아 바뀌고, 개수는 하나씩 줄어들어요.',
   generate: () => {
     const [A, B] = shuffledShapes()
     const start = randomInt(4, 7)
@@ -399,15 +473,20 @@ const countDecreasePlusShapeAlt: ReasoningTemplate = {
 
 // ---------------------------------------------------------------------------
 // Level 4 — Compound Rule. Two attributes change together, at least one via
-// a Level-2-tier sub-rule (a longer cycle or an uneven step) rather than a
-// simple 2-step alternation — genuinely harder to fully verify by eye,
-// while every sub-rule reuses a structure already exercised earlier.
+// a Level-2-tier sub-rule (a longer cycle or a second independent cycle)
+// rather than a simple 2-step alternation — genuinely harder to fully verify
+// by eye, while every sub-rule reuses a structure already proven safe
+// (fully evidenced, non-ambiguous) earlier. MVP scope: templates that stayed
+// structurally ambiguous even after a fix attempt (position advancing by
+// arithmetic steps in a 4-slot space) were replaced with an equally-compound
+// but provable alternative rather than shipped as "hard but unfair".
 // ---------------------------------------------------------------------------
 
 const shapeCycle3PlusCountToggle: ReasoningTemplate = {
   id: 'shape-cycle3-plus-count-toggle',
   reasoningType: 'compound',
   difficultyLevel: 4,
+  ruleExplanation: '모양은 세 가지가 순서대로 돌아가고, 개수는 두 값을 번갈아요.',
   generate: () => {
     const [A, B, C] = shuffledShapes()
     const [c0, c1] = pickTwoDistinctCounts(2, 6)
@@ -423,59 +502,84 @@ const shapeCycle3PlusCountToggle: ReasoningTemplate = {
   },
 }
 
-const positionTwoStepPlusRotationToggle: ReasoningTemplate = {
-  id: 'position-two-step-plus-rotation-toggle',
+/**
+ * Revised (was structurally ambiguous): the original position "two-step"
+ * (advance by +1, then +2, mod 4) aliased with a simple period-3 position
+ * cycle — both readings fit the same shown cells, with no sequence length
+ * that disambiguates them (the mod-4 arithmetic makes them coincide exactly
+ * where the proof cell would go). Replaced the position sub-rule with the
+ * same provable period-3 cycle used elsewhere, kept alongside the rotation
+ * toggle.
+ */
+const positionCyclePlusRotationToggle: ReasoningTemplate = {
+  id: 'position-cycle-plus-rotation-toggle',
   reasoningType: 'compound',
   difficultyLevel: 4,
+  ruleExplanation: '위치는 세 곳을 돌아가며 반복되고, 회전은 두 각도를 번갈아요.',
   generate: () => {
     const [a, b] = shuffled(ANGLE_POOL).slice(0, 2) as [0 | 90 | 180 | 270, 0 | 90 | 180 | 270]
-    const p0 = randomInt(0, 3) as 0 | 1 | 2 | 3
-    const p1 = (((p0 + 1) % 4) as 0 | 1 | 2 | 3)
-    const p2 = (((p1 + 2) % 4) as 0 | 1 | 2 | 3)
-    const p3 = (((p2 + 1) % 4) as 0 | 1 | 2 | 3)
+    const [p0, p1, p2] = shuffled([0, 1, 2, 3]).slice(0, 3) as [0 | 1 | 2 | 3, 0 | 1 | 2 | 3, 0 | 1 | 2 | 3]
     return {
       sequence: [
         sym({ shape: 'triangle', position: p0, rotationDeg: a }),
         sym({ shape: 'triangle', position: p1, rotationDeg: b }),
         sym({ shape: 'triangle', position: p2, rotationDeg: a }),
+        sym({ shape: 'triangle', position: p0, rotationDeg: b }),
       ],
-      correctAnswer: sym({ shape: 'triangle', position: p3, rotationDeg: b }),
+      correctAnswer: sym({ shape: 'triangle', position: p1, rotationDeg: a }),
       distractors: [
-        { symbol: sym({ shape: 'triangle', position: p2, rotationDeg: a }), type: 'repeat-previous' },
-        { symbol: sym({ shape: 'triangle', position: p3, rotationDeg: a }), type: 'partial-attribute' },
-        { symbol: sym({ shape: 'triangle', position: p2, rotationDeg: b }), type: 'partial-attribute' },
+        { symbol: sym({ shape: 'triangle', position: p0, rotationDeg: b }), type: 'repeat-previous' },
+        { symbol: sym({ shape: 'triangle', position: p0, rotationDeg: a }), type: 'partial-attribute' },
+        { symbol: sym({ shape: 'triangle', position: p1, rotationDeg: b }), type: 'partial-attribute' },
       ],
     }
   },
 }
 
-const countAltIncrementPlusShapeCycle3: ReasoningTemplate = {
-  id: 'count-alt-increment-plus-shape-cycle3',
+/**
+ * Revised (was doubly ambiguous): the original combined an unproven shape
+ * cycle ("A B C" with no shown repeat) with an unproven alternating count
+ * step (only 2 diffs shown). Simplified to a plain +1-per-step count (already
+ * proven unambiguous at Level 1) paired with a provable shape cycle (proven
+ * via a 4th cell repeating the 1st) — still a genuine 2-attribute compound,
+ * just without stacking two separately-unprovable rules on top of each other.
+ */
+const shapeCycle3PlusCountIncrease: ReasoningTemplate = {
+  id: 'shape-cycle3-plus-count-increase',
   reasoningType: 'compound',
   difficultyLevel: 4,
+  ruleExplanation: '모양은 세 가지가 순서대로 돌아가고, 개수는 한 단계마다 1개씩 늘어나요.',
   generate: () => {
     const [A, B, C] = shuffledShapes()
     const start = randomInt(1, 3)
-    const v0 = start
-    const v1 = v0 + 1
-    const v2 = v1 + 2
-    const v3 = v2 + 1
     return {
-      sequence: [sym({ shape: A, count: v0 }), sym({ shape: B, count: v1 }), sym({ shape: C, count: v2 })],
-      correctAnswer: sym({ shape: A, count: v3 }),
+      sequence: [
+        sym({ shape: A, count: start }),
+        sym({ shape: B, count: start + 1 }),
+        sym({ shape: C, count: start + 2 }),
+        sym({ shape: A, count: start + 3 }),
+      ],
+      correctAnswer: sym({ shape: B, count: start + 4 }),
       distractors: [
-        { symbol: sym({ shape: C, count: v2 }), type: 'repeat-previous' },
-        { symbol: sym({ shape: A, count: v2 }), type: 'partial-attribute' },
-        { symbol: sym({ shape: C, count: v3 }), type: 'partial-attribute' },
+        { symbol: sym({ shape: A, count: start + 3 }), type: 'repeat-previous' },
+        { symbol: sym({ shape: B, count: start + 3 }), type: 'partial-attribute' },
+        { symbol: sym({ shape: A, count: start + 4 }), type: 'partial-attribute' },
       ],
     }
   },
 }
 
+/**
+ * Revised (was ambiguous): the original rotation cycle ("a b c" with no
+ * shown repeat) never proved it loops back to `a`. Extended to 4 known
+ * cells so the rotation cycle's return to `a` is directly shown, alongside
+ * one more confirming step of the count toggle.
+ */
 const rotationCycle3PlusCountToggle: ReasoningTemplate = {
   id: 'rotation-cycle3-plus-count-toggle',
   reasoningType: 'compound',
   difficultyLevel: 4,
+  ruleExplanation: '회전은 세 각도가 순서대로 돌아가고, 개수는 두 값을 번갈아요.',
   generate: () => {
     const [a, b, c] = shuffled(ANGLE_POOL).slice(0, 3) as [0 | 90 | 180 | 270, 0 | 90 | 180 | 270, 0 | 90 | 180 | 270]
     const [x, y] = pickTwoDistinctCounts(2, 6)
@@ -484,34 +588,47 @@ const rotationCycle3PlusCountToggle: ReasoningTemplate = {
         sym({ shape: 'triangle', rotationDeg: a, count: x }),
         sym({ shape: 'triangle', rotationDeg: b, count: y }),
         sym({ shape: 'triangle', rotationDeg: c, count: x }),
+        sym({ shape: 'triangle', rotationDeg: a, count: y }),
       ],
-      correctAnswer: sym({ shape: 'triangle', rotationDeg: a, count: y }),
+      correctAnswer: sym({ shape: 'triangle', rotationDeg: b, count: x }),
       distractors: [
-        { symbol: sym({ shape: 'triangle', rotationDeg: c, count: x }), type: 'repeat-previous' },
+        { symbol: sym({ shape: 'triangle', rotationDeg: a, count: y }), type: 'repeat-previous' },
+        { symbol: sym({ shape: 'triangle', rotationDeg: b, count: y }), type: 'partial-attribute' },
         { symbol: sym({ shape: 'triangle', rotationDeg: a, count: x }), type: 'partial-attribute' },
-        { symbol: sym({ shape: 'triangle', rotationDeg: c, count: y }), type: 'partial-attribute' },
       ],
     }
   },
 }
 
-const shapeAltPlusPositionTwoStep: ReasoningTemplate = {
-  id: 'shape-alt-plus-position-two-step',
+/**
+ * Revised (was structurally ambiguous, same mod-4 aliasing issue as
+ * position-cycle-plus-rotation-toggle above): replaced the position
+ * "two-step" sub-rule with the provable period-3 cycle, now paired with a
+ * count toggle instead of shape alternation (position-cycle-plus-shape-alt
+ * already covers that pairing at Level 3, so this stays a distinct puzzle
+ * rather than a reskin of it).
+ */
+const positionCyclePlusCountToggle: ReasoningTemplate = {
+  id: 'position-cycle-plus-count-toggle',
   reasoningType: 'compound',
   difficultyLevel: 4,
+  ruleExplanation: '위치는 세 곳을 돌아가며 반복되고, 개수는 두 값을 번갈아요.',
   generate: () => {
-    const [A, B] = shuffledShapes()
-    const p0 = randomInt(0, 3) as 0 | 1 | 2 | 3
-    const p1 = (((p0 + 1) % 4) as 0 | 1 | 2 | 3)
-    const p2 = (((p1 + 2) % 4) as 0 | 1 | 2 | 3)
-    const p3 = (((p2 + 1) % 4) as 0 | 1 | 2 | 3)
+    const shape = pickOneShape()
+    const [p0, p1, p2] = shuffled([0, 1, 2, 3]).slice(0, 3) as [0 | 1 | 2 | 3, 0 | 1 | 2 | 3, 0 | 1 | 2 | 3]
+    const [c0, c1] = pickTwoDistinctCounts(2, 6)
     return {
-      sequence: [sym({ shape: A, position: p0 }), sym({ shape: B, position: p1 }), sym({ shape: A, position: p2 })],
-      correctAnswer: sym({ shape: B, position: p3 }),
+      sequence: [
+        sym({ shape, position: p0, count: c0 }),
+        sym({ shape, position: p1, count: c1 }),
+        sym({ shape, position: p2, count: c0 }),
+        sym({ shape, position: p0, count: c1 }),
+      ],
+      correctAnswer: sym({ shape, position: p1, count: c0 }),
       distractors: [
-        { symbol: sym({ shape: A, position: p2 }), type: 'repeat-previous' },
-        { symbol: sym({ shape: B, position: p2 }), type: 'partial-attribute' },
-        { symbol: sym({ shape: A, position: p3 }), type: 'partial-attribute' },
+        { symbol: sym({ shape, position: p0, count: c1 }), type: 'repeat-previous' },
+        { symbol: sym({ shape, position: p0, count: c0 }), type: 'partial-attribute' },
+        { symbol: sym({ shape, position: p1, count: c1 }), type: 'partial-attribute' },
       ],
     }
   },
@@ -526,7 +643,7 @@ export const REASONING_TEMPLATES: ReasoningTemplate[] = [
   countToggle2,
   shapeCycleAbbc,
   countAlternatingIncrement,
-  positionTwoStep,
+  positionCycle4,
   rotationToggle2,
   shapeCycle3Period,
   shapeAltPlusCountIncrease,
@@ -535,10 +652,10 @@ export const REASONING_TEMPLATES: ReasoningTemplate[] = [
   shapeCycle3PlusPositionToggle,
   countDecreasePlusShapeAlt,
   shapeCycle3PlusCountToggle,
-  positionTwoStepPlusRotationToggle,
-  countAltIncrementPlusShapeCycle3,
+  positionCyclePlusRotationToggle,
+  shapeCycle3PlusCountIncrease,
   rotationCycle3PlusCountToggle,
-  shapeAltPlusPositionTwoStep,
+  positionCyclePlusCountToggle,
 ]
 
 export function templatesForLevel(level: number): ReasoningTemplate[] {

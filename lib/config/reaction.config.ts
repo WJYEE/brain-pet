@@ -2,7 +2,7 @@
 export const REACTION_GAME_VERSION = 'reaction_v1'
 
 export const REACTION_PRACTICE_TRIALS = 1
-export const REACTION_REAL_TRIALS = 5
+export const REACTION_REAL_TRIALS = 4
 
 export const REACTION_DELAY_MS_MIN = 1500
 export const REACTION_DELAY_MS_MAX = 4000

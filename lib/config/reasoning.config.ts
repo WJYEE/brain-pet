@@ -2,8 +2,21 @@
 export const REASONING_GAME_VERSION = 'reasoning_v1'
 
 export const REASONING_LEVELS = [1, 2, 3, 4] as const
-export const REASONING_QUESTIONS_PER_LEVEL = 2
-export const REASONING_REAL_QUESTIONS = REASONING_LEVELS.length * REASONING_QUESTIONS_PER_LEVEL
+
+/**
+ * Real question count per Level — deliberately uneven rather than the
+ * original uniform 2/2/2/2 (8 total), for the First Play length reduction.
+ * Level 3 (not Level 4) gets the extra 2nd question: Level 4's Compound
+ * Rule templates are the ones most likely to make a new player feel "왜 이게
+ * 정답이지?" even after the earlier ambiguity-fix pass, so weighting toward
+ * Level 3 (2-attribute, still easily justifiable) keeps the shortened
+ * session from front-loading dropout risk onto its last question.
+ */
+export const REASONING_QUESTIONS_PER_LEVEL: Record<number, number> = { 1: 1, 2: 1, 3: 2, 4: 1 }
+export const REASONING_REAL_QUESTIONS = REASONING_LEVELS.reduce(
+  (sum, level) => sum + REASONING_QUESTIONS_PER_LEVEL[level],
+  0,
+)
 
 export const REASONING_OPTION_COUNT = 4
 
@@ -31,8 +44,14 @@ export const REASONING_DIFFICULTY_WEIGHTS: Record<number, number> = {
   4: 2.0,
 }
 
-/** How long the per-question correct/wrong/timeout feedback (with the correct-answer highlight) stays up before advancing. */
-export const REASONING_FEEDBACK_MS = 800
+/**
+ * How long the per-question correct/wrong/timeout feedback (with the
+ * correct-answer highlight and the 1-line Rule Explanation) stays up before
+ * advancing. Raised from 800ms so there's actually time to read the
+ * Explanation (~1-1.5s), while staying short enough that the real questions
+ * don't make the whole session feel like it's dragging.
+ */
+export const REASONING_FEEDBACK_MS = 1400
 /** How long the Tutorial → Tutorial / Tutorial → Real transition message stays up. */
 export const REASONING_TUTORIAL_TRANSITION_MS = 1100
 
