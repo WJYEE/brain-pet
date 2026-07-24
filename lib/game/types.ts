@@ -231,14 +231,73 @@ export interface JudgmentGameResult extends BaseGameResult {
   rawSummary: JudgmentRawSummary
 }
 
+export type SpatialRotationAngle = 0 | 90 | 180 | 270
+
+/** Why a wrong option was offered — lets Mirror confusion be analyzed separately from generic misses. */
+export type SpatialDistractorType = 'mirror' | 'similar' | 'unrelated'
+
+/** One of the 4 candidate cards shown for a question — kept per-trial so a specific question can be reproduced/audited later. */
+export interface SpatialOptionRecord {
+  shapeId: string
+  rotationAngle: SpatialRotationAngle
+  isMirrored: boolean
+  isCorrect: boolean
+  /** Null exactly when isCorrect is true (the correct option isn't "a distractor"). */
+  distractorType: SpatialDistractorType | null
+}
+
+export interface SpatialTrial {
+  trialIndex: number
+  difficultyLevel: number
+  /** The base shape identity used as the reference for this question. */
+  shapeId: string
+  /** The CORRECT option's rotation relative to the reference (GAME_SPEC baseline field) — never 0 (see spatial-problems.ts). */
+  rotationAngle: SpatialRotationAngle
+  /** True when one of this question's 3 distractors was a Mirror of the reference shape (Level 3+). */
+  mirrorIncluded: boolean
+  optionCount: number
+  /** Full composition of all 4 options, for reproducing/auditing a specific question later. */
+  options: SpatialOptionRecord[]
+  correctOptionIndex: number
+  selectedOptionIndex: number | null
+  isCorrect: boolean
+  responseTimeMs: number
+  timedOut: boolean
+  createdAt: string
+}
+
+export interface SpatialRawSummary {
+  totalQuestions: number
+  correctAnswers: number
+  overallAccuracy: number
+  /** Difficulty-weighted average accuracy (0-1). Primary Personal Best axis — GAME_SPEC §72. */
+  difficultyWeightedAccuracy: number
+
+  mirrorQuestions: number
+  mirrorCorrect: number
+  /** 0 when mirrorQuestions is 0 — see isBetterSpatialResult for how PB comparison guards against this degenerate case. */
+  mirrorAccuracy: number
+
+  averageResponseTimeMs: number
+  timeoutCount: number
+  /** Accuracy (0-1) per difficultyLevel — lets Level-by-Level performance be analyzed later. */
+  accuracyByDifficulty: Record<number, number>
+}
+
+export interface SpatialGameResult extends BaseGameResult {
+  gameId: 'spatial'
+  trials: SpatialTrial[]
+  rawSummary: SpatialRawSummary
+}
+
 /**
- * Temporary shape for the stats without real game logic yet (spatial/
- * reasoning). Mirrors the PHASE 1 mock generator's output. Replace with a
- * dedicated *GameResult type per game as each one ships, the same way
- * Reaction, Memory, Focus, and Judgment just were promoted out of this shape.
+ * Temporary shape for the stats without real game logic yet (reasoning).
+ * Mirrors the PHASE 1 mock generator's output. Replace with a dedicated
+ * *GameResult type per game as each one ships, the same way Reaction,
+ * Memory, Focus, Judgment, and Spatial just were promoted out of this shape.
  */
 export interface PlaceholderGameResult extends BaseGameResult {
-  gameId: Exclude<GameId, 'reaction' | 'memory' | 'focus' | 'judgment'>
+  gameId: Exclude<GameId, 'reaction' | 'memory' | 'focus' | 'judgment' | 'spatial'>
 }
 
 export type GameResult =
@@ -246,6 +305,7 @@ export type GameResult =
   | MemoryGameResult
   | FocusGameResult
   | JudgmentGameResult
+  | SpatialGameResult
   | PlaceholderGameResult
 
 export interface StatStatus {

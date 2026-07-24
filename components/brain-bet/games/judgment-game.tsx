@@ -10,7 +10,11 @@ import { JudgmentSymbolView } from '@/components/brain-bet/games/judgment-symbol
 import { STATS } from '@/lib/brain-bet'
 import {
   JUDGMENT_BLOCK_EXIT_MS,
+  JUDGMENT_COMBO_BONUS_FEEDBACK_MS,
+  JUDGMENT_COMBO_BONUS_INTERVAL,
+  JUDGMENT_COMBO_BONUS_TIME_MS,
   JUDGMENT_GAME_DURATION_MS,
+  JUDGMENT_MAX_COMBO_TIME_BONUSES,
   JUDGMENT_QUEUE_PREVIEW_COUNT,
   JUDGMENT_RULE_SWITCH_OVERLAY_MS,
   JUDGMENT_SEGMENT_LENGTH,
@@ -73,6 +77,11 @@ interface ExitingBlock {
   ruleId: JudgmentRuleId
   choiceCount: 2 | 3
   outcome: 'correct' | 'wrong'
+}
+
+interface ComboBonusFeedback {
+  key: number
+  milestone: number
 }
 
 interface JudgmentGameProps {
@@ -222,6 +231,7 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
   const [combo, setCombo] = useState(0)
   const [maxCombo, setMaxCombo] = useState(0)
   const [timeLeftMs, setTimeLeftMs] = useState(JUDGMENT_GAME_DURATION_MS)
+  const [comboBonusFeedback, setComboBonusFeedback] = useState<ComboBonusFeedback | null>(null)
 
   const nextKeyRef = useRef(0)
   const nextSegmentToGenerateRef = useRef(0)
@@ -230,6 +240,9 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
   const trialsRef = useRef<JudgmentTrial[]>([])
   const blockShownAtRef = useRef(0)
   const endAtRef = useRef(0)
+  /** Combo values (10, 20, ...) that have already granted a Bonus this session — a Set (not a counter) so resetting Combo back to a milestone already reached never re-grants it. */
+  const grantedComboMilestonesRef = useRef<Set<number>>(new Set())
+  const comboBonusKeyRef = useRef(0)
   const timerIntervalRef = useRef<number | null>(null)
   const timeoutsRef = useRef<number[]>([])
 
@@ -293,6 +306,8 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
     setTrials([])
     setCombo(0)
     setMaxCombo(0)
+    grantedComboMilestonesRef.current = new Set()
+    setComboBonusFeedback(null)
     setExitingBlock(null)
     setIsRuleChanging(false)
     setQueue(fillQueue([], nextKeyRef, nextSegmentToGenerateRef, previousMappingRef, lastMappingByRuleRef))
@@ -345,11 +360,36 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
       }
       trialsRef.current = [...trialsRef.current, trial]
       setTrials(trialsRef.current)
-      setCombo((c) => {
-        const next = isCorrect ? c + 1 : 0
-        setMaxCombo((m) => Math.max(m, next))
-        return next
-      })
+      const nextCombo = isCorrect ? combo + 1 : 0
+      setCombo(nextCombo)
+      setMaxCombo((m) => Math.max(m, nextCombo))
+
+      // Combo Bonus Time — a gameplay reward only (never a Score input, see
+      // judgment.config.ts). Each milestone (10, 20, ...) can grant at most
+      // once per session, tracked by value rather than by count, so resetting
+      // Combo and climbing back to a milestone already reached never
+      // re-grants it. endAtRef stays the single source of truth for the
+      // Timer — extending it here is all that's needed for the existing
+      // interval tick to pick up the new remaining time correctly next tick;
+      // setTimeLeftMs is also nudged immediately so the Gauge doesn't wait
+      // up to 100ms to visibly reflect the bonus.
+      if (
+        isCorrect &&
+        nextCombo > 0 &&
+        nextCombo % JUDGMENT_COMBO_BONUS_INTERVAL === 0 &&
+        !grantedComboMilestonesRef.current.has(nextCombo) &&
+        grantedComboMilestonesRef.current.size < JUDGMENT_MAX_COMBO_TIME_BONUSES
+      ) {
+        grantedComboMilestonesRef.current.add(nextCombo)
+        endAtRef.current += JUDGMENT_COMBO_BONUS_TIME_MS
+        setTimeLeftMs((t) => t + JUDGMENT_COMBO_BONUS_TIME_MS)
+        const feedbackKey = comboBonusKeyRef.current++
+        setComboBonusFeedback({ key: feedbackKey, milestone: nextCombo })
+        schedule(
+          () => setComboBonusFeedback((f) => (f && f.key === feedbackKey ? null : f)),
+          JUDGMENT_COMBO_BONUS_FEEDBACK_MS,
+        )
+      }
     }
 
     const rest = queue.slice(1)
@@ -439,7 +479,7 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
             튜토리얼
           </span>
         ) : appStage === 'playing' || appStage === 'finished' ? (
-          <div className="flex flex-col items-end gap-1">
+          <div className="relative flex flex-col items-end gap-1">
             <div className="flex items-center gap-2">
               {maxCombo > 0 && combo >= 2 && (
                 <span className="font-display text-xs font-extrabold text-primary">COMBO ×{combo}</span>
@@ -452,6 +492,17 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
                 style={{ width: `${timePercent}%` }}
               />
             </div>
+
+            {/* Combo Bonus Time pop-up — absolutely positioned so it never
+                shifts the Timer/Gauge above it, never blocks Queue input. */}
+            {comboBonusFeedback && (
+              <div
+                key={comboBonusFeedback.key}
+                className="animate-pop-in pointer-events-none absolute right-0 top-full z-10 mt-1.5 whitespace-nowrap rounded-xl bg-primary px-3 py-1.5 text-center font-display text-xs font-extrabold text-primary-foreground toy-border"
+              >
+                {comboBonusFeedback.milestone} COMBO! +{JUDGMENT_COMBO_BONUS_TIME_MS / 1000}초
+              </div>
+            )}
           </div>
         ) : null}
       </div>

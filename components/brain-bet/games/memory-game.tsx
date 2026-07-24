@@ -37,7 +37,7 @@ interface MemoryGameProps {
   }) => void
 }
 
-const INSTRUCTION_TEXT = '검게 깜빡이는 타일의 위치를 기억해보세요.'
+const INSTRUCTION_TEXT = '분홍색으로 깜빡이는 타일의 위치를 기억해보세요.'
 
 /**
  * Real, interactive Memory ("Memory Tiles") game — GAME_SPEC §34-44.

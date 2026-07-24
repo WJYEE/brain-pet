@@ -31,6 +31,20 @@ export const JUDGMENT_RULE_SWITCH_OVERLAY_MS = 650
 /** How long the one-time "선택지가 하나 더 늘어났어요!" heads-up stays up — only at the 2-way → 3-way step (segment index 1 → 2). Not scored. */
 export const JUDGMENT_THIRD_OPTION_INTRO_MS = 900
 
+/**
+ * Combo Bonus Time — a pure gameplay reward (extends the Time Attack clock),
+ * never a Score input (Score/PB keep their existing Accuracy > Switch >
+ * Conflict priority untouched; more time just means more Blocks CAN be
+ * processed, which naturally shows up in processedBlocks/correctBlocks).
+ * Draft values, easy to retune after Beta data.
+ */
+export const JUDGMENT_COMBO_BONUS_INTERVAL = 10
+export const JUDGMENT_COMBO_BONUS_TIME_MS = 2_000
+/** Caps total session length growth from Combo Bonuses (2 grants = max +4s). */
+export const JUDGMENT_MAX_COMBO_TIME_BONUSES = 2
+/** How long the "10 COMBO! +2초" pop-up stays visible. */
+export const JUDGMENT_COMBO_BONUS_FEEDBACK_MS = 700
+
 /** Tutorial: fixed, easy, always-2-way Blocks — 3 per rule, discarded from scoring, no timer. */
 export const JUDGMENT_TUTORIAL_SEGMENT_LENGTH = 3
 export const JUDGMENT_TUTORIAL_SHAPE_STIMULI: JudgmentStimulus[] = [

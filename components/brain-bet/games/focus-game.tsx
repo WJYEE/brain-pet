@@ -19,15 +19,16 @@ import {
   FOCUS_TUTORIAL_ROUNDS,
   FOCUS_TUTORIAL_TRANSITION_MS,
 } from '@/lib/config/focus.config'
-import { generateFocusLayout, type FocusLayout } from '@/lib/game/focus-grid'
+import { buildFocusRound, type FocusRoundView } from '@/lib/game/focus-grid'
 import { selectNoTargetRoundIndices } from '@/lib/game/focus-rounds'
-import { FOCUS_TARGET_SYMBOL, generateDistractorSymbol, type FocusSymbolSpec } from '@/lib/game/focus-symbol'
+import { FOCUS_TARGET_SYMBOL } from '@/lib/game/focus-symbol'
 import type { FocusRawSummary, FocusRoundTrial } from '@/lib/game/types'
 import { calculateFocusScore, summarizeFocusRounds } from '@/lib/scoring/focus'
 import { cn } from '@/lib/utils'
 
 type Stage = 'intro' | 'playing' | 'feedback'
 type Round = 'tutorial-target' | 'tutorial-none' | 'real'
+type RoundOutcome = { kind: 'cell'; cellId: string } | { kind: 'none' } | { kind: 'timeout' }
 
 interface FocusGameProps {
   index: number
@@ -43,6 +44,14 @@ interface LastOutcome {
   selectedCellId: string | null
   selectedCorrectly: boolean
   timedOut: boolean
+}
+
+const EMPTY_ROUND_VIEW: FocusRoundView = {
+  gridSize: FOCUS_TUTORIAL_GRID_SIZE,
+  targetPresent: true,
+  occupiedCells: [],
+  targetCellId: null,
+  symbols: {},
 }
 
 /**
@@ -75,6 +84,15 @@ export function computeFocusFeedbackMessage(
  * time limit on real rounds keeps searching from being unboundedly easy.
  * Tutorial (2, discarded — one target-present, one no-target) then
  * FOCUS_REAL_ROUNDS fixed-difficulty rounds.
+ *
+ * Click / "없음" / Timeout all resolve through the single `resolveRound`
+ * below, which reads the round's context from refs (not from React state
+ * closures) — refs are always current the instant a new round begins,
+ * whereas a value captured by a `setTimeout` callback's closure can
+ * otherwise reflect the round that was active when that timeout was
+ * scheduled rather than whichever round the timer actually belongs to by
+ * the time it fires. `hasResolvedRef` additionally guarantees a round is
+ * resolved exactly once even if a timeout and a click land back-to-back.
  */
 export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
   const stat = STATS.focus
@@ -82,17 +100,23 @@ export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
   const [stage, setStage] = useState<Stage>('intro')
   const [round, setRound] = useState<Round>('tutorial-target')
   const [realRoundIndex, setRealRoundIndex] = useState(0)
-  const [noTargetRoundIndices, setNoTargetRoundIndices] = useState<Set<number>>(new Set())
-  const [gridSize, setGridSize] = useState(FOCUS_TUTORIAL_GRID_SIZE)
-  const [targetPresent, setTargetPresent] = useState(true)
-  const [layout, setLayout] = useState<FocusLayout>({ occupiedCells: [], targetCellId: null })
-  const [symbols, setSymbols] = useState<Record<string, FocusSymbolSpec>>({})
+  const [roundView, setRoundView] = useState<FocusRoundView>(EMPTY_ROUND_VIEW)
   const [message, setMessage] = useState('')
-  const [rounds, setRounds] = useState<FocusRoundTrial[]>([])
   const [timeLimitMs, setTimeLimitMs] = useState<number | null>(null)
   const [remainingMs, setRemainingMs] = useState(0)
   const [roundStartedAt, setRoundStartedAt] = useState(0)
   const [lastOutcome, setLastOutcome] = useState<LastOutcome | null>(null)
+
+  // Source of truth for anything resolveRound needs — always current,
+  // updated synchronously in beginRound, never subject to closure staleness.
+  const roundRef = useRef<Round>('tutorial-target')
+  const realRoundIndexRef = useRef(0)
+  const roundViewRef = useRef<FocusRoundView>(EMPTY_ROUND_VIEW)
+  const timeLimitMsRef = useRef<number | null>(null)
+  const roundStartedAtRef = useRef(0)
+  const noTargetRoundIndicesRef = useRef<Set<number>>(new Set())
+  const roundsRef = useRef<FocusRoundTrial[]>([])
+  const hasResolvedRef = useRef(true) // true until a round is actually begun
 
   const timeoutsRef = useRef<number[]>([])
   const schedule = (fn: () => void, ms: number) => {
@@ -115,16 +139,71 @@ export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
     return () => window.clearInterval(interval)
   }, [stage, timeLimitMs, roundStartedAt])
 
-  const finishRound = (selectedCellId: string | null, selectedNone: boolean, timedOut: boolean) => {
+  const beginRound = (nextRound: Round, nextRealIndex: number) => {
     clearScheduled()
-    const responseTimeMs = timedOut ? (timeLimitMs ?? 0) : Math.round(performance.now() - roundStartedAt)
+    hasResolvedRef.current = false
+
+    const isReal = nextRound === 'real'
+    const difficultyNow = isReal ? FOCUS_DIFFICULTY_SEQUENCE[nextRealIndex] : FOCUS_TUTORIAL_DIFFICULTY
+    const gridSizeNow = isReal ? FOCUS_REAL_GRID_SIZE : FOCUS_TUTORIAL_GRID_SIZE
+    const targetPresentNow =
+      nextRound === 'tutorial-target'
+        ? true
+        : nextRound === 'tutorial-none'
+          ? false
+          : !noTargetRoundIndicesRef.current.has(nextRealIndex)
+    const distractorCountNow = difficultyNow.totalPlacementCount - (targetPresentNow ? 1 : 0)
+
+    // Layout + symbols are built and validated together as one atomic value —
+    // they can never end up describing two different rounds.
+    const viewNow = buildFocusRound(gridSizeNow, distractorCountNow, targetPresentNow, difficultyNow.similarityLevel)
+
+    const limit = isReal ? FOCUS_ROUND_TIME_LIMIT_MS[nextRealIndex] : null
+    const startedAt = performance.now()
+
+    roundRef.current = nextRound
+    realRoundIndexRef.current = nextRealIndex
+    roundViewRef.current = viewNow
+    timeLimitMsRef.current = limit
+    roundStartedAtRef.current = startedAt
+
+    setRound(nextRound)
+    setRealRoundIndex(nextRealIndex)
+    setRoundView(viewNow)
+    setLastOutcome(null)
+    setMessage('찾는 모양을 클릭하거나, 안 보이면 "없음"을 눌러주세요.')
+    setStage('playing')
+    setTimeLimitMs(limit)
+    setRemainingMs(limit ?? 0)
+    setRoundStartedAt(startedAt)
+
+    if (limit != null) {
+      schedule(() => resolveRound({ kind: 'timeout' }), limit)
+    }
+  }
+
+  const resolveRound = (outcome: RoundOutcome) => {
+    // Guards against a Timer callback and a user click landing at the same
+    // moment — whichever gets here first wins, the other is a no-op.
+    if (hasResolvedRef.current) return
+    hasResolvedRef.current = true
+    clearScheduled()
+
+    const view = roundViewRef.current
+    const targetPresent = view.targetPresent
+    const timedOut = outcome.kind === 'timeout'
+    const selectedCellId = outcome.kind === 'cell' ? outcome.cellId : null
+    const selectedNone = outcome.kind === 'none'
+    const responseTimeMs = timedOut
+      ? (timeLimitMsRef.current ?? 0)
+      : Math.round(performance.now() - roundStartedAtRef.current)
 
     let selectedCorrectly = false
     let falseClick = false
     let missedTarget = false
 
     if (targetPresent) {
-      if (!timedOut && selectedCellId === layout.targetCellId) {
+      if (!timedOut && selectedCellId === view.targetCellId) {
         selectedCorrectly = true
       } else if (!timedOut && selectedCellId != null) {
         falseClick = true
@@ -144,36 +223,33 @@ export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
     setLastOutcome({ selectedCellId, selectedCorrectly, timedOut })
     setMessage(computeFocusFeedbackMessage(targetPresent, selectedCorrectly, timedOut))
 
-    if (round === 'tutorial-target') {
+    const currentRound = roundRef.current
+
+    if (currentRound === 'tutorial-target') {
       schedule(() => {
         setMessage('이번엔 Target이 없는 경우도 연습해볼게요.')
-        schedule(() => {
-          setRound('tutorial-none')
-          beginRound('tutorial-none', 0)
-        }, FOCUS_TUTORIAL_TRANSITION_MS)
+        schedule(() => beginRound('tutorial-none', 0), FOCUS_TUTORIAL_TRANSITION_MS)
       }, FOCUS_ROUND_FEEDBACK_MS)
       return
     }
 
-    if (round === 'tutorial-none') {
+    if (currentRound === 'tutorial-none') {
       schedule(() => {
         setMessage('튜토리얼 완료! 이제 실전을 시작할게요.')
-        schedule(() => {
-          setRound('real')
-          beginRound('real', 0)
-        }, FOCUS_TUTORIAL_TRANSITION_MS)
+        schedule(() => beginRound('real', 0), FOCUS_TUTORIAL_TRANSITION_MS)
       }, FOCUS_ROUND_FEEDBACK_MS)
       return
     }
 
-    const difficultyNow = FOCUS_DIFFICULTY_SEQUENCE[realRoundIndex]
+    const realRoundIndexNow = realRoundIndexRef.current
+    const difficultyNow = FOCUS_DIFFICULTY_SEQUENCE[realRoundIndexNow]
     const trial: FocusRoundTrial = {
-      roundIndex: realRoundIndex,
+      roundIndex: realRoundIndexNow,
       difficultyLevel: difficultyNow.level,
       distractorCount: difficultyNow.totalPlacementCount - (targetPresent ? 1 : 0),
       similarityLevel: difficultyNow.similarityLevel,
       targetPresent,
-      targetCellId: layout.targetCellId,
+      targetCellId: view.targetCellId,
       selectedCellId,
       selectedNone,
       selectedCorrectly,
@@ -183,8 +259,8 @@ export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
       responseTimeMs,
       createdAt: new Date().toISOString(),
     }
-    const updated = [...rounds, trial]
-    setRounds(updated)
+    const updated = [...roundsRef.current, trial]
+    roundsRef.current = updated
 
     if (updated.length >= FOCUS_REAL_ROUNDS) {
       const rawSummary = summarizeFocusRounds(updated)
@@ -196,80 +272,35 @@ export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
     }
 
     schedule(() => {
-      const nextIndex = realRoundIndex + 1
-      setRealRoundIndex(nextIndex)
-      beginRound('real', nextIndex)
+      beginRound('real', realRoundIndexNow + 1)
     }, FOCUS_ROUND_FEEDBACK_MS)
-  }
-
-  const beginRound = (nextRound: Round, nextRealIndex: number) => {
-    clearScheduled()
-    const isReal = nextRound === 'real'
-    const difficultyNow = isReal ? FOCUS_DIFFICULTY_SEQUENCE[nextRealIndex] : FOCUS_TUTORIAL_DIFFICULTY
-    const gridSizeNow = isReal ? FOCUS_REAL_GRID_SIZE : FOCUS_TUTORIAL_GRID_SIZE
-    const targetPresentNow =
-      nextRound === 'tutorial-target'
-        ? true
-        : nextRound === 'tutorial-none'
-          ? false
-          : !noTargetRoundIndices.has(nextRealIndex)
-    const distractorCountNow = difficultyNow.totalPlacementCount - (targetPresentNow ? 1 : 0)
-
-    const layoutNow = generateFocusLayout(gridSizeNow, distractorCountNow, targetPresentNow)
-    const symbolMap: Record<string, FocusSymbolSpec> = {}
-    layoutNow.occupiedCells.forEach((cellId) => {
-      symbolMap[cellId] =
-        cellId === layoutNow.targetCellId
-          ? FOCUS_TARGET_SYMBOL
-          : generateDistractorSymbol(difficultyNow.similarityLevel)
-    })
-
-    setGridSize(gridSizeNow)
-    setTargetPresent(targetPresentNow)
-    setLayout(layoutNow)
-    setSymbols(symbolMap)
-    setLastOutcome(null)
-    setMessage('찾는 모양을 클릭하거나, 안 보이면 "없음"을 눌러주세요.')
-    setStage('playing')
-
-    const limit = isReal ? FOCUS_ROUND_TIME_LIMIT_MS[nextRealIndex] : null
-    setTimeLimitMs(limit)
-    setRemainingMs(limit ?? 0)
-    const startedAt = performance.now()
-    setRoundStartedAt(startedAt)
-
-    if (limit != null) {
-      schedule(() => finishRound(null, false, true), limit)
-    }
   }
 
   const startGame = () => {
     const picked = selectNoTargetRoundIndices(FOCUS_REAL_ROUNDS, FOCUS_NO_TARGET_ROUND_COUNT)
-    setNoTargetRoundIndices(picked)
-    setRound('tutorial-target')
-    setRealRoundIndex(0)
-    setRounds([])
+    noTargetRoundIndicesRef.current = picked
+    roundsRef.current = []
     beginRound('tutorial-target', 0)
   }
 
   const handleCellClick = (cellId: string) => {
-    if (stage !== 'playing' || !layout.occupiedCells.includes(cellId)) return
-    finishRound(cellId, false, false)
+    if (stage !== 'playing' || !roundView.occupiedCells.includes(cellId)) return
+    resolveRound({ kind: 'cell', cellId })
   }
 
   const handleNoneClick = () => {
     if (stage !== 'playing') return
-    finishRound(null, true, false)
+    resolveRound({ kind: 'none' })
   }
 
   const cellVisual = (cellId: string): 'idle' | 'occupied' | 'correct' | 'wrong' | 'reveal' => {
-    const isOccupied = layout.occupiedCells.includes(cellId)
+    const isOccupied = roundView.occupiedCells.includes(cellId)
     if (stage === 'feedback' && lastOutcome) {
       if (lastOutcome.selectedCellId === cellId && lastOutcome.selectedCorrectly) return 'correct'
       if (lastOutcome.selectedCellId === cellId && !lastOutcome.selectedCorrectly) return 'wrong'
       // Reveal the real target only when one actually existed and the user
       // didn't find it — never fabricate a target position for a no-target round.
-      if (targetPresent && !lastOutcome.selectedCorrectly && cellId === layout.targetCellId) return 'reveal'
+      if (roundView.targetPresent && !lastOutcome.selectedCorrectly && cellId === roundView.targetCellId) return 'reveal'
     }
     return isOccupied ? 'occupied' : 'idle'
   }
@@ -378,11 +409,11 @@ export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
               Tutorial or within Real — only Tutorial→Real changes it once. */}
           <div
             className={cn('mx-auto grid aspect-square w-full gap-1.5', gridMaxWidthClass)}
-            style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0,1fr))` }}
+            style={{ gridTemplateColumns: `repeat(${roundView.gridSize}, minmax(0,1fr))` }}
           >
-            {Array.from({ length: gridSize * gridSize }, (_, i) => String(i)).map((cellId) => {
+            {Array.from({ length: roundView.gridSize * roundView.gridSize }, (_, i) => String(i)).map((cellId) => {
               const visual = cellVisual(cellId)
-              const symbol = symbols[cellId]
+              const symbol = roundView.symbols[cellId]
               return (
                 <button
                   key={cellId}

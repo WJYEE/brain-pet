@@ -11,6 +11,7 @@ import {
   REACTION_DELAY_MS_MIN,
   REACTION_PRACTICE_TRIALS,
   REACTION_REAL_TRIALS,
+  REACTION_TRIAL_FEEDBACK_MS,
 } from '@/lib/config/reaction.config'
 import { calculateReactionScore, summarizeReactionTrials } from '@/lib/scoring/reaction'
 import type { ReactionRawSummary, ReactionTrial } from '@/lib/game/types'
@@ -35,6 +36,51 @@ function randomDelay() {
   )
 }
 
+type RecordFeedbackKind = 'first' | 'new-best' | 'behind' | 'tie'
+
+/**
+ * Per-Trial "did I just beat my own session record" feedback — deliberately
+ * separate from the Median-based, all-time Personal Best (StatStatus.current).
+ * `sessionFastestReactionMs` here means "fastest single valid Real Trial
+ * reaction seen so far THIS session", never persisted, never compared
+ * against history — purely a same-session micro-feedback signal.
+ */
+export interface RecordFeedback {
+  kind: RecordFeedbackKind
+  reactionMs: number
+  /** ms improved (new-best) or ms behind (behind) — 0 and unused for first/tie. */
+  deltaMs: number
+}
+
+export function buildRecordFeedback(reactionMs: number, sessionFastestReactionMs: number | null): RecordFeedback {
+  if (sessionFastestReactionMs === null) return { kind: 'first', reactionMs, deltaMs: 0 }
+  if (reactionMs < sessionFastestReactionMs) {
+    return { kind: 'new-best', reactionMs, deltaMs: sessionFastestReactionMs - reactionMs }
+  }
+  if (reactionMs > sessionFastestReactionMs) {
+    return { kind: 'behind', reactionMs, deltaMs: reactionMs - sessionFastestReactionMs }
+  }
+  return { kind: 'tie', reactionMs, deltaMs: 0 }
+}
+
+export function recordFeedbackHeadline(feedback: RecordFeedback): string {
+  switch (feedback.kind) {
+    case 'first':
+      return '첫 기록!'
+    case 'new-best':
+      return '✨최고 기록!✨'
+    case 'behind':
+      return `최고 기록까지 ${feedback.deltaMs}ms!`
+    case 'tie':
+      return '최고 기록과 같아요!'
+  }
+}
+
+export function recordFeedbackSubline(feedback: RecordFeedback): string {
+  if (feedback.kind === 'new-best') return `${feedback.deltaMs}ms 더 빨라졌어요`
+  return `${feedback.reactionMs}ms`
+}
+
 /**
  * Real, interactive Reaction ("Catch the Signal") game — GAME_SPEC §23-33.
  * Tutorial (1, discarded) then REACTION_REAL_TRIALS valid Real Trials; False
@@ -49,6 +95,9 @@ export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
   const [trials, setTrials] = useState<ReactionTrial[]>([])
   const [message, setMessage] = useState('신호가 나타나면 최대한 빠르게 탭하세요.')
   const [lastReactionMs, setLastReactionMs] = useState<number | null>(null)
+  /** Fastest valid Real Trial reaction seen so far this session — Tutorial never sets this, and it's never persisted or compared against the all-time Median Personal Best. */
+  const [sessionFastestReactionMs, setSessionFastestReactionMs] = useState<number | null>(null)
+  const [recordFeedback, setRecordFeedback] = useState<RecordFeedback | null>(null)
 
   const timeoutRef = useRef<number | null>(null)
   const targetShownAtRef = useRef(0)
@@ -80,6 +129,8 @@ export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
   const startGame = () => {
     setRound('practice')
     setTrials([])
+    setSessionFastestReactionMs(null)
+    setRecordFeedback(null)
     nextTrialIndexRef.current = 0
     scheduleAttempt()
   }
@@ -102,6 +153,8 @@ export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
         setTrials((t) => [...t, trial])
       }
       setLastReactionMs(null)
+      // False Start is never a valid reaction — it never participates in the Session-Best comparison.
+      setRecordFeedback(null)
       setMessage('앗, 너무 빨랐어요! 신호가 나타난 뒤 눌러주세요.')
       setStage('feedback')
       window.setTimeout(scheduleAttempt, 900)
@@ -113,7 +166,9 @@ export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
       setLastReactionMs(reactionMs)
 
       if (round === 'practice') {
-        // Tutorial result is discarded entirely — never scored (GAME_SPEC §19).
+        // Tutorial result is discarded entirely — never scored (GAME_SPEC §19)
+        // and never allowed to seed the Real session's Session-Best.
+        setRecordFeedback(null)
         setMessage('튜토리얼 완료! 실전 시작!')
         setStage('feedback')
         window.setTimeout(() => {
@@ -121,6 +176,16 @@ export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
           scheduleAttempt()
         }, 1100)
         return
+      }
+
+      // Session-Best micro-feedback: compares against "fastest single valid
+      // Real Trial reaction so far this session" only — a separate concept
+      // from the Median-based, all-time Personal Best (see StatStatus,
+      // untouched by this feature).
+      const feedback = buildRecordFeedback(reactionMs, sessionFastestReactionMs)
+      setRecordFeedback(feedback)
+      if (feedback.kind === 'first' || feedback.kind === 'new-best') {
+        setSessionFastestReactionMs(reactionMs)
       }
 
       const trial: ReactionTrial = {
@@ -144,9 +209,11 @@ export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
         return
       }
 
-      setMessage(`${reactionMs}ms! 다음 신호를 기다리세요.`)
+      // The ms figure is already shown by the Session-Best feedback above the
+      // icon — repeating it here would be redundant.
+      setMessage('다음 신호를 기다리세요.')
       setStage('feedback')
-      window.setTimeout(scheduleAttempt, 700)
+      window.setTimeout(scheduleAttempt, REACTION_TRIAL_FEEDBACK_MS)
     }
   }
 
@@ -170,7 +237,7 @@ export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
         <div className="flex items-center gap-3">
           <StatBadge stat={stat} size="md" />
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <p className="-translate-y-0.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
               {round === 'practice' ? 'TUTORIAL' : '실전 측정 중'}
             </p>
             <h1 className="font-display text-2xl font-extrabold leading-none text-foreground">
@@ -208,18 +275,41 @@ export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
           stage === 'target' ? 'bg-primary' : 'bg-card',
         )}
       >
-        <span
-          className={cn(
-            'grid h-24 w-24 place-items-center rounded-3xl toy-border toy-shadow text-[color:var(--ink)]',
-            stage === 'target' ? 'bg-accent' : 'bg-secondary',
+        {/* relative anchor for the floating Session-Best feedback — absolutely
+            positioned above the icon, so it never shifts the icon's own
+            layout position and never needs reserved flow height. */}
+        <div className="relative">
+          <span
+            className={cn(
+              'grid h-24 w-24 place-items-center rounded-3xl toy-border toy-shadow text-[color:var(--ink)]',
+              stage === 'target' ? 'bg-accent' : 'bg-secondary',
+            )}
+          >
+            {stage === 'target' ? (
+              <Zap size={48} strokeWidth={2.2} />
+            ) : (
+              <Hand size={48} strokeWidth={2.2} />
+            )}
+          </span>
+
+          {stage === 'feedback' && recordFeedback && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-full mb-3 flex justify-center">
+              <div className="animate-record-pop flex flex-col items-center gap-0.5 whitespace-nowrap">
+                <p
+                  className={cn(
+                    'font-display text-lg font-extrabold leading-tight',
+                    recordFeedback.kind === 'new-best' ? 'text-primary' : 'text-foreground',
+                  )}
+                >
+                  {recordFeedbackHeadline(recordFeedback)}
+                </p>
+                <p className="font-display text-base font-bold leading-tight text-foreground">
+                  {recordFeedbackSubline(recordFeedback)}
+                </p>
+              </div>
+            </div>
           )}
-        >
-          {stage === 'target' ? (
-            <Zap size={48} strokeWidth={2.2} />
-          ) : (
-            <Hand size={48} strokeWidth={2.2} />
-          )}
-        </span>
+        </div>
         <div className="max-w-sm">
           {stage === 'intro' ? (
             <>
