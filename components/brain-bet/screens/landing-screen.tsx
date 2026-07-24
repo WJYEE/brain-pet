@@ -70,7 +70,7 @@ export function LandingScreen({ onStart }: LandingScreenProps) {
           />
         </button>
         <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
-          <Clock size={15} strokeWidth={2.4} />약 7~10분
+          <Clock size={15} strokeWidth={2.4} />약 4~5분
         </span>
       </div>
 
