@@ -6,6 +6,7 @@ import { LandingScreen } from '@/components/brain-bet/screens/landing-screen'
 import { GameScreen } from '@/components/brain-bet/screens/game-screen'
 import { ReactionGame } from '@/components/brain-bet/games/reaction-game'
 import { MemoryGame } from '@/components/brain-bet/games/memory-game'
+import { FocusGame } from '@/components/brain-bet/games/focus-game'
 import { CompleteScreen } from '@/components/brain-bet/screens/complete-screen'
 import { FreePlayResultScreen } from '@/components/brain-bet/screens/free-play-result-screen'
 import { StatusScreen } from '@/components/brain-bet/screens/status-screen'
@@ -22,11 +23,15 @@ import { PLAY_ORDER, TOTAL_GAMES, getTopStat, type StatId } from '@/lib/brain-be
 import { RECOMMENDED_STAT_PLACEHOLDER } from '@/lib/room'
 import { REACTION_GAME_VERSION } from '@/lib/config/reaction.config'
 import { MEMORY_GAME_VERSION } from '@/lib/config/memory.config'
+import { FOCUS_GAME_VERSION } from '@/lib/config/focus.config'
 import { detectDevice } from '@/lib/game/device'
 import { generateSessionId } from '@/lib/game/id'
 import { buildPlaceholderResult } from '@/lib/game/placeholder-result'
 import { applyGameResult, emptyStatStatusMap } from '@/lib/game/stat-status'
 import type {
+  FocusGameResult,
+  FocusRawSummary,
+  FocusRoundTrial,
   GameResult,
   MemoryGameResult,
   MemoryRawSummary,
@@ -42,6 +47,7 @@ import {
   isBetterReactionResult,
 } from '@/lib/scoring/reaction'
 import { formatMemoryRawRecord, isBetterMemoryResult } from '@/lib/scoring/memory'
+import { formatFocusRawRecord, isBetterFocusResult } from '@/lib/scoring/focus'
 
 type Phase =
   | 'landing'
@@ -102,9 +108,9 @@ export function GameFlow() {
     }
   }
 
-  /** Completion path for the stats that are still Placeholder (focus/judgment/spatial/reasoning). */
+  /** Completion path for the stats that are still Placeholder (judgment/spatial/reasoning). */
   const finishPlaceholderRound = () => {
-    if (activeStatId === 'reaction' || activeStatId === 'memory') return // These have real completion handlers.
+    if (activeStatId === 'reaction' || activeStatId === 'memory' || activeStatId === 'focus') return // These have real completion handlers.
     const prevBest = statStatus[activeStatId].current
     const result = buildPlaceholderResult(activeStatId, flowMode, detectDevice(), prevBest)
     setStatStatus((map) => applyGameResult(activeStatId, map, result))
@@ -202,6 +208,50 @@ export function GameFlow() {
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
 
+  /** Completion path for the real Focus game. */
+  const onFocusComplete = ({
+    rounds,
+    rawSummary,
+    gameScore,
+  }: {
+    rounds: FocusRoundTrial[]
+    rawSummary: FocusRawSummary
+    gameScore: number
+  }) => {
+    // Safe: this app only ever stores a FocusGameResult under the 'focus' key.
+    const prevBest = statStatus.focus.current as FocusGameResult | null
+    const isPersonalBest = isBetterFocusResult(
+      { rawSummary },
+      prevBest ? { rawSummary: prevBest.rawSummary } : null,
+    )
+
+    const result: FocusGameResult = {
+      sessionId: generateSessionId(),
+      gameId: 'focus',
+      gameVersion: FOCUS_GAME_VERSION,
+      mode: flowMode,
+      playedAt: new Date().toISOString(),
+      device: detectDevice(),
+      gameScore,
+      raw: formatFocusRawRecord(rawSummary),
+      final: undefined,
+      isPersonalBest,
+      // Focus-specific anti-cheat isn't defined yet (GAME_SPEC has no Focus
+      // cheat criteria) — every completed attempt is valid for now.
+      isValidAttempt: true,
+      invalidReason: null,
+      rounds,
+      rawSummary,
+    }
+
+    setStatStatus((map) => applyGameResult('focus', map, result))
+    setLastResult(result)
+    // Radar/MY STATUS still shows a decoupled mock value — real Focus data
+    // is never converted into a fake Final Stat/Percentile.
+    setFinals((f) => ({ ...f, focus: Math.round(48 + Math.random() * 47) }))
+    setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
+  }
+
   const selectFreePlayGame = (statId: StatId) => {
     setActiveStatId(statId)
     setFlowMode('free')
@@ -225,6 +275,8 @@ export function GameFlow() {
             <ReactionGame index={index} mode={flowMode} onComplete={onReactionComplete} />
           ) : activeStatId === 'memory' ? (
             <MemoryGame index={index} mode={flowMode} onComplete={onMemoryComplete} />
+          ) : activeStatId === 'focus' ? (
+            <FocusGame index={index} mode={flowMode} onComplete={onFocusComplete} />
           ) : (
             <GameScreen
               statId={activeStatId}

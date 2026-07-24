@@ -92,17 +92,63 @@ export interface MemoryGameResult extends BaseGameResult {
   rawSummary: MemoryRawSummary
 }
 
-/**
- * Temporary shape for the stats without real game logic yet (focus/judgment/
- * spatial/reasoning). Mirrors the PHASE 1 mock generator's output. Replace
- * with a dedicated *GameResult type per game as each one ships, the same way
- * Reaction and Memory just were promoted out of this shape.
- */
-export interface PlaceholderGameResult extends BaseGameResult {
-  gameId: Exclude<GameId, 'reaction' | 'memory'>
+export interface FocusRoundTrial {
+  roundIndex: number
+  difficultyLevel: number
+  distractorCount: number
+  similarityLevel: number
+  targetPresent: boolean
+  /** Null when targetPresent is false. */
+  targetCellId: string | null
+  /** Null when the user pressed "없음" or the round timed out without a click. */
+  selectedCellId: string | null
+  /** True only when the user's action was pressing "없음" (regardless of whether that was correct). */
+  selectedNone: boolean
+  selectedCorrectly: boolean
+  /** Clicked a non-target cell — either a real distractor while a target existed, or any cell when none existed. */
+  falseClick: boolean
+  /** A target existed but the user pressed "없음" or the round timed out. */
+  missedTarget: boolean
+  /** True if the round ended by hitting its time limit with no user action. */
+  timedOut: boolean
+  responseTimeMs: number
+  createdAt: string
 }
 
-export type GameResult = ReactionGameResult | MemoryGameResult | PlaceholderGameResult
+export interface FocusRawSummary {
+  roundsCompleted: number
+  totalTargetsPresent: number
+  correctTargetsFound: number
+  correctNoneCalls: number
+  missedTargets: number
+  falseClicks: number
+  timeouts: number
+  /** Simple unweighted accuracy (0-1). */
+  accuracy: number
+  /** Difficulty-weighted accuracy (0-1). Primary Personal Best axis. */
+  weightedAccuracy: number
+  falseClickRate: number
+  missRate: number
+  averageResponseTimeMs: number
+}
+
+export interface FocusGameResult extends BaseGameResult {
+  gameId: 'focus'
+  rounds: FocusRoundTrial[]
+  rawSummary: FocusRawSummary
+}
+
+/**
+ * Temporary shape for the stats without real game logic yet (judgment/
+ * spatial/reasoning). Mirrors the PHASE 1 mock generator's output. Replace
+ * with a dedicated *GameResult type per game as each one ships, the same way
+ * Reaction, Memory, and Focus just were promoted out of this shape.
+ */
+export interface PlaceholderGameResult extends BaseGameResult {
+  gameId: Exclude<GameId, 'reaction' | 'memory' | 'focus'>
+}
+
+export type GameResult = ReactionGameResult | MemoryGameResult | FocusGameResult | PlaceholderGameResult
 
 export interface StatStatus {
   /** First-play result. Locked the first time this stat is ever completed; never overwritten after. */

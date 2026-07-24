@@ -9,7 +9,7 @@ import type { DeviceInfo, FlowModeType, GameResult, PlaceholderGameResult } from
  * key for Personal Best bookkeeping — never as a real Game Score or Final Stat.
  */
 export function buildPlaceholderResult(
-  statId: Exclude<StatId, 'reaction' | 'memory'>,
+  statId: Exclude<StatId, 'reaction' | 'memory' | 'focus'>,
   mode: FlowModeType,
   device: DeviceInfo,
   prevBest: GameResult | null,
