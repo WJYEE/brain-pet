@@ -290,14 +290,54 @@ export interface SpatialGameResult extends BaseGameResult {
   rawSummary: SpatialRawSummary
 }
 
-/**
- * Temporary shape for the stats without real game logic yet (reasoning).
- * Mirrors the PHASE 1 mock generator's output. Replace with a dedicated
- * *GameResult type per game as each one ships, the same way Reaction,
- * Memory, Focus, Judgment, and Spatial just were promoted out of this shape.
- */
-export interface PlaceholderGameResult extends BaseGameResult {
-  gameId: Exclude<GameId, 'reaction' | 'memory' | 'focus' | 'judgment' | 'spatial'>
+export type ReasoningType = 'alternation' | 'count' | 'position' | 'compound'
+
+/** Why a wrong option was offered — lets a specific kind of reasoning slip be analyzed separately from a plain miss. */
+export type ReasoningDistractorType = 'repeat-previous' | 'reverse-direction' | 'partial-attribute'
+
+/** One of the 4 candidate cards shown for a question — kept per-trial so a specific question can be reproduced/audited later. */
+export interface ReasoningOptionRecord {
+  isCorrect: boolean
+  /** Null when isCorrect is true, or when a distractor doesn't cleanly fit one of the named archetypes (still a valid wrong answer, just not classified). */
+  distractorType: ReasoningDistractorType | null
+}
+
+export interface ReasoningTrial {
+  trialIndex: number
+  /** Per-instance id (templateId + a random seed) — identifies this exact generated question. */
+  questionId: string
+  /** Which hand-authored rule Template generated this question — lets performance be analyzed per Template, not just per Type/Level. */
+  templateId: string
+  reasoningType: ReasoningType
+  difficultyLevel: number
+  optionCount: number
+  options: ReasoningOptionRecord[]
+  correctOptionIndex: number
+  selectedOptionIndex: number | null
+  isCorrect: boolean
+  responseTimeMs: number
+  timedOut: boolean
+  createdAt: string
+}
+
+export interface ReasoningRawSummary {
+  totalQuestions: number
+  correctAnswers: number
+  overallAccuracy: number
+  /** Difficulty-weighted average accuracy (0-1). Primary Personal Best axis — GAME_SPEC §82. */
+  difficultyWeightedAccuracy: number
+  /** Accuracy (0-1) per difficultyLevel. */
+  accuracyByDifficulty: Record<number, number>
+  /** Accuracy (0-1) per ReasoningType — only types actually seen this session have an entry. */
+  accuracyByReasoningType: Partial<Record<ReasoningType, number>>
+  averageResponseTimeMs: number
+  timeoutCount: number
+}
+
+export interface ReasoningGameResult extends BaseGameResult {
+  gameId: 'reasoning'
+  trials: ReasoningTrial[]
+  rawSummary: ReasoningRawSummary
 }
 
 export type GameResult =
@@ -306,7 +346,7 @@ export type GameResult =
   | FocusGameResult
   | JudgmentGameResult
   | SpatialGameResult
-  | PlaceholderGameResult
+  | ReasoningGameResult
 
 export interface StatStatus {
   /** First-play result. Locked the first time this stat is ever completed; never overwritten after. */

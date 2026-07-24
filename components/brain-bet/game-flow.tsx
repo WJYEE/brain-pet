@@ -3,12 +3,12 @@
 import { useState } from 'react'
 import { Palette, Trophy } from 'lucide-react'
 import { LandingScreen } from '@/components/brain-bet/screens/landing-screen'
-import { GameScreen } from '@/components/brain-bet/screens/game-screen'
 import { ReactionGame } from '@/components/brain-bet/games/reaction-game'
 import { MemoryGame } from '@/components/brain-bet/games/memory-game'
 import { FocusGame } from '@/components/brain-bet/games/focus-game'
 import { JudgmentGame } from '@/components/brain-bet/games/judgment-game'
 import { SpatialGame } from '@/components/brain-bet/games/spatial-game'
+import { ReasoningGame } from '@/components/brain-bet/games/reasoning-game'
 import { CompleteScreen } from '@/components/brain-bet/screens/complete-screen'
 import { FreePlayResultScreen } from '@/components/brain-bet/screens/free-play-result-screen'
 import { StatusScreen } from '@/components/brain-bet/screens/status-screen'
@@ -28,9 +28,9 @@ import { MEMORY_GAME_VERSION } from '@/lib/config/memory.config'
 import { FOCUS_GAME_VERSION } from '@/lib/config/focus.config'
 import { JUDGMENT_GAME_VERSION } from '@/lib/config/judgment.config'
 import { SPATIAL_GAME_VERSION } from '@/lib/config/spatial.config'
+import { REASONING_GAME_VERSION } from '@/lib/config/reasoning.config'
 import { detectDevice } from '@/lib/game/device'
 import { generateSessionId } from '@/lib/game/id'
-import { buildPlaceholderResult } from '@/lib/game/placeholder-result'
 import { applyGameResult, emptyStatStatusMap } from '@/lib/game/stat-status'
 import type {
   FocusGameResult,
@@ -46,6 +46,9 @@ import type {
   ReactionGameResult,
   ReactionRawSummary,
   ReactionTrial,
+  ReasoningGameResult,
+  ReasoningRawSummary,
+  ReasoningTrial,
   SpatialGameResult,
   SpatialRawSummary,
   SpatialTrial,
@@ -60,6 +63,7 @@ import { formatMemoryRawRecord, isBetterMemoryResult } from '@/lib/scoring/memor
 import { formatFocusRawRecord, isBetterFocusResult } from '@/lib/scoring/focus'
 import { formatJudgmentRawRecord, isBetterJudgmentResult } from '@/lib/scoring/judgment'
 import { formatSpatialRawRecord, isBetterSpatialResult } from '@/lib/scoring/spatial'
+import { formatReasoningRawRecord, isBetterReasoningResult } from '@/lib/scoring/reasoning'
 
 type Phase =
   | 'landing'
@@ -118,24 +122,6 @@ export function GameFlow() {
     } else {
       setPhase('status')
     }
-  }
-
-  /** Completion path for the stats that are still Placeholder (reasoning). */
-  const finishPlaceholderRound = () => {
-    if (
-      activeStatId === 'reaction' ||
-      activeStatId === 'memory' ||
-      activeStatId === 'focus' ||
-      activeStatId === 'judgment' ||
-      activeStatId === 'spatial'
-    )
-      return // These have real completion handlers.
-    const prevBest = statStatus[activeStatId].current
-    const result = buildPlaceholderResult(activeStatId, flowMode, detectDevice(), prevBest)
-    setStatStatus((map) => applyGameResult(activeStatId, map, result))
-    setLastResult(result)
-    setFinals((f) => ({ ...f, [activeStatId]: result.gameScore }))
-    setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
 
   /** Completion path for the real Reaction game. */
@@ -359,6 +345,50 @@ export function GameFlow() {
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
 
+  /** Completion path for the real Reasoning game — the last stat to get a real implementation; every stat now has one. */
+  const onReasoningComplete = ({
+    trials,
+    rawSummary,
+    gameScore,
+  }: {
+    trials: ReasoningTrial[]
+    rawSummary: ReasoningRawSummary
+    gameScore: number
+  }) => {
+    // Safe: this app only ever stores a ReasoningGameResult under the 'reasoning' key.
+    const prevBest = statStatus.reasoning.current as ReasoningGameResult | null
+    const isPersonalBest = isBetterReasoningResult(
+      { rawSummary },
+      prevBest ? { rawSummary: prevBest.rawSummary } : null,
+    )
+
+    const result: ReasoningGameResult = {
+      sessionId: generateSessionId(),
+      gameId: 'reasoning',
+      gameVersion: REASONING_GAME_VERSION,
+      mode: flowMode,
+      playedAt: new Date().toISOString(),
+      device: detectDevice(),
+      gameScore,
+      raw: formatReasoningRawRecord(rawSummary),
+      final: undefined,
+      isPersonalBest,
+      // Reasoning-specific anti-cheat isn't defined yet (GAME_SPEC has no
+      // Reasoning cheat criteria) — every completed attempt is valid for now.
+      isValidAttempt: true,
+      invalidReason: null,
+      trials,
+      rawSummary,
+    }
+
+    setStatStatus((map) => applyGameResult('reasoning', map, result))
+    setLastResult(result)
+    // Radar/MY STATUS still shows a decoupled mock value — real Reasoning
+    // data is never converted into a fake Final Stat/Percentile.
+    setFinals((f) => ({ ...f, reasoning: Math.round(48 + Math.random() * 47) }))
+    setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
+  }
+
   const selectFreePlayGame = (statId: StatId) => {
     setActiveStatId(statId)
     setFlowMode('free')
@@ -389,12 +419,7 @@ export function GameFlow() {
           ) : activeStatId === 'spatial' ? (
             <SpatialGame index={index} mode={flowMode} onComplete={onSpatialComplete} />
           ) : (
-            <GameScreen
-              statId={activeStatId}
-              index={index}
-              mode={flowMode}
-              onComplete={finishPlaceholderRound}
-            />
+            <ReasoningGame index={index} mode={flowMode} onComplete={onReasoningComplete} />
           ))}
 
         {phase === 'complete' && lastResult && (
