@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Baloo_2, Nunito } from 'next/font/google'
+import { AppToastProvider } from '@/components/brain-bet/toast-provider'
 import './globals.css'
 
 const baloo = Baloo_2({
@@ -15,11 +16,41 @@ const nunito = Nunito({
   variable: '--font-nunito',
 })
 
+/**
+ * Same URL-resolution priority as lib/share/build-share-text.ts's
+ * buildShareUrl (NEXT_PUBLIC_APP_URL -> dev fallback) — kept separate
+ * because metadata is evaluated at build/request time on the server, where
+ * window.location isn't available, unlike the client-side share flow.
+ */
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+/**
+ * Common Open Graph/Twitter metadata for the whole service. There's no
+ * per-user dynamic result page yet (see lib/share/), so every link preview
+ * — including one pasted from the share button into KakaoTalk/Messages —
+ * uses this same static title/description/image rather than assuming a
+ * user's own pet shows up automatically. og:image is supplied by
+ * app/opengraph-image.tsx (Next's file convention wires it up automatically).
+ */
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'Statling — 나의 숨겨진 스탯을 발견해보세요',
   description:
     '6개의 짧은 미니게임을 플레이하며 나만의 6가지 능력치를 발견하세요. 모든 스탯을 발견하면 나만의 Statling이 깨어납니다.',
   generator: 'v0.app',
+  openGraph: {
+    title: '나만의 스탯링을 만나보세요',
+    description: '6개의 두뇌 스탯을 분석해 나와 가장 닮은 스탯링을 확인해보세요.',
+    url: SITE_URL,
+    siteName: 'Statling',
+    type: 'website',
+    locale: 'ko_KR',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '나만의 스탯링을 만나보세요',
+    description: '6개의 두뇌 스탯을 분석해 나와 가장 닮은 스탯링을 확인해보세요.',
+  },
   icons: {
     icon: [
       {
@@ -55,7 +86,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`bg-background ${baloo.variable} ${nunito.variable}`}>
       <body className="antialiased">
-        {children}
+        <AppToastProvider>{children}</AppToastProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

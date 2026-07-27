@@ -1,10 +1,14 @@
 'use client'
 
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { Toast } from '@base-ui/react/toast'
+import { ArrowRight, Download, Loader2, Share2, Sparkles } from 'lucide-react'
 import { AssetImage } from '@/components/brain-bet/asset-image'
 import { Logo } from '@/components/brain-bet/logo'
+import { ShareFallbackModal } from '@/components/brain-bet/share-fallback-modal'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { ToyButton } from '@/components/brain-bet/toy-button'
+import { StatlingShareCard } from '@/components/share/statling-share-card'
 import { STATLING_TYPES, STATS, type StatId } from '@/lib/brain-bet'
 import {
   getDifferentRhythmBlurb,
@@ -14,6 +18,10 @@ import {
 } from '@/lib/pets/compatibility'
 import { buildCoreTraitSummary, buildSelectionReason } from '@/lib/pets/pet-analysis'
 import type { PetProfile } from '@/lib/pets/pet-profile'
+import { buildShareImageFilename, downloadShareImage } from '@/lib/share/download-share-image'
+import { createShareImage } from '@/lib/share/create-share-image'
+import { shareStatlingResult } from '@/lib/share/share-statling-result'
+import type { ShareStatlingInput } from '@/lib/share/share-types'
 
 interface RevealScreenProps {
   petProfile: PetProfile
@@ -41,6 +49,66 @@ export function RevealScreen({
   const stat = STATS[topStat]
   const secondary = STATS[secondaryStat]
   const type = STATLING_TYPES[topStat]
+
+  const toastManager = Toast.useToastManager()
+  const shareCardRef = useRef<HTMLDivElement>(null)
+  // One shared lock (not two independent flags): both actions capture the
+  // same hidden card DOM node via html-to-image, so they must never overlap.
+  const [busyAction, setBusyAction] = useState<'share' | 'save' | null>(null)
+  const [fallback, setFallback] = useState<{ title: string; text: string; url: string } | null>(null)
+
+  const buildShareInput = (): ShareStatlingInput => ({
+    petName: petProfile.name,
+    petImage: petProfile.imageSrc,
+    tagline: petProfile.tagline,
+    primaryStat: stat.name,
+    secondaryStat: secondary.name,
+  })
+
+  const handleShare = async () => {
+    if (busyAction) return // prevent double-clicks while an action is in flight
+    setBusyAction('share')
+    try {
+      const outcome = await shareStatlingResult(buildShareInput(), shareCardRef.current ?? undefined)
+
+      switch (outcome.status) {
+        case 'shared':
+          toastManager.add({ title: '공유했어요!', type: 'success' })
+          break
+        case 'copied':
+          toastManager.add({ title: '공유 내용이 복사되었어요.', type: 'success' })
+          break
+        case 'cancelled':
+          break // user backed out of the share sheet — not an error
+        case 'manual-copy':
+          setFallback({ title: outcome.title, text: outcome.text, url: outcome.url })
+          break
+        case 'error':
+          toastManager.add({ title: '공유하지 못했어요. 다시 시도해주세요.', type: 'error' })
+          break
+      }
+    } finally {
+      setBusyAction(null)
+    }
+  }
+
+  const handleSaveImage = async () => {
+    if (busyAction || !shareCardRef.current) return
+    setBusyAction('save')
+    try {
+      const blob = await createShareImage(shareCardRef.current)
+      if (!blob) {
+        toastManager.add({ title: '이미지를 만들지 못했어요. 다시 시도해주세요.', type: 'error' })
+        return
+      }
+      downloadShareImage(blob, buildShareImageFilename(petProfile.name))
+      toastManager.add({ title: '이미지가 저장되었어요.', type: 'success' })
+    } catch {
+      toastManager.add({ title: '이미지를 만들지 못했어요. 다시 시도해주세요.', type: 'error' })
+    } finally {
+      setBusyAction(null)
+    }
+  }
 
   const selectionReason = buildSelectionReason(petProfile, topStat, secondaryStat)
   const coreTraitSummary = buildCoreTraitSummary(finals, topStat, secondaryStat)
@@ -175,7 +243,59 @@ export function RevealScreen({
           {isConfirmed ? '저장하고 시작하기' : '이 Statling과 함께하기'}
           <ArrowRight size={20} strokeWidth={2.8} />
         </ToyButton>
+
+        <ToyButton
+          className="w-full"
+          onClick={handleShare}
+          disabled={busyAction !== null}
+          aria-disabled={busyAction !== null}
+          aria-label="대표 스탯링 결과 공유하기"
+        >
+          {busyAction === 'share' ? (
+            <Loader2 size={18} strokeWidth={2.4} className="animate-spin" />
+          ) : (
+            <Share2 size={18} strokeWidth={2.4} />
+          )}
+          {busyAction === 'share' ? '공유 준비 중...' : '공유하기'}
+        </ToyButton>
+
+        <ToyButton
+          variant="secondary"
+          className="w-full"
+          onClick={handleSaveImage}
+          disabled={busyAction !== null}
+          aria-disabled={busyAction !== null}
+          aria-label="대표 스탯링 결과 이미지로 저장하기"
+        >
+          {busyAction === 'save' ? (
+            <Loader2 size={18} strokeWidth={2.4} className="animate-spin" />
+          ) : (
+            <Download size={18} strokeWidth={2.4} />
+          )}
+          {busyAction === 'save' ? '이미지 만드는 중...' : '이미지로 저장'}
+        </ToyButton>
       </div>
+
+      {/* Hidden capture target for html-to-image — see StatlingShareCard's own doc comment for why opacity-0 (not display:none) plus aria-hidden/inert is the right combination here. */}
+      <StatlingShareCard
+        ref={shareCardRef}
+        petProfile={petProfile}
+        primaryStatName={stat.name}
+        secondaryStatName={secondary.name}
+        serviceLabel="6개의 두뇌 능력을 분석하는 Statling"
+      />
+
+      {fallback && (
+        <ShareFallbackModal
+          open={!!fallback}
+          onOpenChange={(open) => {
+            if (!open) setFallback(null)
+          }}
+          title={fallback.title}
+          text={fallback.text}
+          url={fallback.url}
+        />
+      )}
     </div>
   )
 }
