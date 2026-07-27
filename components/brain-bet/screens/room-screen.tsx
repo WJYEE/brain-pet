@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { ArrowRight, Sparkles } from 'lucide-react'
+import { AssetImage } from '@/components/brain-bet/asset-image'
 import { CharacterImage } from '@/components/brain-bet/character-image'
 import { RoomStage } from '@/components/brain-bet/room-stage'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { ToyButton } from '@/components/brain-bet/toy-button'
 import { STATS, type StatId } from '@/lib/brain-bet'
+import type { PetProfile } from '@/lib/pets/pet-profile'
 import { CARE_ACTIONS, INITIAL_ROOM_STATUS, ROOM_STATUS_META, type CareActionId } from '@/lib/room'
 import { WARM_WOOD_PRESET } from '@/lib/room-presets'
 import { cn } from '@/lib/utils'
@@ -14,6 +16,16 @@ import { cn } from '@/lib/utils'
 interface RoomScreenProps {
   statlingName: string
   topStat: StatId
+  /**
+   * The confirmed representative pet — same resolver (and same value) as
+   * every other post-hatch screen (see lib/pets/pet-flow.ts
+   * #resolveCurrentPetProfile), passed down from GameFlow's single
+   * petRecord source of truth rather than read from storage here. Null only
+   * when there's genuinely no saved pet data (e.g. legacy/no-data games
+   * flow) — falls back to the original stat-type CharacterImage in that
+   * case only, never for a confirmed pet.
+   */
+  petProfile: PetProfile | null
   onGrow: () => void
 }
 
@@ -21,7 +33,7 @@ interface RoomScreenProps {
  * Statling Room (Home). Care buttons only trigger a short visual reaction —
  * PHASE 1 does not compute or persist satiety/cleanliness/affection changes.
  */
-export function RoomScreen({ statlingName, topStat, onGrow }: RoomScreenProps) {
+export function RoomScreen({ statlingName, topStat, petProfile, onGrow }: RoomScreenProps) {
   const [mood, setMood] = useState<'happy' | 'excited' | 'sleepy'>('happy')
   const [feedbackId, setFeedbackId] = useState<CareActionId | null>(null)
   const [comingSoonId, setComingSoonId] = useState<CareActionId | null>(null)
@@ -58,11 +70,20 @@ export function RoomScreen({ statlingName, topStat, onGrow }: RoomScreenProps) {
       {/* room stage — the focal point of this screen */}
       <RoomStage preset={WARM_WOOD_PRESET} className="mt-4 toy-border toy-shadow-lg">
         <div className="relative">
-          <CharacterImage
-            type={topStat}
-            size={180}
-            className={mood === 'happy' ? 'animate-float' : 'animate-wobble'}
-          />
+          {petProfile ? (
+            <AssetImage
+              src={petProfile.imageSrc}
+              alt={petProfile.name}
+              size={180}
+              className={mood === 'happy' ? 'animate-float' : 'animate-wobble'}
+            />
+          ) : (
+            <CharacterImage
+              type={topStat}
+              size={180}
+              className={mood === 'happy' ? 'animate-float' : 'animate-wobble'}
+            />
+          )}
           {feedbackId && (
             <span
               className="animate-pop-in absolute -right-2 -top-2 text-3xl"

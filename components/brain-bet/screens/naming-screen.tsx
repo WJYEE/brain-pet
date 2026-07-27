@@ -2,18 +2,19 @@
 
 import { useState } from 'react'
 import { ArrowRight } from 'lucide-react'
-import { CharacterImage } from '@/components/brain-bet/character-image'
+import { AssetImage } from '@/components/brain-bet/asset-image'
 import { Logo } from '@/components/brain-bet/logo'
 import { ToyButton } from '@/components/brain-bet/toy-button'
-import type { StatId } from '@/lib/brain-bet'
+import type { PetProfile } from '@/lib/pets/pet-profile'
 import { STATLING_NAME_MAX_LENGTH, STATLING_NAME_MIN_LENGTH, isValidStatlingName } from '@/lib/naming'
 
 interface NamingScreenProps {
-  topStat: StatId
+  /** The already-confirmed representative pet — same PetProfile as Reveal (see lib/pets/pet-flow.ts#resolveCurrentPetProfile), never the old getTopStat-based CharacterImage. */
+  petProfile: PetProfile
   onConfirm: (name: string) => void
 }
 
-export function NamingScreen({ topStat, onConfirm }: NamingScreenProps) {
+export function NamingScreen({ petProfile, onConfirm }: NamingScreenProps) {
   const [name, setName] = useState('')
   const valid = isValidStatlingName(name)
 
@@ -22,10 +23,11 @@ export function NamingScreen({ topStat, onConfirm }: NamingScreenProps) {
       <Logo size="sm" />
 
       <div className="mt-6">
-        <CharacterImage type={topStat} size={140} className="animate-float" />
+        <AssetImage src={petProfile.imageSrc} alt={petProfile.name} size={140} className="animate-float" />
       </div>
+      <p className="mt-2 text-sm font-bold text-muted-foreground">{petProfile.name}</p>
 
-      <h1 className="mt-6 text-balance font-display text-2xl font-extrabold leading-snug text-foreground">
+      <h1 className="mt-4 text-balance font-display text-2xl font-extrabold leading-snug text-foreground">
         이 친구에게
         <br />
         이름을 지어주세요.
@@ -35,7 +37,7 @@ export function NamingScreen({ topStat, onConfirm }: NamingScreenProps) {
         <input
           value={name}
           onChange={(e) => setName(e.target.value.slice(0, STATLING_NAME_MAX_LENGTH))}
-          placeholder="이름 입력"
+          placeholder={petProfile.name}
           maxLength={STATLING_NAME_MAX_LENGTH}
           className="w-full rounded-2xl bg-card px-4 py-3.5 text-center font-display text-lg font-extrabold text-foreground toy-border outline-none placeholder:font-sans placeholder:font-normal placeholder:text-muted-foreground"
         />

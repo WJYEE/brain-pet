@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Palette, Trophy } from 'lucide-react'
 import { LandingScreen } from '@/components/brain-bet/screens/landing-screen'
 import { ReactionGame } from '@/components/brain-bet/games/reaction-game'
@@ -21,8 +21,23 @@ import { GrowScreen } from '@/components/brain-bet/screens/grow-screen'
 import { ComingSoonScreen } from '@/components/brain-bet/screens/coming-soon-screen'
 import { MyPageScreen } from '@/components/brain-bet/screens/my-page-screen'
 import { NavRail, type NavTab } from '@/components/brain-bet/nav-rail'
-import { PLAY_ORDER, TOTAL_GAMES, getTopStat, type StatId } from '@/lib/brain-bet'
+import { QaSkipMenu } from '@/components/brain-bet/qa-skip-menu'
+import { PLAY_ORDER, TOTAL_GAMES, getSecondStat, getTopStat, type StatId } from '@/lib/brain-bet'
 import { RECOMMENDED_STAT_PLACEHOLDER } from '@/lib/room'
+import {
+  beginPetAssignment,
+  confirmPet,
+  refreshGrowthData,
+  rerollPet,
+  resolveCurrentPetProfile,
+} from '@/lib/pets/pet-flow'
+import {
+  clearStoredPetProfile,
+  loadStoredPetProfile,
+  saveStoredPetProfile,
+  type StoredPetProfile,
+} from '@/lib/pets/pet-storage'
+import { generateMockFinals, type MockStatPreset } from '@/lib/game/mock-finals'
 import { REACTION_GAME_VERSION } from '@/lib/config/reaction.config'
 import { MEMORY_GAME_VERSION } from '@/lib/config/memory.config'
 import { FOCUS_GAME_VERSION } from '@/lib/config/focus.config'
@@ -85,6 +100,16 @@ type Phase =
 /** Phases that show the post-hatch bottom navigation. */
 const NAV_PHASES: Phase[] = ['room', 'mystats', 'ranking', 'mypage', 'theme']
 
+/**
+ * Dev/QA "skip the 6 mini-games" control — visible in local dev by default,
+ * or in any build where NEXT_PUBLIC_ENABLE_TEST_SKIP is explicitly turned
+ * on. Never shown in a normal production build. Reading an unset env var is
+ * always just `undefined` here, so this never throws when the variable is
+ * absent.
+ */
+const SHOW_QA_SKIP =
+  process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_ENABLE_TEST_SKIP === 'true'
+
 const emptyFinals = () =>
   Object.fromEntries(PLAY_ORDER.map((id) => [id, 0])) as Record<StatId, number>
 
@@ -102,8 +127,39 @@ export function GameFlow() {
    */
   const [finals, setFinals] = useState<Record<StatId, number>>(emptyFinals())
   const [statlingName, setStatlingName] = useState('')
+  /**
+   * The user's representative-pet record — candidate pool + reroll progress
+   * before confirmation, locked-in petId after. Persisted to localStorage
+   * (see lib/pets/pet-storage.ts); `seed`/`petId`/`candidatePetIds` never
+   * change once `confirmed` is true — replaying the tests only refreshes the
+   * stored growth data.
+   */
+  const [petRecord, setPetRecord] = useState<StoredPetProfile | null>(null)
 
   const topStat = getTopStat(finals)
+  /**
+   * Single source of truth for "which pet is currently shown" — every
+   * post-hatch screen (Egg, Reveal, Naming, Room, ...) reads this same value
+   * instead of recomputing anything from getTopStat/CharacterImage. Resolves
+   * to the current unconfirmed candidate or the locked-in confirmed pet (see
+   * lib/pets/pet-flow.ts#resolveCurrentPetProfile); null only when no pet
+   * has been assigned yet at all.
+   */
+  const displayedPetProfile = petRecord ? resolveCurrentPetProfile(petRecord) : null
+
+  // Resume an in-progress (not yet confirmed) reveal straight to the Reveal
+  // screen on mount — e.g. after a refresh mid-reroll. A CONFIRMED pet never
+  // auto-navigates anywhere; only this one bounce-back case is handled, since
+  // no other phase is persisted (GAME_SPEC: keep existing navigation as-is
+  // otherwise).
+  useEffect(() => {
+    const stored = loadStoredPetProfile()
+    if (stored && !stored.confirmed) {
+      setFinals(stored.latestFinals)
+      setPetRecord(stored)
+      setPhase('reveal')
+    }
+  }, [])
 
   const start = () => {
     setIndex(0)
@@ -397,6 +453,86 @@ export function GameFlow() {
 
   const returnToRoom = () => setPhase('room')
 
+  /**
+   * Runs once the full 6-stat test is complete (status -> egg transition).
+   * Already confirmed (replaying after locking in a pet): only refreshes
+   * latestFinals, the pet itself never changes. Otherwise (first-ever run,
+   * or a redo before ever confirming): computes a fresh candidate pool —
+   * reusing the existing seed if one exists, so the same seed keeps
+   * producing the same deterministic order — and starts back at candidate 0,
+   * unconfirmed. Reveal itself decides the pet via reroll/confirm.
+   *
+   * Also the QA Skip path's completion function (see handleSkipGames below)
+   * — `overrideFinals` lets Skip hand in a freshly-generated mock result
+   * without waiting a render cycle for `finals` state to update first, but
+   * every other step (candidate matching, storage, confirmed-pet growth
+   * refresh) is the exact same code a real playthrough goes through.
+   */
+  const handleMeetStatling = (overrideFinals?: Record<StatId, number>) => {
+    const effectiveFinals = overrideFinals ?? finals
+    if (overrideFinals) setFinals(overrideFinals)
+
+    const stored = loadStoredPetProfile()
+    const next = stored?.confirmed
+      ? refreshGrowthData(stored, effectiveFinals)
+      : beginPetAssignment(effectiveFinals, stored?.seed)
+
+    saveStoredPetProfile(next)
+    setPetRecord(next)
+    setPhase('egg')
+  }
+
+  /**
+   * Dev/QA only (see SHOW_QA_SKIP) — generates a full 6-stat result instead
+   * of playing the mini-games, then hands it to the exact same
+   * handleMeetStatling completion path a real playthrough uses. Does not
+   * touch statStatus/lastResult/any per-game scoring — those stay whatever
+   * they were, since Skip never runs the real games at all.
+   *
+   * Clears any leftover *unconfirmed* record first: handleMeetStatling
+   * normally reuses an existing unconfirmed record's seed (correct for a
+   * real user resuming a reveal after a refresh), but for repeated Skip
+   * clicks during QA that meant every run kept the same seed — same
+   * seed -> same sort key for whichever pet happens to always be in the
+   * candidate pool -> the same pet ("천사폭신이") every time. A CONFIRMED
+   * record is left untouched (Skip must never reassign an already-locked-in
+   * pet, only refresh its growth data — same as real replays).
+   */
+  const handleSkipGames = (preset: MockStatPreset) => {
+    const stored = loadStoredPetProfile()
+    if (stored && !stored.confirmed) {
+      clearStoredPetProfile()
+      setPetRecord(null)
+    }
+    handleMeetStatling(generateMockFinals(preset))
+  }
+
+  /** Dev/QA only — "대표 펫 초기화": wipes the representative-pet record entirely (confirmed or not) so the next Skip/playthrough starts completely fresh. */
+  const handleResetPetProfile = () => {
+    clearStoredPetProfile()
+    setPetRecord(null)
+  }
+
+  /** "다른 Statling 보기" — advances to the next unseen top-5 candidate. No-op once confirmed or out of rerolls. */
+  const handleRerollPet = () => {
+    if (!petRecord) return
+    const updated = rerollPet(petRecord)
+    if (updated !== petRecord) {
+      saveStoredPetProfile(updated)
+      setPetRecord(updated)
+    }
+  }
+
+  /** "이 Statling과 함께하기" — locks in whichever pet is currently on screen, then always continues forward. */
+  const handleConfirmPet = () => {
+    if (petRecord && !petRecord.confirmed) {
+      const updated = confirmPet(petRecord)
+      saveStoredPetProfile(updated)
+      setPetRecord(updated)
+    }
+    setPhase('save')
+  }
+
   const currentBestRaw = statStatus[activeStatId].current?.raw ?? null
 
   // key forces a fresh mount per step so transitions/animations replay
@@ -406,6 +542,10 @@ export function GameFlow() {
     <main className="min-h-dvh bg-background">
       <div key={stepKey} className="animate-in fade-in slide-in-from-bottom-3 duration-300">
         {phase === 'landing' && <LandingScreen onStart={start} />}
+
+        {phase === 'game' && flowMode === 'first' && SHOW_QA_SKIP && (
+          <QaSkipMenu onSkip={handleSkipGames} onReset={handleResetPetProfile} />
+        )}
 
         {phase === 'game' &&
           (activeStatId === 'reaction' ? (
@@ -448,24 +588,34 @@ export function GameFlow() {
           <StatusScreen
             context="first-complete"
             values={finals}
-            onMeetStatling={() => setPhase('egg')}
+            onMeetStatling={handleMeetStatling}
             onReplay={start}
           />
         )}
 
-        {phase === 'egg' && <EggScreen topStat={topStat} onHatched={() => setPhase('reveal')} />}
+        {phase === 'egg' && <EggScreen petProfile={displayedPetProfile} onHatched={() => setPhase('reveal')} />}
 
-        {phase === 'reveal' && (
-          <RevealScreen topStat={topStat} onContinue={() => setPhase('save')} />
+        {phase === 'reveal' && petRecord && displayedPetProfile && (
+          <RevealScreen
+            petProfile={displayedPetProfile}
+            topStat={topStat}
+            secondaryStat={getSecondStat(finals)}
+            finals={finals}
+            isConfirmed={petRecord.confirmed}
+            canReroll={!petRecord.confirmed && petRecord.rerollCount < petRecord.maxRerolls}
+            rerollsRemaining={petRecord.maxRerolls - petRecord.rerollCount}
+            onReroll={handleRerollPet}
+            onConfirm={handleConfirmPet}
+          />
         )}
 
         {phase === 'save' && (
           <SaveScreen onContinue={() => setPhase('naming')} onSkip={() => setPhase('naming')} />
         )}
 
-        {phase === 'naming' && (
+        {phase === 'naming' && displayedPetProfile && (
           <NamingScreen
-            topStat={topStat}
+            petProfile={displayedPetProfile}
             onConfirm={(name) => {
               setStatlingName(name)
               setPhase('room')
@@ -477,6 +627,7 @@ export function GameFlow() {
           <RoomScreen
             statlingName={statlingName}
             topStat={topStat}
+            petProfile={displayedPetProfile}
             onGrow={() => setPhase('grow')}
           />
         )}

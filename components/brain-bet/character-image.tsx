@@ -1,14 +1,23 @@
 import { AssetImage } from '@/components/brain-bet/asset-image'
 import { STATS, type StatId } from '@/lib/brain-bet'
 
-/** Real file paths under public/assets/statling/characters — verified against the actual filenames on disk before wiring, never guessed. */
+/**
+ * Real file paths under public/assets/statling/characters — verified against
+ * the actual filenames on disk before wiring, never guessed. The original
+ * hand-drawn 순발력.png/기억력.png/etc. were removed as duplicates once the
+ * cropped pet_NNN.png sprites covered the same ground, so each stat now
+ * points at its highest-affinity pet from PET_CATALOG (lib/pets/pet-profile.ts)
+ * instead — reaction -> pet_001 (reaction 0.95), memory -> pet_002 (0.92),
+ * focus -> pet_005 (0.92), judgment -> pet_004 (0.93), spatial -> pet_017
+ * (0.85), reasoning -> pet_003 (0.9).
+ */
 const CHARACTER_IMAGE_SRC: Record<StatId, string> = {
-  reaction: '/assets/statling/characters/순발력.png',
-  memory: '/assets/statling/characters/기억력.png',
-  focus: '/assets/statling/characters/집중력.png',
-  judgment: '/assets/statling/characters/판단력.png',
-  spatial: '/assets/statling/characters/공간감각.png',
-  reasoning: '/assets/statling/characters/추리력.png',
+  reaction: '/assets/statling/characters/pet_001.png',
+  memory: '/assets/statling/characters/pet_002.png',
+  focus: '/assets/statling/characters/pet_005.png',
+  judgment: '/assets/statling/characters/pet_004.png',
+  spatial: '/assets/statling/characters/pet_017.png',
+  reasoning: '/assets/statling/characters/pet_003.png',
 }
 
 /**
@@ -27,15 +36,18 @@ const CHARACTER_SCALE: Record<StatId, number> = {
 }
 
 /**
- * Two extra character PNGs exist on disk (빛나는타입/신비타입 — a "balanced"
- * bonus type and an "undiscovered" mystery type) but aren't wired into any
- * screen yet: StatId has no key for them, and there's no selection logic
- * (e.g. "all stats roughly equal") to decide when either would apply. Kept
- * here as a real, verified path for whenever that's designed, not a guess.
+ * The original 빛나는타입.png/신비타입.png (a "balanced" bonus type and an
+ * "undiscovered" mystery type) were removed as duplicates alongside the rest
+ * of the old character set — replaced with their closest PET_CATALOG
+ * equivalents (pet_007 is an evenly-balanced-across-all-stats profile,
+ * pet_008 leans mysterious/shadowy). Still not wired into any screen yet:
+ * StatId has no key for them, and there's no selection logic (e.g. "all
+ * stats roughly equal") to decide when either would apply. Kept here as a
+ * real, verified path for whenever that's designed, not a guess.
  */
 export const BONUS_CHARACTER_IMAGE_SRC = {
-  shining: '/assets/statling/characters/빛나는타입.png',
-  mystery: '/assets/statling/characters/신비타입.png',
+  shining: '/assets/statling/characters/pet_007.png',
+  mystery: '/assets/statling/characters/pet_008.png',
 } as const
 
 interface CharacterImageProps {

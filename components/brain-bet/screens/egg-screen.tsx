@@ -1,16 +1,24 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { CharacterImage } from '@/components/brain-bet/character-image'
+import { AssetImage } from '@/components/brain-bet/asset-image'
 import { EggImage } from '@/components/brain-bet/egg-image'
 import { Logo } from '@/components/brain-bet/logo'
-import type { StatId } from '@/lib/brain-bet'
+import type { PetProfile } from '@/lib/pets/pet-profile'
 import { cn } from '@/lib/utils'
 
 type Stage = 'idle' | 'shaking' | 'crack' | 'light' | 'opening' | 'revealed'
 
 interface EggScreenProps {
-  topStat: StatId
+  /**
+   * The pet to reveal — resolved from StoredPetProfile (candidate or
+   * confirmed, see lib/pets/pet-flow.ts#resolveCurrentPetProfile), never the
+   * old getTopStat-based CharacterImage. Only null in the (practically
+   * unreachable, since handleMeetStatling always assigns a candidate pool
+   * before this screen mounts) case where no pet has been matched yet — a
+   * neutral silhouette is shown instead of guessing.
+   */
+  petProfile: PetProfile | null
   onHatched: () => void
 }
 
@@ -35,10 +43,10 @@ const HATCH_REVEAL_HOLD_MS = 1300
  * up. Reuses the egg PNG at its fullest (stage 6) growth look — this screen
  * is about what happens to an already-fully-grown egg, not the growth
  * itself (that's CompleteScreen's job between games). The revealed-stage
- * CharacterImage is sized to match RevealScreen's (180) so the character
- * doesn't visibly jump in size across the cut to the next screen.
+ * pet image is sized to match RevealScreen's (180) so it doesn't visibly
+ * jump in size across the cut to the next screen.
  */
-export function EggScreen({ topStat, onHatched }: EggScreenProps) {
+export function EggScreen({ petProfile, onHatched }: EggScreenProps) {
   const [stage, setStage] = useState<Stage>('idle')
 
   // onHatched is an inline prop (a fresh function reference every parent
@@ -101,13 +109,36 @@ export function EggScreen({ topStat, onHatched }: EggScreenProps) {
             <span className="animate-shell-open-right absolute -right-4 top-6 text-3xl" aria-hidden="true">
               🥚
             </span>
-            <CharacterImage type={topStat} size={140} className="animate-pop-in" />
+            {petProfile ? (
+              <AssetImage
+                src={petProfile.imageSrc}
+                alt={petProfile.name}
+                size={140}
+                className="animate-pop-in"
+              />
+            ) : (
+              <span
+                className="grid h-35 w-35 animate-pop-in place-items-center rounded-full bg-muted text-4xl"
+                aria-hidden="true"
+              >
+                ✨
+              </span>
+            )}
           </div>
         )}
 
         {isRevealed && (
           <div className="relative animate-pop-in">
-            <CharacterImage type={topStat} size={180} />
+            {petProfile ? (
+              <AssetImage src={petProfile.imageSrc} alt={petProfile.name} size={180} />
+            ) : (
+              <span
+                className="grid h-45 w-45 place-items-center rounded-full bg-muted text-5xl"
+                aria-hidden="true"
+              >
+                ✨
+              </span>
+            )}
             {['-left-4 -top-2', 'right-0 top-0', 'left-2 bottom-2'].map((pos, i) => (
               <span
                 key={pos}

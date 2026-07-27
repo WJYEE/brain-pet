@@ -207,3 +207,11 @@ export function getTopStat(finals: Record<StatId, number>): StatId {
     (finals[id] ?? 0) > (finals[best] ?? 0) ? id : best,
   )
 }
+
+/** Returns the stat id with the second-highest Final Stat (the supporting type used by the pet-matching explanation). */
+export function getSecondStat(finals: Record<StatId, number>): StatId {
+  const top = getTopStat(finals)
+  return STAT_DISPLAY_ORDER.filter((id) => id !== top).reduce((best, id) =>
+    (finals[id] ?? 0) > (finals[best] ?? 0) ? id : best,
+  )
+}
