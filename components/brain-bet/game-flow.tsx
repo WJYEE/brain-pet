@@ -588,7 +588,7 @@ export function GameFlow() {
           <StatusScreen
             context="first-complete"
             values={finals}
-            onMeetStatling={handleMeetStatling}
+            onMeetStatling={() => handleMeetStatling()}
             onReplay={start}
           />
         )}
