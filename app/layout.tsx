@@ -1,4 +1,5 @@
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
 import { Baloo_2, Nunito } from 'next/font/google'
 import { AppToastProvider } from '@/components/brain-bet/toast-provider'
@@ -88,6 +89,7 @@ export default function RootLayout({
       <body className="antialiased">
         <AppToastProvider>{children}</AppToastProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
+        {process.env.NODE_ENV === 'production' && <SpeedInsights />}
       </body>
     </html>
   )
