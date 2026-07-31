@@ -31,6 +31,14 @@ export interface BaseGameResult {
   isPersonalBest: boolean
   isValidAttempt: boolean
   invalidReason: InvalidReason
+  /**
+   * Which registered game (see lib/game/game-registry.ts) produced this
+   * result, e.g. 'reaction-classic' | 'reaction-dodge-run'. Optional and
+   * additive — the original 6 games never set it (gameId alone identified
+   * them 1:1 with a stat), so existing result objects stay valid as-is.
+   * Only present once a stat has more than one registered game.
+   */
+  variant?: string
 }
 
 export interface ReactionTrial {
@@ -275,7 +283,7 @@ export interface SpatialRawSummary {
 
   mirrorQuestions: number
   mirrorCorrect: number
-  /** 0 when mirrorQuestions is 0 — see isBetterSpatialResult for how PB comparison guards against this degenerate case. */
+  /** 0 when mirrorQuestions is 0 (an abnormal/partial session that never reached Level 3-4) — see calculateSpatialScore's handling of this edge case. */
   mirrorAccuracy: number
 
   averageResponseTimeMs: number
@@ -340,6 +348,163 @@ export interface ReasoningGameResult extends BaseGameResult {
   rawSummary: ReasoningRawSummary
 }
 
+// ---------------------------------------------------------------------------
+// Second game per stat (see lib/game/game-registry.ts) — each stat still
+// reports the same `gameId: StatId`; `variant` disambiguates which of the
+// stat's registered games actually produced a given result. Kept as
+// independent, simpler types rather than shoehorned into the existing
+// Trial/RawSummary shapes above, since e.g. "이야기 기억" has nothing in
+// common with the grid-recall Memory game's per-cell trial log.
+// ---------------------------------------------------------------------------
+
+export type StoryQuestionCategory = 'person' | 'place' | 'order' | 'number' | 'object'
+
+export interface StoryMemoryAnswer {
+  questionIndex: number
+  category: StoryQuestionCategory
+  selectedIndex: number | null
+  correctIndex: number
+  isCorrect: boolean
+  responseTimeMs: number
+}
+
+export interface StoryMemoryRawSummary {
+  storyId: string
+  totalQuestions: number
+  correctAnswers: number
+  accuracy: number
+  averageResponseTimeMs: number
+}
+
+export interface StoryMemoryGameResult extends BaseGameResult {
+  gameId: 'memory'
+  variant: 'story-recall'
+  answers: StoryMemoryAnswer[]
+  rawSummary: StoryMemoryRawSummary
+}
+
+export interface ColorTargetClickEvent {
+  kind: 'correct' | 'wrong' | 'missed'
+  colorId: string
+  targetColorId: string
+  reactionTimeMs: number | null
+  createdAt: string
+}
+
+export interface ColorTargetRawSummary {
+  correctClicks: number
+  wrongClicks: number
+  missedTargets: number
+  averageReactionTimeMs: number
+  targetColorChanges: number
+  accuracy: number
+}
+
+export interface ColorTargetGameResult extends BaseGameResult {
+  gameId: 'focus'
+  variant: 'color-target'
+  events: ColorTargetClickEvent[]
+  rawSummary: ColorTargetRawSummary
+}
+
+export interface DodgeObstacleEvent {
+  kind: 'dodged' | 'collided'
+  lane: 0 | 1 | 2
+  atMs: number
+}
+
+export interface DodgeObstacleRawSummary {
+  obstaclesDodged: number
+  collisions: number
+  survivedMs: number
+  averageMoveReactionMs: number
+}
+
+export interface DodgeObstacleGameResult extends BaseGameResult {
+  gameId: 'reaction'
+  variant: 'dodge-run'
+  events: DodgeObstacleEvent[]
+  rawSummary: DodgeObstacleRawSummary
+}
+
+export interface BestChoiceAnswer {
+  roundIndex: number
+  scenarioId: string
+  selectedIndex: number | null
+  selectedScore: number
+  bestPossibleScore: number
+  responseTimeMs: number
+  timedOut: boolean
+}
+
+export interface BestChoiceRawSummary {
+  totalRounds: number
+  optimalChoices: number
+  averageChoiceQuality: number
+  averageResponseTimeMs: number
+  timeouts: number
+}
+
+export interface BestChoiceGameResult extends BaseGameResult {
+  gameId: 'judgment'
+  variant: 'best-choice'
+  answers: BestChoiceAnswer[]
+  rawSummary: BestChoiceRawSummary
+}
+
+export interface FitPuzzleRoundResult {
+  roundIndex: number
+  pieceCount: number
+  correctPlacements: number
+  misplacements: number
+  rotations: number
+  completed: boolean
+  completionMs: number
+}
+
+export interface FitPuzzleRawSummary {
+  totalRounds: number
+  roundsCompleted: number
+  correctPlacements: number
+  misplacements: number
+  rotations: number
+  totalCompletionMs: number
+}
+
+export interface FitPuzzleGameResult extends BaseGameResult {
+  gameId: 'spatial'
+  variant: 'fit-puzzle'
+  rounds: FitPuzzleRoundResult[]
+  rawSummary: FitPuzzleRawSummary
+}
+
+export interface NumberPatternAnswer {
+  questionIndex: number
+  ruleType: string
+  difficulty: 'easy' | 'normal' | 'hard'
+  selectedValue: number | null
+  correctValue: number
+  isCorrect: boolean
+  responseTimeMs: number
+  timedOut: boolean
+}
+
+export interface NumberPatternRawSummary {
+  totalQuestions: number
+  correctAnswers: number
+  accuracy: number
+  hardCorrect: number
+  hardTotal: number
+  averageResponseTimeMs: number
+}
+
+export interface NumberPatternGameResult extends BaseGameResult {
+  gameId: 'reasoning'
+  variant: 'number-pattern'
+  answers: NumberPatternAnswer[]
+  rawSummary: NumberPatternRawSummary
+}
+
 export type GameResult =
   | ReactionGameResult
   | MemoryGameResult
@@ -347,6 +512,12 @@ export type GameResult =
   | JudgmentGameResult
   | SpatialGameResult
   | ReasoningGameResult
+  | StoryMemoryGameResult
+  | ColorTargetGameResult
+  | DodgeObstacleGameResult
+  | BestChoiceGameResult
+  | FitPuzzleGameResult
+  | NumberPatternGameResult
 
 export interface StatStatus {
   /** First-play result. Locked the first time this stat is ever completed; never overwritten after. */

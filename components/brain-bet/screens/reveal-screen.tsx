@@ -2,26 +2,26 @@
 
 import { useRef, useState } from 'react'
 import { Toast } from '@base-ui/react/toast'
-import { ArrowRight, Download, Loader2, Share2, Sparkles } from 'lucide-react'
-import { AssetImage } from '@/components/brain-bet/asset-image'
+import { ArrowRight, Download, Loader2, Share2 } from 'lucide-react'
+import { CharacterTraits } from '@/components/brain-bet/result/character-traits'
+import { CompatibleEnvironment } from '@/components/brain-bet/result/compatible-environment'
+import { StatDistribution } from '@/components/brain-bet/result/stat-distribution'
+import { StatlingCompatibility } from '@/components/brain-bet/result/statling-compatibility'
+import { StatlingHero } from '@/components/brain-bet/result/statling-hero'
 import { Logo } from '@/components/brain-bet/logo'
 import { ShareFallbackModal } from '@/components/brain-bet/share-fallback-modal'
-import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { ToyButton } from '@/components/brain-bet/toy-button'
 import { StatlingShareCard } from '@/components/share/statling-share-card'
 import { STATLING_TYPES, STATS, type StatId } from '@/lib/brain-bet'
-import {
-  getDifferentRhythmBlurb,
-  getGoodMatchBlurb,
-  getStatCompatibility,
-  getStatTypeLabel,
-} from '@/lib/pets/compatibility'
+import { getStatCompatibility } from '@/lib/pets/compatibility'
 import { buildCoreTraitSummary, buildSelectionReason } from '@/lib/pets/pet-analysis'
 import type { PetProfile } from '@/lib/pets/pet-profile'
 import { buildShareImageFilename, downloadShareImage } from '@/lib/share/download-share-image'
 import { createShareImage } from '@/lib/share/create-share-image'
 import { shareStatlingResult } from '@/lib/share/share-statling-result'
 import type { ShareStatlingInput } from '@/lib/share/share-types'
+import { buildDifferentRhythmCards, buildGoodMatchCards } from '@/lib/stats/stat-compatibility-copy'
+import { buildStatInsight } from '@/lib/stats/stat-insights'
 
 interface RevealScreenProps {
   petProfile: PetProfile
@@ -113,128 +113,44 @@ export function RevealScreen({
   const selectionReason = buildSelectionReason(petProfile, topStat, secondaryStat)
   const coreTraitSummary = buildCoreTraitSummary(finals, topStat, secondaryStat)
   const compatibility = getStatCompatibility(petProfile)
+  const insight = buildStatInsight(topStat, secondaryStat)
+  const goodMatchCards = buildGoodMatchCards(compatibility.goodMatches)
+  const differentRhythmCards = buildDifferentRhythmCards(compatibility.differentRhythms)
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-10 text-center">
+    <div className="dot-grid-bg contain-[layout] mx-auto flex min-h-dvh w-full max-w-md flex-col items-center overflow-x-hidden px-5 py-6">
       <Logo size="sm" />
 
-      <span className="mt-8 inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground toy-border toy-shadow-sm">
-        <Sparkles size={14} strokeWidth={2.6} />
-        HATCH!
-      </span>
-
-      <h1 className="mt-4 text-balance font-display text-3xl font-extrabold text-foreground">
-        나의 Statling이 태어났어요!
-      </h1>
-
-      {/* Keyed by pet id so rerolling remounts this subtree and replays the
-          existing pop-in/sparkle CSS animations for the newly-shown pet —
-          reusing the same animation classes used everywhere else, no new
-          animation library. */}
-      <div key={petProfile.id} className="relative mt-6">
-        <div className="animate-pop-in">
-          <AssetImage src={petProfile.imageSrc} alt={petProfile.name} size={180} />
-        </div>
-        {['-left-3 top-2', 'right-0 top-6', 'left-6 bottom-4'].map((pos, i) => (
-          <span
-            key={pos}
-            className={`animate-sparkle-burst absolute text-2xl ${pos}`}
-            style={{ animationDelay: `${300 + i * 130}ms` }}
-            aria-hidden="true"
-          >
-            ✨
-          </span>
-        ))}
+      <div className="mt-4 w-full">
+        <StatlingHero
+          petProfile={petProfile}
+          topStat={stat}
+          secondaryStat={secondary}
+          typeName={type.typeName}
+          coreTrait={coreTraitSummary}
+        />
       </div>
 
-      <p className="mt-2 font-display text-xl font-extrabold text-foreground">{petProfile.name}</p>
-      <p className="mt-1 max-w-xs text-pretty text-sm leading-relaxed text-muted-foreground">
-        {petProfile.tagline}
-      </p>
-
-      <div className="mt-4 flex items-center gap-3">
-        <div className="flex items-center gap-1.5">
-          <StatBadge stat={stat} size="sm" />
-          <span className="text-sm font-bold text-foreground">{stat.name}</span>
-        </div>
-        <span className="text-sm text-muted-foreground">+</span>
-        <div className="flex items-center gap-1.5">
-          <StatBadge stat={secondary} size="sm" />
-          <span className="text-sm font-bold text-foreground">{secondary.name}</span>
-        </div>
-      </div>
-
-      <p className="mt-4 max-w-xs text-pretty text-sm leading-relaxed text-muted-foreground">
+      <p className="mt-2 line-clamp-2 max-w-xs text-pretty text-center text-xs leading-relaxed text-muted-foreground">
         {selectionReason}
       </p>
 
-      <div className="mt-5 w-full rounded-2xl bg-secondary px-4 py-3 text-left toy-border">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-          나의 스탯 성향
-        </p>
-        <ul className="mt-1.5 space-y-0.5 text-xs text-secondary-foreground">
-          <li>
-            가장 강한 스탯: <span className="font-bold">{stat.name}</span>
-          </li>
-          <li>
-            성향 타입: <span className="font-bold">{type.typeName}</span>
-          </li>
-        </ul>
-      </div>
+      <CharacterTraits insight={insight} />
 
-      <div className="mt-3 w-full rounded-2xl bg-card px-4 py-3 text-left toy-border">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-          핵심 성향
-        </p>
-        <p className="mt-1 text-sm leading-relaxed text-foreground">{coreTraitSummary}</p>
-      </div>
+      <CompatibleEnvironment insight={insight} />
 
-      <div className="mt-5 w-full text-left">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-          잘 맞는 Statling
-        </p>
-        <div className="mt-1.5 grid grid-cols-2 gap-2">
-          {compatibility.goodMatches.map((id) => (
-            <div key={id} className="rounded-xl bg-card px-2.5 py-2 toy-border">
-              <div className="flex items-center gap-1.5">
-                <StatBadge stat={STATS[id]} size="xs" />
-                <span className="text-xs font-bold text-foreground">{getStatTypeLabel(id)}</span>
-              </div>
-              <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
-                {getGoodMatchBlurb(id)}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
+      <StatDistribution finals={finals} />
 
-      <div className="mt-3 w-full text-left">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-          조금 다른 리듬의 Statling
-        </p>
-        <div className="mt-1.5 grid grid-cols-2 gap-2">
-          {compatibility.differentRhythms.map((id) => (
-            <div key={id} className="rounded-xl bg-card px-2.5 py-2 toy-border">
-              <div className="flex items-center gap-1.5">
-                <StatBadge stat={STATS[id]} size="xs" />
-                <span className="text-xs font-bold text-foreground">{getStatTypeLabel(id)}</span>
-              </div>
-              <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
-                {getDifferentRhythmBlurb(id)}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
+      <StatlingCompatibility goodMatches={goodMatchCards} differentRhythms={differentRhythmCards} />
 
-      <div className="mt-6 flex w-full flex-col gap-3">
+      <div className="mt-7 flex w-full flex-col gap-3">
         {!isConfirmed &&
           (canReroll ? (
             <ToyButton variant="secondary" className="w-full" onClick={onReroll}>
               다른 Statling 보기 · {rerollsRemaining}회 남음
             </ToyButton>
           ) : (
-            <p className="text-xs font-semibold text-muted-foreground">
+            <p className="text-center text-xs font-semibold text-muted-foreground">
               마지막으로 만난 Statling이에요
             </p>
           ))}

@@ -12,6 +12,7 @@ import {
   REASONING_TIME_LIMIT_MS,
   REASONING_TUTORIAL_TRANSITION_MS,
 } from '@/lib/config/reasoning.config'
+import { detectDevice } from '@/lib/game/device'
 import {
   buildTutorialQuestion1,
   buildTutorialQuestion2,
@@ -21,9 +22,10 @@ import {
 import type { ReasoningRawSummary, ReasoningTrial } from '@/lib/game/types'
 import { calculateReasoningScore, summarizeReasoningTrials } from '@/lib/scoring/reasoning'
 import { cn } from '@/lib/utils'
+import { useSound } from '@/hooks/use-sound'
 
 type Stage = 'intro' | 'playing' | 'feedback'
-type Round = 'tutorial-1' | 'tutorial-2' | 'real'
+type Round = 'tutorial-1' | 'real'
 type QuestionOutcome = { kind: 'option'; optionIndex: number } | { kind: 'timeout' }
 
 interface ReasoningGameProps {
@@ -55,8 +57,10 @@ interface LastOutcome {
  * Each question has its own time limit that INCREASES with difficulty
  * (Level 3-4 need more time to analyze, not less — the opposite of
  * Spatial's schedule, since the skill here is rule discovery, not speed).
- * Tutorial (2, discarded — one shape alternation, one count increase) then
- * REASONING_REAL_QUESTIONS fixed-difficulty questions.
+ * Tutorial (1, discarded, shape alternation only — the "rules can also be
+ * about count/position/direction" point is explained via the transition
+ * message instead of a second practice question) then REASONING_REAL_QUESTIONS
+ * fixed-difficulty questions.
  *
  * Option click / Timeout both resolve through the single `resolveQuestion`
  * below, reading the question's context from refs (not React state
@@ -65,6 +69,7 @@ interface LastOutcome {
  */
 export function ReasoningGame({ index, mode, onComplete }: ReasoningGameProps) {
   const stat = STATS.reasoning
+  const { play } = useSound()
 
   const [stage, setStage] = useState<Stage>('intro')
   const [round, setRound] = useState<Round>('tutorial-1')
@@ -113,11 +118,7 @@ export function ReasoningGame({ index, mode, onComplete }: ReasoningGameProps) {
     hasResolvedRef.current = false
 
     const question =
-      nextRound === 'tutorial-1'
-        ? buildTutorialQuestion1()
-        : nextRound === 'tutorial-2'
-          ? buildTutorialQuestion2()
-          : realQuestionsRef.current[nextRealIndex]
+      nextRound === 'tutorial-1' ? buildTutorialQuestion1() : realQuestionsRef.current[nextRealIndex]
 
     const limit = nextRound === 'real' ? REASONING_TIME_LIMIT_MS[question.difficultyLevel] : null
     const startedAt = performance.now()
@@ -158,6 +159,7 @@ export function ReasoningGame({ index, mode, onComplete }: ReasoningGameProps) {
       ? (timeLimitMsRef.current ?? 0)
       : Math.round(performance.now() - questionStartedAtRef.current)
     const isCorrect = !timedOut && selectedOptionIndex === question.correctOptionIndex
+    play(isCorrect ? 'answer-correct' : 'answer-wrong-soft')
 
     setStage('feedback')
     setLastOutcome({ selectedOptionIndex, isCorrect, timedOut })
@@ -167,15 +169,7 @@ export function ReasoningGame({ index, mode, onComplete }: ReasoningGameProps) {
 
     if (currentRound === 'tutorial-1') {
       schedule(() => {
-        setMessage('이번엔 개수가 변하는 경우를 볼게요.')
-        schedule(() => beginQuestion('tutorial-2', 0), REASONING_TUTORIAL_TRANSITION_MS)
-      }, REASONING_FEEDBACK_MS)
-      return
-    }
-
-    if (currentRound === 'tutorial-2') {
-      schedule(() => {
-        setMessage('튜토리얼 완료! 이제 실전을 시작할게요.')
+        setMessage('규칙은 모양뿐 아니라 개수·위치·방향에도 있을 수 있어요. 이제 실전을 시작할게요.')
         schedule(() => beginQuestion('real', 0), REASONING_TUTORIAL_TRANSITION_MS)
       }, REASONING_FEEDBACK_MS)
       return
@@ -202,7 +196,7 @@ export function ReasoningGame({ index, mode, onComplete }: ReasoningGameProps) {
 
     if (updated.length >= REASONING_REAL_QUESTIONS) {
       const rawSummary = summarizeReasoningTrials(updated)
-      const gameScore = calculateReasoningScore(rawSummary)
+      const gameScore = calculateReasoningScore(rawSummary, detectDevice().inputType)
       schedule(() => onComplete({ trials: updated, rawSummary, gameScore }), REASONING_FEEDBACK_MS)
       return
     }
@@ -213,6 +207,7 @@ export function ReasoningGame({ index, mode, onComplete }: ReasoningGameProps) {
   }
 
   const startGame = () => {
+    play('game-start')
     clearScheduled()
     realQuestionsRef.current = generateReasoningSession()
     trialsRef.current = []
@@ -235,12 +230,7 @@ export function ReasoningGame({ index, mode, onComplete }: ReasoningGameProps) {
 
   const gaugePercent = timeLimitMs == null ? 100 : Math.max(0, Math.min(100, (remainingMs / timeLimitMs) * 100))
   const gaugeCritical = timeLimitMs != null && gaugePercent < 25
-  const tutorialHint =
-    round === 'tutorial-1'
-      ? '반복되는 규칙을 찾아 다음에 올 것을 골라보세요.'
-      : round === 'tutorial-2'
-        ? '규칙은 모양뿐 아니라 개수, 위치, 방향에도 있을 수 있어요.'
-        : ''
+  const tutorialHint = round === 'tutorial-1' ? '반복되는 규칙을 찾아 다음에 올 것을 골라보세요.' : ''
 
   // A longer strip (4 known cells + "?") gets slightly smaller cards so it
   // never overflows a narrow mobile viewport — never just force-shrinking
@@ -271,7 +261,7 @@ export function ReasoningGame({ index, mode, onComplete }: ReasoningGameProps) {
         </div>
         {round !== 'real' ? (
           <span className="rounded-xl bg-secondary px-3 py-2 text-center font-display text-sm font-extrabold text-secondary-foreground toy-border">
-            튜토리얼 <span className="text-primary">{round === 'tutorial-1' ? 1 : 2}</span> / 2
+            튜토리얼 <span className="text-primary">1</span> / 1
           </span>
         ) : (
           <span className="rounded-xl bg-secondary px-3 py-2 text-center font-display text-sm font-extrabold text-secondary-foreground toy-border">
@@ -284,6 +274,7 @@ export function ReasoningGame({ index, mode, onComplete }: ReasoningGameProps) {
       {stage === 'intro' ? (
         <button
           type="button"
+          data-sfx-skip
           onClick={startGame}
           className="mt-5 flex flex-1 flex-col items-center justify-center gap-5 rounded-3xl bg-card px-6 py-12 text-center toy-border toy-shadow-lg transition-colors duration-150"
         >

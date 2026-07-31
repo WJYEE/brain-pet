@@ -25,9 +25,10 @@ import { FOCUS_TARGET_SYMBOL } from '@/lib/game/focus-symbol'
 import type { FocusRawSummary, FocusRoundTrial } from '@/lib/game/types'
 import { calculateFocusScore, summarizeFocusRounds } from '@/lib/scoring/focus'
 import { cn } from '@/lib/utils'
+import { useSound } from '@/hooks/use-sound'
 
 type Stage = 'intro' | 'playing' | 'feedback'
-type Round = 'tutorial-target' | 'tutorial-none' | 'real'
+type Round = 'tutorial-target' | 'real'
 type RoundOutcome = { kind: 'cell'; cellId: string } | { kind: 'none' } | { kind: 'timeout' }
 
 interface FocusGameProps {
@@ -82,7 +83,8 @@ export function computeFocusFeedbackMessage(
  * small, easy grid (FOCUS_TUTORIAL_GRID_SIZE); Real rounds use a much larger
  * one (FOCUS_REAL_GRID_SIZE) so the target isn't visible at a glance. A soft
  * time limit on real rounds keeps searching from being unboundedly easy.
- * Tutorial (2, discarded — one target-present, one no-target) then
+ * Tutorial (1, discarded, target-present only — the "없음" case is explained
+ * via the transition message instead of a second practice round) then
  * FOCUS_REAL_ROUNDS fixed-difficulty rounds.
  *
  * Click / "없음" / Timeout all resolve through the single `resolveRound`
@@ -96,6 +98,7 @@ export function computeFocusFeedbackMessage(
  */
 export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
   const stat = STATS.focus
+  const { play } = useSound()
 
   const [stage, setStage] = useState<Stage>('intro')
   const [round, setRound] = useState<Round>('tutorial-target')
@@ -147,11 +150,7 @@ export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
     const difficultyNow = isReal ? FOCUS_DIFFICULTY_SEQUENCE[nextRealIndex] : FOCUS_TUTORIAL_DIFFICULTY
     const gridSizeNow = isReal ? FOCUS_REAL_GRID_SIZE : FOCUS_TUTORIAL_GRID_SIZE
     const targetPresentNow =
-      nextRound === 'tutorial-target'
-        ? true
-        : nextRound === 'tutorial-none'
-          ? false
-          : !noTargetRoundIndicesRef.current.has(nextRealIndex)
+      nextRound === 'tutorial-target' ? true : !noTargetRoundIndicesRef.current.has(nextRealIndex)
     const distractorCountNow = difficultyNow.totalPlacementCount - (targetPresentNow ? 1 : 0)
 
     // Layout + symbols are built and validated together as one atomic value —
@@ -227,15 +226,7 @@ export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
 
     if (currentRound === 'tutorial-target') {
       schedule(() => {
-        setMessage('이번엔 Target이 없는 경우도 연습해볼게요.')
-        schedule(() => beginRound('tutorial-none', 0), FOCUS_TUTORIAL_TRANSITION_MS)
-      }, FOCUS_ROUND_FEEDBACK_MS)
-      return
-    }
-
-    if (currentRound === 'tutorial-none') {
-      schedule(() => {
-        setMessage('튜토리얼 완료! 이제 실전을 시작할게요.')
+        setMessage('찾는 모양이 안 보이면 "없음"을 눌러주세요. 이제 실전을 시작할게요.')
         schedule(() => beginRound('real', 0), FOCUS_TUTORIAL_TRANSITION_MS)
       }, FOCUS_ROUND_FEEDBACK_MS)
       return
@@ -277,6 +268,7 @@ export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
   }
 
   const startGame = () => {
+    play('game-start')
     const picked = selectNoTargetRoundIndices(FOCUS_REAL_ROUNDS, FOCUS_NO_TARGET_ROUND_COUNT)
     noTargetRoundIndicesRef.current = picked
     roundsRef.current = []
@@ -333,9 +325,7 @@ export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
         </div>
         {round !== 'real' ? (
           <span className="rounded-xl bg-secondary px-3 py-2 text-center font-display text-sm font-extrabold text-secondary-foreground toy-border">
-            튜토리얼{' '}
-            <span className="text-primary">{round === 'tutorial-target' ? 1 : 2}</span> /{' '}
-            {FOCUS_TUTORIAL_ROUNDS}
+            튜토리얼 <span className="text-primary">1</span> / {FOCUS_TUTORIAL_ROUNDS}
           </span>
         ) : (
           <span className="rounded-xl bg-secondary px-3 py-2 text-center font-display text-sm font-extrabold text-secondary-foreground toy-border">
@@ -347,6 +337,7 @@ export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
       {stage === 'intro' ? (
         <button
           type="button"
+          data-sfx-skip
           onClick={startGame}
           className="mt-5 flex flex-1 flex-col items-center justify-center gap-5 rounded-3xl bg-card px-6 py-12 text-center toy-border toy-shadow-lg transition-colors duration-150"
         >

@@ -1,9 +1,11 @@
 'use client'
 
+import { useEffect } from 'react'
 import { ArrowRight, Check, PartyPopper, Trophy } from 'lucide-react'
 import { EggImage } from '@/components/brain-bet/egg-image'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
+import { useSound } from '@/hooks/use-sound'
 import { PLAY_ORDER, STATS, TOTAL_GAMES, type RawRecord, type StatId } from '@/lib/brain-bet'
 import { EGG_STAGE_MESSAGE, EGG_STAGE_MOTION } from '@/lib/egg-growth'
 
@@ -14,10 +16,12 @@ interface CompleteScreenProps {
   statId: StatId
   /** zero-based index of the game just finished */
   index: number
-  /** display raw record for this round (formatted per-game, see lib/scoring/*) */
+  /** this round's real 0-100 gameScore — the headline number (see game-flow.tsx, lib/scoring/*) */
+  gameScore: number
+  /** display raw record for this round (formatted per-game, see lib/scoring/*) — shown as a small parenthetical under the score, never as the headline */
   raw: RawRecord
-  /** current Personal Best raw record, if one exists and differs from this round's */
-  personalBestRaw?: RawRecord | null
+  /** current Personal Best gameScore, if one exists and differs from this round's */
+  personalBestScore?: number | null
   /** whether this round's result is now the Personal Best */
   isNewRecord?: boolean
   onNext: () => void
@@ -26,8 +30,9 @@ interface CompleteScreenProps {
 export function CompleteScreen({
   statId,
   index,
+  gameScore,
   raw,
-  personalBestRaw,
+  personalBestScore,
   isNewRecord,
   onNext,
 }: CompleteScreenProps) {
@@ -37,6 +42,12 @@ export function CompleteScreen({
   /** How many of the 6 First Play games are done as of this screen — doubles as the Egg's growth stage. */
   const eggStage = index + 1
   const motion = EGG_STAGE_MOTION[eggStage] ?? EGG_STAGE_MOTION[1]
+  const { play } = useSound()
+
+  useEffect(() => {
+    play('game-complete')
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire exactly once per mount (GameFlow remounts this screen fresh each round via stepKey)
+  }, [])
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-10 text-center">
@@ -56,11 +67,11 @@ export function CompleteScreen({
         좋아요! {stat.name} 스탯을 발견했어요.
       </h1>
 
-      {/* this round's raw record */}
+      {/* this round's gameScore — the headline number; raw detail (개수/정확도) is a small parenthetical below it, never the other way around */}
       <div className="mt-6 w-full rounded-2xl bg-card px-6 py-5 toy-border toy-shadow">
         <div className="flex items-center justify-center gap-2">
           <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            이번 기록
+            이번 점수
           </p>
           {isNewRecord && (
             <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
@@ -70,17 +81,21 @@ export function CompleteScreen({
           )}
         </div>
         <p className="mt-1 font-display text-4xl font-extrabold leading-none text-foreground">
-          {raw.primary}
+          {gameScore}
+          <span className="text-lg">점</span>
         </p>
-        {raw.secondary && <p className="mt-2 text-sm text-muted-foreground">{raw.secondary}</p>}
+        <p className="mt-2 text-xs font-semibold text-muted-foreground">
+          ({raw.primary}
+          {raw.secondary ? ` · ${raw.secondary}` : ''})
+        </p>
 
-        {personalBestRaw && !isNewRecord && (
+        {personalBestScore != null && !isNewRecord && (
           <div className="mt-4 border-t border-border pt-3">
             <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               개인 최고
             </p>
             <p className="mt-1 font-display text-lg font-extrabold text-foreground">
-              {personalBestRaw.primary}
+              {personalBestScore}점
             </p>
           </div>
         )}

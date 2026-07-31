@@ -130,54 +130,6 @@ export interface RawRecord {
   secondary?: string
 }
 
-/** A completed result: the raw record plus the derived 0–100 Final Stat. */
-export interface StatResult {
-  raw: RawRecord
-  /** Unified 0–100 Final Stat (UI placeholder scale, not a real percentile). */
-  final: number
-}
-
-/**
- * Placeholder result generator so the prototype feels alive. Produces a raw
- * record shaped like each game's real measurement, plus a unified Final Stat.
- * No real scoring/percentile logic yet — see GAME_SPEC for that later.
- */
-export function generateResult(statId: StatId): StatResult {
-  const final = Math.round(48 + Math.random() * 47) // 48–95
-  const rand = (min: number, max: number) => Math.round(min + Math.random() * (max - min))
-
-  let raw: RawRecord
-  switch (statId) {
-    case 'reaction':
-      raw = { primary: `${rand(190, 320)} ms`, secondary: `최고 ${rand(170, 210)} ms` }
-      break
-    case 'memory':
-      raw = { primary: `Lv ${rand(5, 12)}`, secondary: `정확도 ${rand(82, 99)}%` }
-      break
-    case 'focus':
-      raw = { primary: `정확도 ${rand(80, 99)}%`, secondary: `반응 ${rand(420, 640)} ms` }
-      break
-    case 'judgment':
-      raw = { primary: `정확도 ${rand(78, 97)}%`, secondary: `반응 ${rand(460, 700)} ms` }
-      break
-    case 'spatial':
-      raw = { primary: `정답 ${rand(6, 12)}개`, secondary: `난이도 ${rand(3, 5)}` }
-      break
-    case 'reasoning':
-    default:
-      raw = { primary: `정답 ${rand(5, 11)}개`, secondary: `난이도 ${rand(3, 5)}` }
-      break
-  }
-  return { raw, final }
-}
-
-/** Empty result map for resetting a run. */
-export function emptyResults(): Record<StatId, StatResult | null> {
-  return Object.fromEntries(PLAY_ORDER.map((id) => [id, null])) as Record<
-    StatId,
-    StatResult | null
-  >
-}
 
 /**
  * Statling type metadata. In MVP v1 the highest Final Stat decides which of

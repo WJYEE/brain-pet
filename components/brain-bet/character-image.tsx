@@ -1,23 +1,24 @@
 import { AssetImage } from '@/components/brain-bet/asset-image'
+import { characterIdlePath } from '@/lib/character-assets'
 import { STATS, type StatId } from '@/lib/brain-bet'
 
 /**
- * Real file paths under public/assets/statling/characters — verified against
- * the actual filenames on disk before wiring, never guessed. The original
- * hand-drawn 순발력.png/기억력.png/etc. were removed as duplicates once the
- * cropped pet_NNN.png sprites covered the same ground, so each stat now
+ * Real file paths under public/assets/statling/characters — resolved through
+ * the CHARACTER_ASSETS registry (lib/character-assets.ts), never hardcoded.
+ * The original hand-drawn 순발력.png/기억력.png/etc. were removed as duplicates
+ * once the cropped pet_NNN sprites covered the same ground, so each stat now
  * points at its highest-affinity pet from PET_CATALOG (lib/pets/pet-profile.ts)
  * instead — reaction -> pet_001 (reaction 0.95), memory -> pet_002 (0.92),
  * focus -> pet_005 (0.92), judgment -> pet_004 (0.93), spatial -> pet_017
  * (0.85), reasoning -> pet_003 (0.9).
  */
 const CHARACTER_IMAGE_SRC: Record<StatId, string> = {
-  reaction: '/assets/statling/characters/pet_001.png',
-  memory: '/assets/statling/characters/pet_002.png',
-  focus: '/assets/statling/characters/pet_005.png',
-  judgment: '/assets/statling/characters/pet_004.png',
-  spatial: '/assets/statling/characters/pet_017.png',
-  reasoning: '/assets/statling/characters/pet_003.png',
+  reaction: characterIdlePath('pet_001'),
+  memory: characterIdlePath('pet_002'),
+  focus: characterIdlePath('pet_005'),
+  judgment: characterIdlePath('pet_004'),
+  spatial: characterIdlePath('pet_017'),
+  reasoning: characterIdlePath('pet_003'),
 }
 
 /**
@@ -46,8 +47,8 @@ const CHARACTER_SCALE: Record<StatId, number> = {
  * real, verified path for whenever that's designed, not a guess.
  */
 export const BONUS_CHARACTER_IMAGE_SRC = {
-  shining: '/assets/statling/characters/pet_007.png',
-  mystery: '/assets/statling/characters/pet_008.png',
+  shining: characterIdlePath('pet_007'),
+  mystery: characterIdlePath('pet_008'),
 } as const
 
 interface CharacterImageProps {

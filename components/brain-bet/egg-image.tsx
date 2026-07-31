@@ -1,15 +1,8 @@
 import { AssetImage } from '@/components/brain-bet/asset-image'
+import { EGG_HATCH_SEQUENCE } from '@/lib/egg-assets'
 
-/** Real file paths under public/assets/statling/eggs — verified against the actual filenames on disk before wiring, never guessed. */
-const EGG_IMAGE_SRC: Record<number, string> = {
-  0: '/assets/statling/eggs/0알.png',
-  1: '/assets/statling/eggs/1알.png',
-  2: '/assets/statling/eggs/2알.png',
-  3: '/assets/statling/eggs/3알.png',
-  4: '/assets/statling/eggs/4알.png',
-  5: '/assets/statling/eggs/5알.png',
-  6: '/assets/statling/eggs/6알.png',
-}
+/** Real file paths under public/assets/statling/eggs/hatch-sequence — resolved through the EGG_HATCH_SEQUENCE registry (lib/egg-assets.ts), never hardcoded. */
+const EGG_IMAGE_SRC: Record<number, string> = Object.fromEntries(EGG_HATCH_SEQUENCE.map((stage) => [stage.stage, stage.src]))
 
 /** Per-stage fine-tune multiplier — start every stage at 1, adjust only the stage(s) that read visually off once seen on a real screen. */
 const EGG_SCALE: Record<number, number> = {

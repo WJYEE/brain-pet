@@ -1,10 +1,12 @@
 'use client'
 
+import { useEffect } from 'react'
 import { ArrowRight, RotateCcw, Trophy } from 'lucide-react'
 import { Logo } from '@/components/brain-bet/logo'
 import { RadarChart } from '@/components/brain-bet/radar-chart'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { ToyButton } from '@/components/brain-bet/toy-button'
+import { useSound } from '@/hooks/use-sound'
 import { STATS, STAT_DISPLAY_ORDER, type StatId } from '@/lib/brain-bet'
 import { cn } from '@/lib/utils'
 
@@ -26,6 +28,12 @@ export function StatusScreen({
     (values[id] ?? 0) > (values[best] ?? 0) ? id : best,
   )
   const isFirstComplete = context === 'first-complete'
+  const { play } = useSound()
+
+  useEffect(() => {
+    if (isFirstComplete) play('game-complete')
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire exactly once per mount, only for the real "all 6 games done" moment
+  }, [])
 
   return (
     <div

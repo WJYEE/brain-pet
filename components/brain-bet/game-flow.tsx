@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Palette, Trophy } from 'lucide-react'
+import { Trophy } from 'lucide-react'
+import { ConfirmDialog } from '@/components/brain-bet/confirm-dialog'
 import { LandingScreen } from '@/components/brain-bet/screens/landing-screen'
 import { ReactionGame } from '@/components/brain-bet/games/reaction-game'
 import { MemoryGame } from '@/components/brain-bet/games/memory-game'
@@ -9,6 +10,12 @@ import { FocusGame } from '@/components/brain-bet/games/focus-game'
 import { JudgmentGame } from '@/components/brain-bet/games/judgment-game'
 import { SpatialGame } from '@/components/brain-bet/games/spatial-game'
 import { ReasoningGame } from '@/components/brain-bet/games/reasoning-game'
+import { StoryMemoryGame } from '@/components/brain-bet/games/story-memory-game'
+import { ColorTargetGame } from '@/components/brain-bet/games/color-target-game'
+import { DodgeObstacleGame } from '@/components/brain-bet/games/dodge-obstacle-game'
+import { BestChoiceGame } from '@/components/brain-bet/games/best-choice-game'
+import { FitPuzzleGame } from '@/components/brain-bet/games/fit-puzzle-game'
+import { NumberPatternGame } from '@/components/brain-bet/games/number-pattern-game'
 import { CompleteScreen } from '@/components/brain-bet/screens/complete-screen'
 import { FreePlayResultScreen } from '@/components/brain-bet/screens/free-play-result-screen'
 import { StatusScreen } from '@/components/brain-bet/screens/status-screen'
@@ -18,12 +25,16 @@ import { SaveScreen } from '@/components/brain-bet/screens/save-screen'
 import { NamingScreen } from '@/components/brain-bet/screens/naming-screen'
 import { RoomScreen } from '@/components/brain-bet/screens/room-screen'
 import { GrowScreen } from '@/components/brain-bet/screens/grow-screen'
+import { GrowGameScreen } from '@/components/brain-bet/screens/grow-game-screen'
 import { ComingSoonScreen } from '@/components/brain-bet/screens/coming-soon-screen'
+import { ThemeScreen } from '@/components/brain-bet/screens/theme-screen'
 import { MyPageScreen } from '@/components/brain-bet/screens/my-page-screen'
 import { NavRail, type NavTab } from '@/components/brain-bet/nav-rail'
 import { QaSkipMenu } from '@/components/brain-bet/qa-skip-menu'
 import { PLAY_ORDER, TOTAL_GAMES, getSecondStat, getTopStat, type StatId } from '@/lib/brain-bet'
 import { RECOMMENDED_STAT_PLACEHOLDER } from '@/lib/room'
+import { recordGameCompletion } from '@/lib/pet-care/pet-memory'
+import { loadPetMemory, savePetMemory } from '@/lib/pet-care/pet-memory-storage'
 import {
   beginPetAssignment,
   confirmPet,
@@ -37,6 +48,8 @@ import {
   saveStoredPetProfile,
   type StoredPetProfile,
 } from '@/lib/pets/pet-storage'
+import { TESTER_CHARACTER_FOLDERS } from '@/lib/character-state-assets'
+import type { PetProfile } from '@/lib/pets/pet-profile'
 import { generateMockFinals, type MockStatPreset } from '@/lib/game/mock-finals'
 import { REACTION_GAME_VERSION } from '@/lib/config/reaction.config'
 import { MEMORY_GAME_VERSION } from '@/lib/config/memory.config'
@@ -44,10 +57,29 @@ import { FOCUS_GAME_VERSION } from '@/lib/config/focus.config'
 import { JUDGMENT_GAME_VERSION } from '@/lib/config/judgment.config'
 import { SPATIAL_GAME_VERSION } from '@/lib/config/spatial.config'
 import { REASONING_GAME_VERSION } from '@/lib/config/reasoning.config'
+import { STORY_MEMORY_GAME_VERSION } from '@/lib/config/story-memory.config'
+import { COLOR_TARGET_GAME_VERSION } from '@/lib/config/color-target.config'
+import { DODGE_OBSTACLE_GAME_VERSION } from '@/lib/config/dodge-obstacle.config'
+import { BEST_CHOICE_GAME_VERSION } from '@/lib/config/best-choice.config'
+import { FIT_PUZZLE_GAME_VERSION } from '@/lib/config/fit-puzzle.config'
+import { NUMBER_PATTERN_GAME_VERSION } from '@/lib/config/number-pattern.config'
 import { detectDevice } from '@/lib/game/device'
 import { generateSessionId } from '@/lib/game/id'
 import { applyGameResult, emptyStatStatusMap } from '@/lib/game/stat-status'
+import { getClassicGameKey } from '@/lib/game/game-registry'
 import type {
+  BestChoiceAnswer,
+  BestChoiceGameResult,
+  BestChoiceRawSummary,
+  ColorTargetClickEvent,
+  ColorTargetGameResult,
+  ColorTargetRawSummary,
+  DodgeObstacleEvent,
+  DodgeObstacleGameResult,
+  DodgeObstacleRawSummary,
+  FitPuzzleGameResult,
+  FitPuzzleRawSummary,
+  FitPuzzleRoundResult,
   FocusGameResult,
   FocusRawSummary,
   FocusRoundTrial,
@@ -58,6 +90,9 @@ import type {
   MemoryGameResult,
   MemoryRawSummary,
   MemoryRoundTrial,
+  NumberPatternAnswer,
+  NumberPatternGameResult,
+  NumberPatternRawSummary,
   ReactionGameResult,
   ReactionRawSummary,
   ReactionTrial,
@@ -68,17 +103,23 @@ import type {
   SpatialRawSummary,
   SpatialTrial,
   StatStatusMap,
+  StoryMemoryAnswer,
+  StoryMemoryGameResult,
+  StoryMemoryRawSummary,
 } from '@/lib/game/types'
-import {
-  evaluateReactionValidity,
-  formatReactionRawRecord,
-  isBetterReactionResult,
-} from '@/lib/scoring/reaction'
-import { formatMemoryRawRecord, isBetterMemoryResult } from '@/lib/scoring/memory'
-import { formatFocusRawRecord, isBetterFocusResult } from '@/lib/scoring/focus'
-import { formatJudgmentRawRecord, isBetterJudgmentResult } from '@/lib/scoring/judgment'
-import { formatSpatialRawRecord, isBetterSpatialResult } from '@/lib/scoring/spatial'
-import { formatReasoningRawRecord, isBetterReasoningResult } from '@/lib/scoring/reasoning'
+import { evaluateReactionValidity, formatReactionRawRecord } from '@/lib/scoring/reaction'
+import { formatMemoryRawRecord } from '@/lib/scoring/memory'
+import { formatFocusRawRecord } from '@/lib/scoring/focus'
+import { formatJudgmentRawRecord } from '@/lib/scoring/judgment'
+import { formatSpatialRawRecord } from '@/lib/scoring/spatial'
+import { formatReasoningRawRecord } from '@/lib/scoring/reasoning'
+import { isBetterByGameScore } from '@/lib/scoring/shared'
+import { formatStoryMemoryRawRecord } from '@/lib/scoring/story-memory'
+import { formatColorTargetRawRecord } from '@/lib/scoring/color-target'
+import { formatDodgeObstacleRawRecord } from '@/lib/scoring/dodge-obstacle'
+import { formatBestChoiceRawRecord } from '@/lib/scoring/best-choice'
+import { formatFitPuzzleRawRecord } from '@/lib/scoring/fit-puzzle'
+import { formatNumberPatternRawRecord } from '@/lib/scoring/number-pattern'
 
 type Phase =
   | 'landing'
@@ -96,6 +137,7 @@ type Phase =
   | 'mypage'
   | 'theme'
   | 'grow'
+  | 'grow-game'
 
 /** Phases that show the post-hatch bottom navigation. */
 const NAV_PHASES: Phase[] = ['room', 'mystats', 'ranking', 'mypage', 'theme']
@@ -118,12 +160,18 @@ export function GameFlow() {
   const [flowMode, setFlowMode] = useState<'first' | 'free'>('first')
   const [index, setIndex] = useState(0)
   const [activeStatId, setActiveStatId] = useState<StatId>(PLAY_ORDER[0])
+  /** Which registered game (see lib/game/game-registry.ts) is currently showing for activeStatId — e.g. 'reaction-classic' vs 'reaction-dodge-run'. */
+  const [activeGameKey, setActiveGameKey] = useState<string>(getClassicGameKey(PLAY_ORDER[0]))
   const [statStatus, setStatStatus] = useState<StatStatusMap>(emptyStatStatusMap())
   const [lastResult, setLastResult] = useState<GameResult | null>(null)
   /**
-   * Mock 0-100 values for the Radar / MY STATUS chart only. Deliberately
-   * decoupled from real game data — no fake Percentile/Final Stat is ever
-   * derived from real Reaction results (GAME_SPEC §9, §128).
+   * The 0-100 value per stat shown on the Radar / MY STATUS chart, used for
+   * representative-pet matching (getTopStat/getSecondStat, beginPetAssignment)
+   * and the share card. Set directly from each stat's personal-best gameScore
+   * (see the on*Complete handlers below: `isPersonalBest ? gameScore :
+   * prevBest.gameScore`) — never recomputed separately, never random. A
+   * stat's two registered games (see lib/game/game-registry.ts) share one
+   * gameScore scale, so replaying with either game updates the same value.
    */
   const [finals, setFinals] = useState<Record<StatId, number>>(emptyFinals())
   const [statlingName, setStatlingName] = useState('')
@@ -135,6 +183,16 @@ export function GameFlow() {
    * stored growth data.
    */
   const [petRecord, setPetRecord] = useState<StoredPetProfile | null>(null)
+  /**
+   * Whether the 테마 tab currently has unsaved room edits — lifted here (not
+   * kept purely local to ThemeScreen) so the bottom NavRail, which lives
+   * outside ThemeScreen, can intercept a tab switch away from 테마 and warn
+   * before discarding those edits (see handleNavSelect below).
+   */
+  const [themeDirty, setThemeDirty] = useState(false)
+  const [pendingNavTab, setPendingNavTab] = useState<NavTab | null>(null)
+  /** Dev/QA only — pins the Room character to one TESTER_CHARACTER_FOLDERS entry's 24-state art. See qa-skip-menu.tsx / pet-mood-view.tsx. */
+  const [testerFolderId, setTesterFolderId] = useState<string | null>(null)
 
   const topStat = getTopStat(finals)
   /**
@@ -146,6 +204,29 @@ export function GameFlow() {
    * has been assigned yet at all.
    */
   const displayedPetProfile = petRecord ? resolveCurrentPetProfile(petRecord) : null
+
+  /** Dev/QA only — the currently-active tester folder, if any (see qa-skip-menu.tsx). */
+  const activeTesterFolder = TESTER_CHARACTER_FOLDERS.find((f) => f.folderId === testerFolderId) ?? null
+  /**
+   * Dev/QA only — swaps in a synthetic profile for `real` whenever a tester
+   * folder is active, so Egg/Reveal/Naming show the tested character's own
+   * name and art instead of whichever real catalog pet the mock finals
+   * happened to match (wrong name, and sometimes a broken image for a
+   * catalog pet whose real PNG isn't wired up yet). Room itself doesn't need
+   * this: it already shows the tester's full 24-state art via PetMoodView's
+   * own `testerFolder` prop, keyed off live mood/animation rather than one
+   * static image.
+   */
+  const applyTesterOverride = (real: PetProfile): PetProfile =>
+    activeTesterFolder
+      ? {
+          id: `tester-${activeTesterFolder.folderId}`,
+          name: activeTesterFolder.displayName,
+          imageSrc: activeTesterFolder.assets.idle,
+          vector: Object.fromEntries(PLAY_ORDER.map((id) => [id, 0.5])) as Record<StatId, number>,
+          tagline: '테스터용 캐릭터예요.',
+        }
+      : real
 
   // Resume an in-progress (not yet confirmed) reveal straight to the Reveal
   // screen on mount — e.g. after a refresh mid-reroll. A CONFIRMED pet never
@@ -161,9 +242,15 @@ export function GameFlow() {
     }
   }, [])
 
+  /** First Play only — always stages the stat's classic game (see getClassicGameKey). Free Play picks a specific game explicitly instead (see selectFreePlayGame/confirmFreePlayGame below). */
+  const enterStatGame = (statId: StatId) => {
+    setActiveStatId(statId)
+    setActiveGameKey(getClassicGameKey(statId))
+  }
+
   const start = () => {
     setIndex(0)
-    setActiveStatId(PLAY_ORDER[0])
+    enterStatGame(PLAY_ORDER[0])
     setFlowMode('first')
     setFinals(emptyFinals())
     setPhase('game')
@@ -173,7 +260,7 @@ export function GameFlow() {
     if (index < TOTAL_GAMES - 1) {
       const nextIndex = index + 1
       setIndex(nextIndex)
-      setActiveStatId(PLAY_ORDER[nextIndex])
+      enterStatGame(PLAY_ORDER[nextIndex])
       setPhase('game')
     } else {
       setPhase('status')
@@ -191,14 +278,12 @@ export function GameFlow() {
     gameScore: number
   }) => {
     const { isValidAttempt, invalidReason } = evaluateReactionValidity(trials)
-    // Safe: this app only ever stores a ReactionGameResult under the 'reaction' key.
-    const prevBest = statStatus.reaction.current as ReactionGameResult | null
-    const isPersonalBest =
-      isValidAttempt &&
-      isBetterReactionResult(
-        { rawSummary },
-        prevBest ? { rawSummary: prevBest.rawSummary } : null,
-      )
+    // gameScore is on BaseGameResult, so this is safe regardless of which of
+    // the stat's two games (신호 반응 vs 장애물 피하기) set the current best —
+    // unlike a rawSummary-shaped comparator, which would assume the wrong
+    // shape whenever the sibling game set the record.
+    const prevBest = statStatus.reaction.current
+    const isPersonalBest = isValidAttempt && isBetterByGameScore(gameScore, prevBest?.gameScore ?? null)
 
     const result: ReactionGameResult = {
       sessionId: generateSessionId(),
@@ -219,9 +304,8 @@ export function GameFlow() {
 
     setStatStatus((map) => applyGameResult('reaction', map, result))
     setLastResult(result)
-    // Radar/MY STATUS still shows a decoupled mock value here — real
-    // Reaction data is never converted into a fake Final Stat/Percentile.
-    setFinals((f) => ({ ...f, reaction: Math.round(48 + Math.random() * 47) }))
+    if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    setFinals((f) => ({ ...f, reaction: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
 
@@ -235,12 +319,10 @@ export function GameFlow() {
     rawSummary: MemoryRawSummary
     gameScore: number
   }) => {
-    // Safe: this app only ever stores a MemoryGameResult under the 'memory' key.
-    const prevBest = statStatus.memory.current as MemoryGameResult | null
-    const isPersonalBest = isBetterMemoryResult(
-      { rawSummary },
-      prevBest ? { rawSummary: prevBest.rawSummary } : null,
-    )
+    // gameScore is on BaseGameResult, safe regardless of which of the stat's
+    // two games (패턴 기억 vs 이야기 기억) set the current best.
+    const prevBest = statStatus.memory.current
+    const isPersonalBest = isBetterByGameScore(gameScore, prevBest?.gameScore ?? null)
 
     const result: MemoryGameResult = {
       sessionId: generateSessionId(),
@@ -263,9 +345,8 @@ export function GameFlow() {
 
     setStatStatus((map) => applyGameResult('memory', map, result))
     setLastResult(result)
-    // Radar/MY STATUS still shows a decoupled mock value — real Memory data
-    // is never converted into a fake Final Stat/Percentile.
-    setFinals((f) => ({ ...f, memory: Math.round(48 + Math.random() * 47) }))
+    if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    setFinals((f) => ({ ...f, memory: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
 
@@ -279,12 +360,10 @@ export function GameFlow() {
     rawSummary: FocusRawSummary
     gameScore: number
   }) => {
-    // Safe: this app only ever stores a FocusGameResult under the 'focus' key.
-    const prevBest = statStatus.focus.current as FocusGameResult | null
-    const isPersonalBest = isBetterFocusResult(
-      { rawSummary },
-      prevBest ? { rawSummary: prevBest.rawSummary } : null,
-    )
+    // gameScore is on BaseGameResult, safe regardless of which of the stat's
+    // two games (표적 찾기 vs 특정 색만 클릭) set the current best.
+    const prevBest = statStatus.focus.current
+    const isPersonalBest = isBetterByGameScore(gameScore, prevBest?.gameScore ?? null)
 
     const result: FocusGameResult = {
       sessionId: generateSessionId(),
@@ -307,9 +386,8 @@ export function GameFlow() {
 
     setStatStatus((map) => applyGameResult('focus', map, result))
     setLastResult(result)
-    // Radar/MY STATUS still shows a decoupled mock value — real Focus data
-    // is never converted into a fake Final Stat/Percentile.
-    setFinals((f) => ({ ...f, focus: Math.round(48 + Math.random() * 47) }))
+    if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    setFinals((f) => ({ ...f, focus: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
 
@@ -323,12 +401,10 @@ export function GameFlow() {
     rawSummary: JudgmentRawSummary
     gameScore: number
   }) => {
-    // Safe: this app only ever stores a JudgmentGameResult under the 'judgment' key.
-    const prevBest = statStatus.judgment.current as JudgmentGameResult | null
-    const isPersonalBest = isBetterJudgmentResult(
-      { rawSummary },
-      prevBest ? { rawSummary: prevBest.rawSummary } : null,
-    )
+    // gameScore is on BaseGameResult, safe regardless of which of the stat's
+    // two games (규칙 전환 vs 무엇을 선택할까) set the current best.
+    const prevBest = statStatus.judgment.current
+    const isPersonalBest = isBetterByGameScore(gameScore, prevBest?.gameScore ?? null)
 
     const result: JudgmentGameResult = {
       sessionId: generateSessionId(),
@@ -351,9 +427,8 @@ export function GameFlow() {
 
     setStatStatus((map) => applyGameResult('judgment', map, result))
     setLastResult(result)
-    // Radar/MY STATUS still shows a decoupled mock value — real Judgment data
-    // is never converted into a fake Final Stat/Percentile.
-    setFinals((f) => ({ ...f, judgment: Math.round(48 + Math.random() * 47) }))
+    if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    setFinals((f) => ({ ...f, judgment: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
 
@@ -367,12 +442,10 @@ export function GameFlow() {
     rawSummary: SpatialRawSummary
     gameScore: number
   }) => {
-    // Safe: this app only ever stores a SpatialGameResult under the 'spatial' key.
-    const prevBest = statStatus.spatial.current as SpatialGameResult | null
-    const isPersonalBest = isBetterSpatialResult(
-      { rawSummary },
-      prevBest ? { rawSummary: prevBest.rawSummary } : null,
-    )
+    // gameScore is on BaseGameResult, safe regardless of which of the stat's
+    // two games (회전 도형 찾기 vs 퍼즐 끼우기) set the current best.
+    const prevBest = statStatus.spatial.current
+    const isPersonalBest = isBetterByGameScore(gameScore, prevBest?.gameScore ?? null)
 
     const result: SpatialGameResult = {
       sessionId: generateSessionId(),
@@ -395,9 +468,8 @@ export function GameFlow() {
 
     setStatStatus((map) => applyGameResult('spatial', map, result))
     setLastResult(result)
-    // Radar/MY STATUS still shows a decoupled mock value — real Spatial data
-    // is never converted into a fake Final Stat/Percentile.
-    setFinals((f) => ({ ...f, spatial: Math.round(48 + Math.random() * 47) }))
+    if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    setFinals((f) => ({ ...f, spatial: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
 
@@ -411,12 +483,10 @@ export function GameFlow() {
     rawSummary: ReasoningRawSummary
     gameScore: number
   }) => {
-    // Safe: this app only ever stores a ReasoningGameResult under the 'reasoning' key.
-    const prevBest = statStatus.reasoning.current as ReasoningGameResult | null
-    const isPersonalBest = isBetterReasoningResult(
-      { rawSummary },
-      prevBest ? { rawSummary: prevBest.rawSummary } : null,
-    )
+    // gameScore is on BaseGameResult, safe regardless of which of the stat's
+    // two games (규칙 찾기 vs 숫자 규칙) set the current best.
+    const prevBest = statStatus.reasoning.current
+    const isPersonalBest = isBetterByGameScore(gameScore, prevBest?.gameScore ?? null)
 
     const result: ReasoningGameResult = {
       sessionId: generateSessionId(),
@@ -439,19 +509,279 @@ export function GameFlow() {
 
     setStatStatus((map) => applyGameResult('reasoning', map, result))
     setLastResult(result)
-    // Radar/MY STATUS still shows a decoupled mock value — real Reasoning
-    // data is never converted into a fake Final Stat/Percentile.
-    setFinals((f) => ({ ...f, reasoning: Math.round(48 + Math.random() * 47) }))
+    if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    setFinals((f) => ({ ...f, reasoning: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
 
+  // ---------------------------------------------------------------------
+  // Completion paths for the 6 new games (one extra per stat, see
+  // lib/game/game-registry.ts). Same shape as the 6 handlers above: build a
+  // GameResult, hand it to the untouched applyGameResult/StatStatus
+  // machinery, then set `finals` to this stat's personal-best gameScore —
+  // the exact same rule every other stat uses, so a story-recall result and
+  // a grid-recall result under the same stat feed the same `finals[stat]`.
+  // isPersonalBest compares gameScore directly (see isBetterByGameScore)
+  // rather than the classic game's own rawSummary-shaped comparator, since
+  // a story-recall result and a grid-recall result aren't structurally
+  // comparable field-by-field.
+  // ---------------------------------------------------------------------
+
+  const onStoryMemoryComplete = ({
+    answers,
+    rawSummary,
+    gameScore,
+  }: {
+    answers: StoryMemoryAnswer[]
+    rawSummary: StoryMemoryRawSummary
+    gameScore: number
+  }) => {
+    const prevBest = statStatus.memory.current
+    const isPersonalBest = isBetterByGameScore(gameScore, prevBest?.gameScore ?? null)
+
+    const result: StoryMemoryGameResult = {
+      sessionId: generateSessionId(),
+      gameId: 'memory',
+      variant: 'story-recall',
+      gameVersion: STORY_MEMORY_GAME_VERSION,
+      mode: flowMode,
+      playedAt: new Date().toISOString(),
+      device: detectDevice(),
+      gameScore,
+      raw: formatStoryMemoryRawRecord(rawSummary),
+      final: undefined,
+      isPersonalBest,
+      isValidAttempt: true,
+      invalidReason: null,
+      answers,
+      rawSummary,
+    }
+
+    setStatStatus((map) => applyGameResult('memory', map, result))
+    setLastResult(result)
+    if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    setFinals((f) => ({ ...f, memory: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
+    setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
+  }
+
+  const onColorTargetComplete = ({
+    events,
+    rawSummary,
+    gameScore,
+  }: {
+    events: ColorTargetClickEvent[]
+    rawSummary: ColorTargetRawSummary
+    gameScore: number
+  }) => {
+    const prevBest = statStatus.focus.current
+    const isPersonalBest = isBetterByGameScore(gameScore, prevBest?.gameScore ?? null)
+
+    const result: ColorTargetGameResult = {
+      sessionId: generateSessionId(),
+      gameId: 'focus',
+      variant: 'color-target',
+      gameVersion: COLOR_TARGET_GAME_VERSION,
+      mode: flowMode,
+      playedAt: new Date().toISOString(),
+      device: detectDevice(),
+      gameScore,
+      raw: formatColorTargetRawRecord(rawSummary),
+      final: undefined,
+      isPersonalBest,
+      isValidAttempt: true,
+      invalidReason: null,
+      events,
+      rawSummary,
+    }
+
+    setStatStatus((map) => applyGameResult('focus', map, result))
+    setLastResult(result)
+    if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    setFinals((f) => ({ ...f, focus: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
+    setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
+  }
+
+  const onDodgeObstacleComplete = ({
+    events,
+    rawSummary,
+    gameScore,
+  }: {
+    events: DodgeObstacleEvent[]
+    rawSummary: DodgeObstacleRawSummary
+    gameScore: number
+  }) => {
+    const prevBest = statStatus.reaction.current
+    const isPersonalBest = isBetterByGameScore(gameScore, prevBest?.gameScore ?? null)
+
+    const result: DodgeObstacleGameResult = {
+      sessionId: generateSessionId(),
+      gameId: 'reaction',
+      variant: 'dodge-run',
+      gameVersion: DODGE_OBSTACLE_GAME_VERSION,
+      mode: flowMode,
+      playedAt: new Date().toISOString(),
+      device: detectDevice(),
+      gameScore,
+      raw: formatDodgeObstacleRawRecord(rawSummary),
+      final: undefined,
+      isPersonalBest,
+      isValidAttempt: true,
+      invalidReason: null,
+      events,
+      rawSummary,
+    }
+
+    setStatStatus((map) => applyGameResult('reaction', map, result))
+    setLastResult(result)
+    if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    setFinals((f) => ({ ...f, reaction: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
+    setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
+  }
+
+  const onBestChoiceComplete = ({
+    answers,
+    rawSummary,
+    gameScore,
+  }: {
+    answers: BestChoiceAnswer[]
+    rawSummary: BestChoiceRawSummary
+    gameScore: number
+  }) => {
+    const prevBest = statStatus.judgment.current
+    const isPersonalBest = isBetterByGameScore(gameScore, prevBest?.gameScore ?? null)
+
+    const result: BestChoiceGameResult = {
+      sessionId: generateSessionId(),
+      gameId: 'judgment',
+      variant: 'best-choice',
+      gameVersion: BEST_CHOICE_GAME_VERSION,
+      mode: flowMode,
+      playedAt: new Date().toISOString(),
+      device: detectDevice(),
+      gameScore,
+      raw: formatBestChoiceRawRecord(rawSummary),
+      final: undefined,
+      isPersonalBest,
+      isValidAttempt: true,
+      invalidReason: null,
+      answers,
+      rawSummary,
+    }
+
+    setStatStatus((map) => applyGameResult('judgment', map, result))
+    setLastResult(result)
+    if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    setFinals((f) => ({ ...f, judgment: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
+    setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
+  }
+
+  const onFitPuzzleComplete = ({
+    rounds,
+    rawSummary,
+    gameScore,
+  }: {
+    rounds: FitPuzzleRoundResult[]
+    rawSummary: FitPuzzleRawSummary
+    gameScore: number
+  }) => {
+    const prevBest = statStatus.spatial.current
+    const isPersonalBest = isBetterByGameScore(gameScore, prevBest?.gameScore ?? null)
+
+    const result: FitPuzzleGameResult = {
+      sessionId: generateSessionId(),
+      gameId: 'spatial',
+      variant: 'fit-puzzle',
+      gameVersion: FIT_PUZZLE_GAME_VERSION,
+      mode: flowMode,
+      playedAt: new Date().toISOString(),
+      device: detectDevice(),
+      gameScore,
+      raw: formatFitPuzzleRawRecord(rawSummary),
+      final: undefined,
+      isPersonalBest,
+      isValidAttempt: true,
+      invalidReason: null,
+      rounds,
+      rawSummary,
+    }
+
+    setStatStatus((map) => applyGameResult('spatial', map, result))
+    setLastResult(result)
+    if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    setFinals((f) => ({ ...f, spatial: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
+    setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
+  }
+
+  const onNumberPatternComplete = ({
+    answers,
+    rawSummary,
+    gameScore,
+  }: {
+    answers: NumberPatternAnswer[]
+    rawSummary: NumberPatternRawSummary
+    gameScore: number
+  }) => {
+    const prevBest = statStatus.reasoning.current
+    const isPersonalBest = isBetterByGameScore(gameScore, prevBest?.gameScore ?? null)
+
+    const result: NumberPatternGameResult = {
+      sessionId: generateSessionId(),
+      gameId: 'reasoning',
+      variant: 'number-pattern',
+      gameVersion: NUMBER_PATTERN_GAME_VERSION,
+      mode: flowMode,
+      playedAt: new Date().toISOString(),
+      device: detectDevice(),
+      gameScore,
+      raw: formatNumberPatternRawRecord(rawSummary),
+      final: undefined,
+      isPersonalBest,
+      isValidAttempt: true,
+      invalidReason: null,
+      answers,
+      rawSummary,
+    }
+
+    setStatStatus((map) => applyGameResult('reasoning', map, result))
+    setLastResult(result)
+    if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    setFinals((f) => ({ ...f, reasoning: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
+    setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
+  }
+
+  /** Free Play step 1 — stat chosen in GrowScreen, now show that stat's game pool so the player can pick which one to play. */
   const selectFreePlayGame = (statId: StatId) => {
     setActiveStatId(statId)
     setFlowMode('free')
+    setPhase('grow-game')
+  }
+
+  /** Free Play step 2 — a specific game was chosen in GrowGameScreen, start it. */
+  const confirmFreePlayGame = (gameKey: string) => {
+    setActiveGameKey(gameKey)
     setPhase('game')
   }
 
   const returnToRoom = () => setPhase('room')
+
+  /**
+   * Guards NavRail tab switches: leaving 테마 while it has unsaved room
+   * edits opens a confirm dialog instead of switching immediately (see
+   * pendingNavTab render below). Any other switch goes through untouched.
+   */
+  const handleNavSelect = (tab: NavTab) => {
+    if (phase === 'theme' && themeDirty && tab !== 'theme') {
+      setPendingNavTab(tab)
+      return
+    }
+    setPhase(tab)
+  }
+
+  const handleDiscardThemeEdits = () => {
+    if (pendingNavTab) setPhase(pendingNavTab)
+    setPendingNavTab(null)
+    setThemeDirty(false)
+  }
 
   /**
    * Runs once the full 6-stat test is complete (status -> egg transition).
@@ -513,6 +843,23 @@ export function GameFlow() {
     setPetRecord(null)
   }
 
+  /**
+   * Toggling the same folder again turns the tester override back off. If
+   * we're not already on the Room screen (e.g. clicked from Landing or
+   * mid-game), turning it on also runs the same Skip flow the preset
+   * buttons use — otherwise the click would just flip a flag with nothing
+   * visibly different, since Room (the only screen that reads
+   * testerFolderId) isn't even on screen yet. That flow is exactly what
+   * shows the Egg hatching motion en route to Room.
+   */
+  const handleToggleTesterFolder = (folderId: string) => {
+    const turningOn = testerFolderId !== folderId
+    setTesterFolderId(turningOn ? folderId : null)
+    if (turningOn && phase !== 'room') {
+      handleSkipGames('balanced')
+    }
+  }
+
   /** "다른 Statling 보기" — advances to the next unseen top-5 candidate. No-op once confirmed or out of rerolls. */
   const handleRerollPet = () => {
     if (!petRecord) return
@@ -534,30 +881,58 @@ export function GameFlow() {
   }
 
   const currentBestRaw = statStatus[activeStatId].current?.raw ?? null
+  const currentBestScore = statStatus[activeStatId].current?.gameScore ?? null
 
   // key forces a fresh mount per step so transitions/animations replay
-  const stepKey = `${phase}-${activeStatId}-${flowMode}`
+  const stepKey = `${phase}-${activeStatId}-${flowMode}-${activeGameKey}`
 
   return (
     <main className="min-h-dvh bg-background">
       <div key={stepKey} className="animate-in fade-in slide-in-from-bottom-3 duration-300">
         {phase === 'landing' && <LandingScreen onStart={start} />}
 
-        {phase === 'game' && flowMode === 'first' && SHOW_QA_SKIP && (
-          <QaSkipMenu onSkip={handleSkipGames} onReset={handleResetPetProfile} />
+        {SHOW_QA_SKIP && (phase === 'room' || (phase === 'game' && flowMode === 'first')) && (
+          <QaSkipMenu
+            onSkip={handleSkipGames}
+            onReset={handleResetPetProfile}
+            testerFolderId={testerFolderId}
+            onToggleTesterFolder={handleToggleTesterFolder}
+          />
         )}
 
         {phase === 'game' &&
           (activeStatId === 'reaction' ? (
-            <ReactionGame index={index} mode={flowMode} onComplete={onReactionComplete} />
+            activeGameKey === 'reaction-dodge-run' ? (
+              <DodgeObstacleGame index={index} mode={flowMode} onComplete={onDodgeObstacleComplete} />
+            ) : (
+              <ReactionGame index={index} mode={flowMode} onComplete={onReactionComplete} />
+            )
           ) : activeStatId === 'memory' ? (
-            <MemoryGame index={index} mode={flowMode} onComplete={onMemoryComplete} />
+            activeGameKey === 'memory-story-recall' ? (
+              <StoryMemoryGame index={index} mode={flowMode} onComplete={onStoryMemoryComplete} />
+            ) : (
+              <MemoryGame index={index} mode={flowMode} onComplete={onMemoryComplete} />
+            )
           ) : activeStatId === 'focus' ? (
-            <FocusGame index={index} mode={flowMode} onComplete={onFocusComplete} />
+            activeGameKey === 'focus-color-target' ? (
+              <ColorTargetGame index={index} mode={flowMode} onComplete={onColorTargetComplete} />
+            ) : (
+              <FocusGame index={index} mode={flowMode} onComplete={onFocusComplete} />
+            )
           ) : activeStatId === 'judgment' ? (
-            <JudgmentGame index={index} mode={flowMode} onComplete={onJudgmentComplete} />
+            activeGameKey === 'decision-best-choice' ? (
+              <BestChoiceGame index={index} mode={flowMode} onComplete={onBestChoiceComplete} />
+            ) : (
+              <JudgmentGame index={index} mode={flowMode} onComplete={onJudgmentComplete} />
+            )
           ) : activeStatId === 'spatial' ? (
-            <SpatialGame index={index} mode={flowMode} onComplete={onSpatialComplete} />
+            activeGameKey === 'spatial-fit-puzzle' ? (
+              <FitPuzzleGame index={index} mode={flowMode} onComplete={onFitPuzzleComplete} />
+            ) : (
+              <SpatialGame index={index} mode={flowMode} onComplete={onSpatialComplete} />
+            )
+          ) : activeGameKey === 'reasoning-number-pattern' ? (
+            <NumberPatternGame index={index} mode={flowMode} onComplete={onNumberPatternComplete} />
           ) : (
             <ReasoningGame index={index} mode={flowMode} onComplete={onReasoningComplete} />
           ))}
@@ -566,8 +941,9 @@ export function GameFlow() {
           <CompleteScreen
             statId={activeStatId}
             index={index}
+            gameScore={lastResult.gameScore}
             raw={lastResult.raw}
-            personalBestRaw={currentBestRaw}
+            personalBestScore={currentBestScore}
             isNewRecord={lastResult.isPersonalBest}
             onNext={goNextFirst}
           />
@@ -593,11 +969,16 @@ export function GameFlow() {
           />
         )}
 
-        {phase === 'egg' && <EggScreen petProfile={displayedPetProfile} onHatched={() => setPhase('reveal')} />}
+        {phase === 'egg' && (
+          <EggScreen
+            petProfile={displayedPetProfile ? applyTesterOverride(displayedPetProfile) : null}
+            onHatched={() => setPhase('reveal')}
+          />
+        )}
 
         {phase === 'reveal' && petRecord && displayedPetProfile && (
           <RevealScreen
-            petProfile={displayedPetProfile}
+            petProfile={applyTesterOverride(displayedPetProfile)}
             topStat={topStat}
             secondaryStat={getSecondStat(finals)}
             finals={finals}
@@ -615,7 +996,7 @@ export function GameFlow() {
 
         {phase === 'naming' && displayedPetProfile && (
           <NamingScreen
-            petProfile={displayedPetProfile}
+            petProfile={applyTesterOverride(displayedPetProfile)}
             onConfirm={(name) => {
               setStatlingName(name)
               setPhase('room')
@@ -629,6 +1010,7 @@ export function GameFlow() {
             topStat={topStat}
             petProfile={displayedPetProfile}
             onGrow={() => setPhase('grow')}
+            testerFolder={activeTesterFolder}
           />
         )}
 
@@ -645,11 +1027,7 @@ export function GameFlow() {
         {phase === 'mypage' && <MyPageScreen statlingName={statlingName} topStat={topStat} />}
 
         {phase === 'theme' && (
-          <ComingSoonScreen
-            icon={Palette}
-            title="테마"
-            message={'나만의 Room과 색상을\n곧 꾸밀 수 있어요.'}
-          />
+          <ThemeScreen topStat={topStat} petProfile={displayedPetProfile} onDirtyChange={setThemeDirty} />
         )}
 
         {phase === 'grow' && (
@@ -660,11 +1038,29 @@ export function GameFlow() {
             onBack={returnToRoom}
           />
         )}
+
+        {phase === 'grow-game' && (
+          <GrowGameScreen
+            statId={activeStatId}
+            onSelect={confirmFreePlayGame}
+            onBack={() => setPhase('grow')}
+          />
+        )}
       </div>
 
-      {NAV_PHASES.includes(phase) && (
-        <NavRail active={phase as NavTab} onSelect={(tab) => setPhase(tab)} />
-      )}
+      {NAV_PHASES.includes(phase) && <NavRail active={phase as NavTab} onSelect={handleNavSelect} />}
+
+      <ConfirmDialog
+        open={pendingNavTab !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingNavTab(null)
+        }}
+        title="저장하지 않은 변경사항이 있어요."
+        description={'지금 나가면 방 편집 내용이 사라져요.\n계속 편집할까요, 변경사항을 버릴까요?'}
+        confirmLabel="변경사항 버리기"
+        cancelLabel="계속 편집"
+        onConfirm={handleDiscardThemeEdits}
+      />
     </main>
   )
 }

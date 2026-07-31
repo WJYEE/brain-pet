@@ -1,8 +1,9 @@
 /** Reaction ("Catch the Signal") tuning constants — GAME_SPEC §23-33. */
-export const REACTION_GAME_VERSION = 'reaction_v1'
+/** v2: gameScore reworked to 유효시행비율 60% + 반응속도 40%, clamped 0-100 (was an unbounded ~1000-scale formula). */
+export const REACTION_GAME_VERSION = 'reaction_v2'
 
 export const REACTION_PRACTICE_TRIALS = 1
-export const REACTION_REAL_TRIALS = 4
+export const REACTION_REAL_TRIALS = 3
 
 export const REACTION_DELAY_MS_MIN = 1500
 export const REACTION_DELAY_MS_MAX = 4000

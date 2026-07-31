@@ -1,6 +1,16 @@
 import type { RawRecord } from '@/lib/brain-bet'
-import { REASONING_DIFFICULTY_WEIGHTS, REASONING_SCORE_WEIGHTS } from '@/lib/config/reasoning.config'
-import type { ReasoningRawSummary, ReasoningTrial, ReasoningType } from '@/lib/game/types'
+import {
+  REASONING_DIFFICULTY_WEIGHTS,
+  REASONING_SCORE_WEIGHTS,
+  REASONING_TIME_SCORE_BEST_MS,
+  REASONING_TIME_SCORE_WORST_MS,
+} from '@/lib/config/reasoning.config'
+import type { InputType, ReasoningRawSummary, ReasoningTrial, ReasoningType } from '@/lib/game/types'
+import { clampScore, normalizeForInput, scoreFromReactionTime } from '@/lib/scoring/shared'
+
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value))
+}
 
 /** Summarizes a completed 8-question Reasoning session into the aggregate fields GAME_SPEC §80-82 lists. */
 export function summarizeReasoningTrials(trials: ReasoningTrial[]): ReasoningRawSummary {
@@ -44,38 +54,30 @@ export function summarizeReasoningTrials(trials: ReasoningTrial[]): ReasoningRaw
 }
 
 /**
- * Reasoning Game Score — internal only. See lib/config/reasoning.config.ts
- * for the weight rationale: difficultyWeightedAccuracy dominates (Accuracy >
- * Difficulty), with no separate Compound Rule bonus (Level 3/4's own weight
- * already accounts for that), and responseTime/timeouts are small,
- * conservative deductions (> Speed last).
+ * "규칙 찾기" — 추리력 스탯의 두 게임 중 시각적·추상적 규칙 추론(도형·기호
+ * 배열에서 숨은 규칙을 찾는 능력)을 측정하는 쪽. 짝인 "숫자 규칙"
+ * (lib/scoring/number-pattern.ts)은 수리적 규칙 추론(숫자 수열의 규칙을
+ * 찾는 능력)을 측정한다.
+ *
+ * Reasoning Game Score — difficultyWeightedAccuracy 75% + timeScore 15% +
+ * timeoutScore 10%, clampScore 0-100. `inputType`(see lib/game/device.ts)은
+ * 순발력·기억력·공간감각과 동일하게 timeScore 계산 직전에만 터치 입력
+ * 지연을 보정한다 — raw 표시값은 건드리지 않는다.
  */
-export function calculateReasoningScore(summary: ReasoningRawSummary): number {
-  const { difficultyWeightedAccuracyScale, speedPenalty, timeoutPenalty } = REASONING_SCORE_WEIGHTS
+export function calculateReasoningScore(summary: ReasoningRawSummary, inputType: InputType): number {
+  const { accuracyWeight, timeWeight, timeoutWeight } = REASONING_SCORE_WEIGHTS
 
-  return Math.round(
-    summary.difficultyWeightedAccuracy * difficultyWeightedAccuracyScale -
-      summary.averageResponseTimeMs * speedPenalty -
-      summary.timeoutCount * timeoutPenalty,
+  const accuracyScore = clamp01(summary.difficultyWeightedAccuracy)
+  const timeScore = clamp01(
+    scoreFromReactionTime(
+      normalizeForInput(summary.averageResponseTimeMs, inputType),
+      REASONING_TIME_SCORE_BEST_MS,
+      REASONING_TIME_SCORE_WORST_MS,
+    ) / 100,
   )
-}
+  const timeoutScore = clamp01(summary.totalQuestions > 0 ? 1 - summary.timeoutCount / summary.totalQuestions : 1)
 
-/**
- * Reasoning Personal Best ranking: higher Difficulty-weighted Accuracy wins;
- * ties broken by higher Overall Accuracy, then faster Average Response Time.
- */
-export function isBetterReasoningResult(
-  candidate: { rawSummary: ReasoningRawSummary },
-  current: { rawSummary: ReasoningRawSummary } | null,
-): boolean {
-  if (!current) return true
-  if (candidate.rawSummary.difficultyWeightedAccuracy !== current.rawSummary.difficultyWeightedAccuracy) {
-    return candidate.rawSummary.difficultyWeightedAccuracy > current.rawSummary.difficultyWeightedAccuracy
-  }
-  if (candidate.rawSummary.overallAccuracy !== current.rawSummary.overallAccuracy) {
-    return candidate.rawSummary.overallAccuracy > current.rawSummary.overallAccuracy
-  }
-  return candidate.rawSummary.averageResponseTimeMs < current.rawSummary.averageResponseTimeMs
+  return clampScore(accuracyScore * accuracyWeight + timeScore * timeWeight + timeoutScore * timeoutWeight)
 }
 
 /** Formats the raw summary into the display RawRecord — never invents a "pts" unit (GAME_SPEC §3-5). */

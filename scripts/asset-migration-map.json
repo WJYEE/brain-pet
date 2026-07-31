@@ -1,0 +1,7130 @@
+[
+  {
+    "oldPath": "characters/pet_001.png",
+    "newPath": "characters/pet_001/idle.png",
+    "category": "character",
+    "assetId": "pet_001"
+  },
+  {
+    "oldPath": "characters/pet_002.png",
+    "newPath": "characters/pet_002/idle.png",
+    "category": "character",
+    "assetId": "pet_002"
+  },
+  {
+    "oldPath": "characters/pet_003.png",
+    "newPath": "characters/pet_003/idle.png",
+    "category": "character",
+    "assetId": "pet_003"
+  },
+  {
+    "oldPath": "characters/pet_004.png",
+    "newPath": "characters/pet_004/idle.png",
+    "category": "character",
+    "assetId": "pet_004"
+  },
+  {
+    "oldPath": "characters/pet_005.png",
+    "newPath": "characters/pet_005/idle.png",
+    "category": "character",
+    "assetId": "pet_005"
+  },
+  {
+    "oldPath": "characters/pet_006.png",
+    "newPath": "characters/pet_006/idle.png",
+    "category": "character",
+    "assetId": "pet_006"
+  },
+  {
+    "oldPath": "characters/pet_007.png",
+    "newPath": "characters/pet_007/idle.png",
+    "category": "character",
+    "assetId": "pet_007"
+  },
+  {
+    "oldPath": "characters/pet_008.png",
+    "newPath": "characters/pet_008/idle.png",
+    "category": "character",
+    "assetId": "pet_008"
+  },
+  {
+    "oldPath": "characters/pet_009.png",
+    "newPath": "characters/pet_009/idle.png",
+    "category": "character",
+    "assetId": "pet_009"
+  },
+  {
+    "oldPath": "characters/pet_010.png",
+    "newPath": "characters/pet_010/idle.png",
+    "category": "character",
+    "assetId": "pet_010"
+  },
+  {
+    "oldPath": "characters/pet_011.png",
+    "newPath": "characters/pet_011/idle.png",
+    "category": "character",
+    "assetId": "pet_011"
+  },
+  {
+    "oldPath": "characters/pet_012.png",
+    "newPath": "characters/pet_012/idle.png",
+    "category": "character",
+    "assetId": "pet_012"
+  },
+  {
+    "oldPath": "characters/pet_013.png",
+    "newPath": "characters/pet_013/idle.png",
+    "category": "character",
+    "assetId": "pet_013"
+  },
+  {
+    "oldPath": "characters/pet_014.png",
+    "newPath": "characters/pet_014/idle.png",
+    "category": "character",
+    "assetId": "pet_014"
+  },
+  {
+    "oldPath": "characters/pet_015.png",
+    "newPath": "characters/pet_015/idle.png",
+    "category": "character",
+    "assetId": "pet_015"
+  },
+  {
+    "oldPath": "characters/pet_016.png",
+    "newPath": "characters/pet_016/idle.png",
+    "category": "character",
+    "assetId": "pet_016"
+  },
+  {
+    "oldPath": "characters/pet_017.png",
+    "newPath": "characters/pet_017/idle.png",
+    "category": "character",
+    "assetId": "pet_017"
+  },
+  {
+    "oldPath": "characters/pet_018.png",
+    "newPath": "characters/pet_018/idle.png",
+    "category": "character",
+    "assetId": "pet_018"
+  },
+  {
+    "oldPath": "characters/pet_019.png",
+    "newPath": "characters/pet_019/idle.png",
+    "category": "character",
+    "assetId": "pet_019"
+  },
+  {
+    "oldPath": "characters/pet_020.png",
+    "newPath": "characters/pet_020/idle.png",
+    "category": "character",
+    "assetId": "pet_020"
+  },
+  {
+    "oldPath": "characters/pet_021.png",
+    "newPath": "characters/pet_021/idle.png",
+    "category": "character",
+    "assetId": "pet_021"
+  },
+  {
+    "oldPath": "characters/pet_023.png",
+    "newPath": "characters/pet_023/idle.png",
+    "category": "character",
+    "assetId": "pet_023"
+  },
+  {
+    "oldPath": "characters/pet_024.png",
+    "newPath": "characters/pet_024/idle.png",
+    "category": "character",
+    "assetId": "pet_024"
+  },
+  {
+    "oldPath": "characters/pet_025.png",
+    "newPath": "characters/pet_025/idle.png",
+    "category": "character",
+    "assetId": "pet_025"
+  },
+  {
+    "oldPath": "characters/pet_026.png",
+    "newPath": "characters/pet_026/idle.png",
+    "category": "character",
+    "assetId": "pet_026"
+  },
+  {
+    "oldPath": "characters/pet_027.png",
+    "newPath": "characters/pet_027/idle.png",
+    "category": "character",
+    "assetId": "pet_027"
+  },
+  {
+    "oldPath": "characters/pet_028.png",
+    "newPath": "characters/pet_028/idle.png",
+    "category": "character",
+    "assetId": "pet_028"
+  },
+  {
+    "oldPath": "characters/pet_029.png",
+    "newPath": "characters/pet_029/idle.png",
+    "category": "character",
+    "assetId": "pet_029"
+  },
+  {
+    "oldPath": "characters/pet_030.png",
+    "newPath": "characters/pet_030/idle.png",
+    "category": "character",
+    "assetId": "pet_030"
+  },
+  {
+    "oldPath": "characters/pet_031.png",
+    "newPath": "characters/pet_031/idle.png",
+    "category": "character",
+    "assetId": "pet_031"
+  },
+  {
+    "oldPath": "characters/pet_032.png",
+    "newPath": "characters/pet_032/idle.png",
+    "category": "character",
+    "assetId": "pet_032"
+  },
+  {
+    "oldPath": "characters/pet_033.png",
+    "newPath": "characters/pet_033/idle.png",
+    "category": "character",
+    "assetId": "pet_033"
+  },
+  {
+    "oldPath": "characters/pet_034.png",
+    "newPath": "characters/pet_034/idle.png",
+    "category": "character",
+    "assetId": "pet_034"
+  },
+  {
+    "oldPath": "characters/pet_035.png",
+    "newPath": "characters/pet_035/idle.png",
+    "category": "character",
+    "assetId": "pet_035"
+  },
+  {
+    "oldPath": "characters/pet_036.png",
+    "newPath": "characters/pet_036/idle.png",
+    "category": "character",
+    "assetId": "pet_036"
+  },
+  {
+    "oldPath": "characters/pet_037.png",
+    "newPath": "characters/pet_037/idle.png",
+    "category": "character",
+    "assetId": "pet_037"
+  },
+  {
+    "oldPath": "characters/pet_038.png",
+    "newPath": "characters/pet_038/idle.png",
+    "category": "character",
+    "assetId": "pet_038"
+  },
+  {
+    "oldPath": "characters/pet_039.png",
+    "newPath": "characters/pet_039/idle.png",
+    "category": "character",
+    "assetId": "pet_039"
+  },
+  {
+    "oldPath": "characters/pet_040.png",
+    "newPath": "characters/pet_040/idle.png",
+    "category": "character",
+    "assetId": "pet_040"
+  },
+  {
+    "oldPath": "characters/pet_041.png",
+    "newPath": "characters/pet_041/idle.png",
+    "category": "character",
+    "assetId": "pet_041"
+  },
+  {
+    "oldPath": "characters/pet_043.png",
+    "newPath": "characters/pet_043/idle.png",
+    "category": "character",
+    "assetId": "pet_043"
+  },
+  {
+    "oldPath": "characters/pet_044.png",
+    "newPath": "characters/pet_044/idle.png",
+    "category": "character",
+    "assetId": "pet_044"
+  },
+  {
+    "oldPath": "characters/pet_045.png",
+    "newPath": "characters/pet_045/idle.png",
+    "category": "character",
+    "assetId": "pet_045"
+  },
+  {
+    "oldPath": "characters/pet_046.png",
+    "newPath": "characters/pet_046/idle.png",
+    "category": "character",
+    "assetId": "pet_046"
+  },
+  {
+    "oldPath": "characters/pet_047.png",
+    "newPath": "characters/pet_047/idle.png",
+    "category": "character",
+    "assetId": "pet_047"
+  },
+  {
+    "oldPath": "characters/pet_048.png",
+    "newPath": "characters/pet_048/idle.png",
+    "category": "character",
+    "assetId": "pet_048"
+  },
+  {
+    "oldPath": "characters/pet_049.png",
+    "newPath": "characters/pet_049/idle.png",
+    "category": "character",
+    "assetId": "pet_049"
+  },
+  {
+    "oldPath": "characters/pet_050.png",
+    "newPath": "characters/pet_050/idle.png",
+    "category": "character",
+    "assetId": "pet_050"
+  },
+  {
+    "oldPath": "characters/pet_051.png",
+    "newPath": "characters/pet_051/idle.png",
+    "category": "character",
+    "assetId": "pet_051"
+  },
+  {
+    "oldPath": "characters/pet_052.png",
+    "newPath": "characters/pet_052/idle.png",
+    "category": "character",
+    "assetId": "pet_052"
+  },
+  {
+    "oldPath": "characters/pet_053.png",
+    "newPath": "characters/pet_053/idle.png",
+    "category": "character",
+    "assetId": "pet_053"
+  },
+  {
+    "oldPath": "characters/pet_054.png",
+    "newPath": "characters/pet_054/idle.png",
+    "category": "character",
+    "assetId": "pet_054"
+  },
+  {
+    "oldPath": "characters/pet_055.png",
+    "newPath": "characters/pet_055/idle.png",
+    "category": "character",
+    "assetId": "pet_055"
+  },
+  {
+    "oldPath": "characters/pet_056.png",
+    "newPath": "characters/pet_056/idle.png",
+    "category": "character",
+    "assetId": "pet_056"
+  },
+  {
+    "oldPath": "characters/pet_057.png",
+    "newPath": "characters/pet_057/idle.png",
+    "category": "character",
+    "assetId": "pet_057"
+  },
+  {
+    "oldPath": "characters/pet_058.png",
+    "newPath": "characters/pet_058/idle.png",
+    "category": "character",
+    "assetId": "pet_058"
+  },
+  {
+    "oldPath": "characters/pet_059.png",
+    "newPath": "characters/pet_059/idle.png",
+    "category": "character",
+    "assetId": "pet_059"
+  },
+  {
+    "oldPath": "characters/pet_060.png",
+    "newPath": "characters/pet_060/idle.png",
+    "category": "character",
+    "assetId": "pet_060"
+  },
+  {
+    "oldPath": "characters/pet_061.png",
+    "newPath": "characters/pet_061/idle.png",
+    "category": "character",
+    "assetId": "pet_061"
+  },
+  {
+    "oldPath": "characters/pet_062.png",
+    "newPath": "characters/pet_062/idle.png",
+    "category": "character",
+    "assetId": "pet_062"
+  },
+  {
+    "oldPath": "characters/pet_063.png",
+    "newPath": "characters/pet_063/idle.png",
+    "category": "character",
+    "assetId": "pet_063"
+  },
+  {
+    "oldPath": "characters/pet_064.png",
+    "newPath": "characters/pet_064/idle.png",
+    "category": "character",
+    "assetId": "pet_064"
+  },
+  {
+    "oldPath": "characters/pet_065.png",
+    "newPath": "characters/pet_065/idle.png",
+    "category": "character",
+    "assetId": "pet_065"
+  },
+  {
+    "oldPath": "characters/pet_066.png",
+    "newPath": "characters/pet_066/idle.png",
+    "category": "character",
+    "assetId": "pet_066"
+  },
+  {
+    "oldPath": "characters/pet_067.png",
+    "newPath": "characters/pet_067/idle.png",
+    "category": "character",
+    "assetId": "pet_067"
+  },
+  {
+    "oldPath": "characters/pet_068.png",
+    "newPath": "characters/pet_068/idle.png",
+    "category": "character",
+    "assetId": "pet_068"
+  },
+  {
+    "oldPath": "characters/pet_069.png",
+    "newPath": "characters/pet_069/idle.png",
+    "category": "character",
+    "assetId": "pet_069"
+  },
+  {
+    "oldPath": "characters/pet_070.png",
+    "newPath": "characters/pet_070/idle.png",
+    "category": "character",
+    "assetId": "pet_070"
+  },
+  {
+    "oldPath": "characters/pet_071.png",
+    "newPath": "characters/pet_071/idle.png",
+    "category": "character",
+    "assetId": "pet_071"
+  },
+  {
+    "oldPath": "characters/pet_072.png",
+    "newPath": "characters/pet_072/idle.png",
+    "category": "character",
+    "assetId": "pet_072"
+  },
+  {
+    "oldPath": "characters/pet_073.png",
+    "newPath": "characters/pet_073/idle.png",
+    "category": "character",
+    "assetId": "pet_073"
+  },
+  {
+    "oldPath": "characters/pet_074.png",
+    "newPath": "characters/pet_074/idle.png",
+    "category": "character",
+    "assetId": "pet_074"
+  },
+  {
+    "oldPath": "characters/pet_076.png",
+    "newPath": "characters/pet_076/idle.png",
+    "category": "character",
+    "assetId": "pet_076"
+  },
+  {
+    "oldPath": "characters/pet_077.png",
+    "newPath": "characters/pet_077/idle.png",
+    "category": "character",
+    "assetId": "pet_077"
+  },
+  {
+    "oldPath": "characters/pet_078.png",
+    "newPath": "characters/pet_078/idle.png",
+    "category": "character",
+    "assetId": "pet_078"
+  },
+  {
+    "oldPath": "characters/pet_079.png",
+    "newPath": "characters/pet_079/idle.png",
+    "category": "character",
+    "assetId": "pet_079"
+  },
+  {
+    "oldPath": "characters/pet_080.png",
+    "newPath": "characters/pet_080/idle.png",
+    "category": "character",
+    "assetId": "pet_080"
+  },
+  {
+    "oldPath": "characters/pet_081.png",
+    "newPath": "characters/pet_081/idle.png",
+    "category": "character",
+    "assetId": "pet_081"
+  },
+  {
+    "oldPath": "characters/pet_082.png",
+    "newPath": "characters/pet_082/idle.png",
+    "category": "character",
+    "assetId": "pet_082"
+  },
+  {
+    "oldPath": "characters/pet_083.png",
+    "newPath": "characters/pet_083/idle.png",
+    "category": "character",
+    "assetId": "pet_083"
+  },
+  {
+    "oldPath": "characters/pet_084.png",
+    "newPath": "characters/pet_084/idle.png",
+    "category": "character",
+    "assetId": "pet_084"
+  },
+  {
+    "oldPath": "characters/pet_085.png",
+    "newPath": "characters/pet_085/idle.png",
+    "category": "character",
+    "assetId": "pet_085"
+  },
+  {
+    "oldPath": "characters/pet_086.png",
+    "newPath": "characters/pet_086/idle.png",
+    "category": "character",
+    "assetId": "pet_086"
+  },
+  {
+    "oldPath": "characters/pet_087.png",
+    "newPath": "characters/pet_087/idle.png",
+    "category": "character",
+    "assetId": "pet_087"
+  },
+  {
+    "oldPath": "characters/pet_088.png",
+    "newPath": "characters/pet_088/idle.png",
+    "category": "character",
+    "assetId": "pet_088"
+  },
+  {
+    "oldPath": "characters/pet_089.png",
+    "newPath": "characters/pet_089/idle.png",
+    "category": "character",
+    "assetId": "pet_089"
+  },
+  {
+    "oldPath": "characters/pet_090.png",
+    "newPath": "characters/pet_090/idle.png",
+    "category": "character",
+    "assetId": "pet_090"
+  },
+  {
+    "oldPath": "characters/pet_091.png",
+    "newPath": "characters/pet_091/idle.png",
+    "category": "character",
+    "assetId": "pet_091"
+  },
+  {
+    "oldPath": "characters/pet_092.png",
+    "newPath": "characters/pet_092/idle.png",
+    "category": "character",
+    "assetId": "pet_092"
+  },
+  {
+    "oldPath": "characters/pet_094.png",
+    "newPath": "characters/pet_094/idle.png",
+    "category": "character",
+    "assetId": "pet_094"
+  },
+  {
+    "oldPath": "characters/pet_095.png",
+    "newPath": "characters/pet_095/idle.png",
+    "category": "character",
+    "assetId": "pet_095"
+  },
+  {
+    "oldPath": "characters/pet_096.png",
+    "newPath": "characters/pet_096/idle.png",
+    "category": "character",
+    "assetId": "pet_096"
+  },
+  {
+    "oldPath": "characters/pet_097.png",
+    "newPath": "characters/pet_097/idle.png",
+    "category": "character",
+    "assetId": "pet_097"
+  },
+  {
+    "oldPath": "characters/pet_098.png",
+    "newPath": "characters/pet_098/idle.png",
+    "category": "character",
+    "assetId": "pet_098"
+  },
+  {
+    "oldPath": "characters/pet_099.png",
+    "newPath": "characters/pet_099/idle.png",
+    "category": "character",
+    "assetId": "pet_099"
+  },
+  {
+    "oldPath": "characters/pet_100.png",
+    "newPath": "characters/pet_100/idle.png",
+    "category": "character",
+    "assetId": "pet_100"
+  },
+  {
+    "oldPath": "characters/pet_101.png",
+    "newPath": "characters/pet_101/idle.png",
+    "category": "character",
+    "assetId": "pet_101"
+  },
+  {
+    "oldPath": "characters/pet_102.png",
+    "newPath": "characters/pet_102/idle.png",
+    "category": "character",
+    "assetId": "pet_102"
+  },
+  {
+    "oldPath": "characters/pet_103.png",
+    "newPath": "characters/pet_103/idle.png",
+    "category": "character",
+    "assetId": "pet_103"
+  },
+  {
+    "oldPath": "characters/pet_104.png",
+    "newPath": "characters/pet_104/idle.png",
+    "category": "character",
+    "assetId": "pet_104"
+  },
+  {
+    "oldPath": "characters/pet_105.png",
+    "newPath": "characters/pet_105/idle.png",
+    "category": "character",
+    "assetId": "pet_105"
+  },
+  {
+    "oldPath": "characters/pet_106.png",
+    "newPath": "characters/pet_106/idle.png",
+    "category": "character",
+    "assetId": "pet_106"
+  },
+  {
+    "oldPath": "characters/pet_107.png",
+    "newPath": "characters/pet_107/idle.png",
+    "category": "character",
+    "assetId": "pet_107"
+  },
+  {
+    "oldPath": "characters/pet_108.png",
+    "newPath": "characters/pet_108/idle.png",
+    "category": "character",
+    "assetId": "pet_108"
+  },
+  {
+    "oldPath": "characters/pet_109.png",
+    "newPath": "characters/pet_109/idle.png",
+    "category": "character",
+    "assetId": "pet_109"
+  },
+  {
+    "oldPath": "characters/pet_110.png",
+    "newPath": "characters/pet_110/idle.png",
+    "category": "character",
+    "assetId": "pet_110"
+  },
+  {
+    "oldPath": "characters/pet_111.png",
+    "newPath": "characters/pet_111/idle.png",
+    "category": "character",
+    "assetId": "pet_111"
+  },
+  {
+    "oldPath": "characters/pet_112.png",
+    "newPath": "characters/pet_112/idle.png",
+    "category": "character",
+    "assetId": "pet_112"
+  },
+  {
+    "oldPath": "characters/pet_113.png",
+    "newPath": "characters/pet_113/idle.png",
+    "category": "character",
+    "assetId": "pet_113"
+  },
+  {
+    "oldPath": "characters/pet_114.png",
+    "newPath": "characters/pet_114/idle.png",
+    "category": "character",
+    "assetId": "pet_114"
+  },
+  {
+    "oldPath": "characters/pet_115.png",
+    "newPath": "characters/pet_115/idle.png",
+    "category": "character",
+    "assetId": "pet_115"
+  },
+  {
+    "oldPath": "characters/pet_116.png",
+    "newPath": "characters/pet_116/idle.png",
+    "category": "character",
+    "assetId": "pet_116"
+  },
+  {
+    "oldPath": "characters/pet_117.png",
+    "newPath": "characters/pet_117/idle.png",
+    "category": "character",
+    "assetId": "pet_117"
+  },
+  {
+    "oldPath": "characters/pet_118.png",
+    "newPath": "characters/pet_118/idle.png",
+    "category": "character",
+    "assetId": "pet_118"
+  },
+  {
+    "oldPath": "characters/pet_119.png",
+    "newPath": "characters/pet_119/idle.png",
+    "category": "character",
+    "assetId": "pet_119"
+  },
+  {
+    "oldPath": "characters/pet_120.png",
+    "newPath": "characters/pet_120/idle.png",
+    "category": "character",
+    "assetId": "pet_120"
+  },
+  {
+    "oldPath": "characters/pet_121.png",
+    "newPath": "characters/pet_121/idle.png",
+    "category": "character",
+    "assetId": "pet_121"
+  },
+  {
+    "oldPath": "characters/pet_122.png",
+    "newPath": "characters/pet_122/idle.png",
+    "category": "character",
+    "assetId": "pet_122"
+  },
+  {
+    "oldPath": "characters/pet_123.png",
+    "newPath": "characters/pet_123/idle.png",
+    "category": "character",
+    "assetId": "pet_123"
+  },
+  {
+    "oldPath": "characters/pet_124.png",
+    "newPath": "characters/pet_124/idle.png",
+    "category": "character",
+    "assetId": "pet_124"
+  },
+  {
+    "oldPath": "characters/pet_125.png",
+    "newPath": "characters/pet_125/idle.png",
+    "category": "character",
+    "assetId": "pet_125"
+  },
+  {
+    "oldPath": "characters/pet_126.png",
+    "newPath": "characters/pet_126/idle.png",
+    "category": "character",
+    "assetId": "pet_126"
+  },
+  {
+    "oldPath": "characters/pet_127.png",
+    "newPath": "characters/pet_127/idle.png",
+    "category": "character",
+    "assetId": "pet_127"
+  },
+  {
+    "oldPath": "characters/pet_128.png",
+    "newPath": "characters/pet_128/idle.png",
+    "category": "character",
+    "assetId": "pet_128"
+  },
+  {
+    "oldPath": "characters/pet_129.png",
+    "newPath": "characters/pet_129/idle.png",
+    "category": "character",
+    "assetId": "pet_129"
+  },
+  {
+    "oldPath": "characters/pet_130.png",
+    "newPath": "characters/pet_130/idle.png",
+    "category": "character",
+    "assetId": "pet_130"
+  },
+  {
+    "oldPath": "characters/pet_131.png",
+    "newPath": "characters/pet_131/idle.png",
+    "category": "character",
+    "assetId": "pet_131"
+  },
+  {
+    "oldPath": "characters/pet_133.png",
+    "newPath": "characters/pet_133/idle.png",
+    "category": "character",
+    "assetId": "pet_133"
+  },
+  {
+    "oldPath": "characters/pet_134.png",
+    "newPath": "characters/pet_134/idle.png",
+    "category": "character",
+    "assetId": "pet_134"
+  },
+  {
+    "oldPath": "characters/pet_135.png",
+    "newPath": "characters/pet_135/idle.png",
+    "category": "character",
+    "assetId": "pet_135"
+  },
+  {
+    "oldPath": "characters/pet_137.png",
+    "newPath": "characters/pet_137/idle.png",
+    "category": "character",
+    "assetId": "pet_137"
+  },
+  {
+    "oldPath": "characters/pet_138.png",
+    "newPath": "characters/pet_138/idle.png",
+    "category": "character",
+    "assetId": "pet_138"
+  },
+  {
+    "oldPath": "characters/pet_139.png",
+    "newPath": "characters/pet_139/idle.png",
+    "category": "character",
+    "assetId": "pet_139"
+  },
+  {
+    "oldPath": "characters/pet_140.png",
+    "newPath": "characters/pet_140/idle.png",
+    "category": "character",
+    "assetId": "pet_140"
+  },
+  {
+    "oldPath": "characters/pet_141.png",
+    "newPath": "characters/pet_141/idle.png",
+    "category": "character",
+    "assetId": "pet_141"
+  },
+  {
+    "oldPath": "characters/pet_142.png",
+    "newPath": "characters/pet_142/idle.png",
+    "category": "character",
+    "assetId": "pet_142"
+  },
+  {
+    "oldPath": "characters/pet_143.png",
+    "newPath": "characters/pet_143/idle.png",
+    "category": "character",
+    "assetId": "pet_143"
+  },
+  {
+    "oldPath": "characters/pet_144.png",
+    "newPath": "characters/pet_144/idle.png",
+    "category": "character",
+    "assetId": "pet_144"
+  },
+  {
+    "oldPath": "characters/pet_145.png",
+    "newPath": "characters/pet_145/idle.png",
+    "category": "character",
+    "assetId": "pet_145"
+  },
+  {
+    "oldPath": "characters/pet_146.png",
+    "newPath": "characters/pet_146/idle.png",
+    "category": "character",
+    "assetId": "pet_146"
+  },
+  {
+    "oldPath": "characters/pet_147.png",
+    "newPath": "characters/pet_147/idle.png",
+    "category": "character",
+    "assetId": "pet_147"
+  },
+  {
+    "oldPath": "characters/pet_148.png",
+    "newPath": "characters/pet_148/idle.png",
+    "category": "character",
+    "assetId": "pet_148"
+  },
+  {
+    "oldPath": "characters/pet_149.png",
+    "newPath": "characters/pet_149/idle.png",
+    "category": "character",
+    "assetId": "pet_149"
+  },
+  {
+    "oldPath": "characters/pet_151.png",
+    "newPath": "characters/pet_151/idle.png",
+    "category": "character",
+    "assetId": "pet_151"
+  },
+  {
+    "oldPath": "characters/pet_152.png",
+    "newPath": "characters/pet_152/idle.png",
+    "category": "character",
+    "assetId": "pet_152"
+  },
+  {
+    "oldPath": "characters/pet_153.png",
+    "newPath": "characters/pet_153/idle.png",
+    "category": "character",
+    "assetId": "pet_153"
+  },
+  {
+    "oldPath": "characters/pet_154.png",
+    "newPath": "characters/pet_154/idle.png",
+    "category": "character",
+    "assetId": "pet_154"
+  },
+  {
+    "oldPath": "characters/pet_155.png",
+    "newPath": "characters/pet_155/idle.png",
+    "category": "character",
+    "assetId": "pet_155"
+  },
+  {
+    "oldPath": "characters/pet_156.png",
+    "newPath": "characters/pet_156/idle.png",
+    "category": "character",
+    "assetId": "pet_156"
+  },
+  {
+    "oldPath": "characters/pet_157.png",
+    "newPath": "characters/pet_157/idle.png",
+    "category": "character",
+    "assetId": "pet_157"
+  },
+  {
+    "oldPath": "characters/pet_158.png",
+    "newPath": "characters/pet_158/idle.png",
+    "category": "character",
+    "assetId": "pet_158"
+  },
+  {
+    "oldPath": "characters/pet_159.png",
+    "newPath": "characters/pet_159/idle.png",
+    "category": "character",
+    "assetId": "pet_159"
+  },
+  {
+    "oldPath": "characters/pet_160.png",
+    "newPath": "characters/pet_160/idle.png",
+    "category": "character",
+    "assetId": "pet_160"
+  },
+  {
+    "oldPath": "characters/pet_161.png",
+    "newPath": "characters/pet_161/idle.png",
+    "category": "character",
+    "assetId": "pet_161"
+  },
+  {
+    "oldPath": "characters/pet_162.png",
+    "newPath": "characters/pet_162/idle.png",
+    "category": "character",
+    "assetId": "pet_162"
+  },
+  {
+    "oldPath": "characters/pet_164.png",
+    "newPath": "characters/pet_164/idle.png",
+    "category": "character",
+    "assetId": "pet_164"
+  },
+  {
+    "oldPath": "characters/pet_166.png",
+    "newPath": "characters/pet_166/idle.png",
+    "category": "character",
+    "assetId": "pet_166"
+  },
+  {
+    "oldPath": "characters/pet_167.png",
+    "newPath": "characters/pet_167/idle.png",
+    "category": "character",
+    "assetId": "pet_167"
+  },
+  {
+    "oldPath": "characters/pet_168.png",
+    "newPath": "characters/pet_168/idle.png",
+    "category": "character",
+    "assetId": "pet_168"
+  },
+  {
+    "oldPath": "characters/pet_169.png",
+    "newPath": "characters/pet_169/idle.png",
+    "category": "character",
+    "assetId": "pet_169"
+  },
+  {
+    "oldPath": "characters/pet_170.png",
+    "newPath": "characters/pet_170/idle.png",
+    "category": "character",
+    "assetId": "pet_170"
+  },
+  {
+    "oldPath": "characters/pet_171.png",
+    "newPath": "characters/pet_171/idle.png",
+    "category": "character",
+    "assetId": "pet_171"
+  },
+  {
+    "oldPath": "characters/pet_173.png",
+    "newPath": "characters/pet_173/idle.png",
+    "category": "character",
+    "assetId": "pet_173"
+  },
+  {
+    "oldPath": "characters/pet_174.png",
+    "newPath": "characters/pet_174/idle.png",
+    "category": "character",
+    "assetId": "pet_174"
+  },
+  {
+    "oldPath": "characters/pet_175.png",
+    "newPath": "characters/pet_175/idle.png",
+    "category": "character",
+    "assetId": "pet_175"
+  },
+  {
+    "oldPath": "characters/pet_176.png",
+    "newPath": "characters/pet_176/idle.png",
+    "category": "character",
+    "assetId": "pet_176"
+  },
+  {
+    "oldPath": "characters/pet_177.png",
+    "newPath": "characters/pet_177/idle.png",
+    "category": "character",
+    "assetId": "pet_177"
+  },
+  {
+    "oldPath": "characters/pet_178.png",
+    "newPath": "characters/pet_178/idle.png",
+    "category": "character",
+    "assetId": "pet_178"
+  },
+  {
+    "oldPath": "characters/pet_179.png",
+    "newPath": "characters/pet_179/idle.png",
+    "category": "character",
+    "assetId": "pet_179"
+  },
+  {
+    "oldPath": "characters/pet_180.png",
+    "newPath": "characters/pet_180/idle.png",
+    "category": "character",
+    "assetId": "pet_180"
+  },
+  {
+    "oldPath": "characters/pet_181.png",
+    "newPath": "characters/pet_181/idle.png",
+    "category": "character",
+    "assetId": "pet_181"
+  },
+  {
+    "oldPath": "characters/pet_183.png",
+    "newPath": "characters/pet_183/idle.png",
+    "category": "character",
+    "assetId": "pet_183"
+  },
+  {
+    "oldPath": "characters/pet_184.png",
+    "newPath": "characters/pet_184/idle.png",
+    "category": "character",
+    "assetId": "pet_184"
+  },
+  {
+    "oldPath": "characters/pet_185.png",
+    "newPath": "characters/pet_185/idle.png",
+    "category": "character",
+    "assetId": "pet_185"
+  },
+  {
+    "oldPath": "characters/pet_186.png",
+    "newPath": "characters/pet_186/idle.png",
+    "category": "character",
+    "assetId": "pet_186"
+  },
+  {
+    "oldPath": "characters/pet_187.png",
+    "newPath": "characters/pet_187/idle.png",
+    "category": "character",
+    "assetId": "pet_187"
+  },
+  {
+    "oldPath": "characters/pet_188.png",
+    "newPath": "characters/pet_188/idle.png",
+    "category": "character",
+    "assetId": "pet_188"
+  },
+  {
+    "oldPath": "characters/pet_189.png",
+    "newPath": "characters/pet_189/idle.png",
+    "category": "character",
+    "assetId": "pet_189"
+  },
+  {
+    "oldPath": "characters/pet_190.png",
+    "newPath": "characters/pet_190/idle.png",
+    "category": "character",
+    "assetId": "pet_190"
+  },
+  {
+    "oldPath": "characters/pet_191.png",
+    "newPath": "characters/pet_191/idle.png",
+    "category": "character",
+    "assetId": "pet_191"
+  },
+  {
+    "oldPath": "characters/pet_192.png",
+    "newPath": "characters/pet_192/idle.png",
+    "category": "character",
+    "assetId": "pet_192"
+  },
+  {
+    "oldPath": "characters/pet_193.png",
+    "newPath": "characters/pet_193/idle.png",
+    "category": "character",
+    "assetId": "pet_193"
+  },
+  {
+    "oldPath": "characters/pet_194.png",
+    "newPath": "characters/pet_194/idle.png",
+    "category": "character",
+    "assetId": "pet_194"
+  },
+  {
+    "oldPath": "characters/pet_195.png",
+    "newPath": "characters/pet_195/idle.png",
+    "category": "character",
+    "assetId": "pet_195"
+  },
+  {
+    "oldPath": "characters/pet_196.png",
+    "newPath": "characters/pet_196/idle.png",
+    "category": "character",
+    "assetId": "pet_196"
+  },
+  {
+    "oldPath": "characters/pet_197.png",
+    "newPath": "characters/pet_197/idle.png",
+    "category": "character",
+    "assetId": "pet_197"
+  },
+  {
+    "oldPath": "characters/pet_198.png",
+    "newPath": "characters/pet_198/idle.png",
+    "category": "character",
+    "assetId": "pet_198"
+  },
+  {
+    "oldPath": "characters/pet_200.png",
+    "newPath": "characters/pet_200/idle.png",
+    "category": "character",
+    "assetId": "pet_200"
+  },
+  {
+    "oldPath": "characters/pet_201.png",
+    "newPath": "characters/pet_201/idle.png",
+    "category": "character",
+    "assetId": "pet_201"
+  },
+  {
+    "oldPath": "characters/pet_202.png",
+    "newPath": "characters/pet_202/idle.png",
+    "category": "character",
+    "assetId": "pet_202"
+  },
+  {
+    "oldPath": "characters/pet_203.png",
+    "newPath": "characters/pet_203/idle.png",
+    "category": "character",
+    "assetId": "pet_203"
+  },
+  {
+    "oldPath": "characters/pet_204.png",
+    "newPath": "characters/pet_204/idle.png",
+    "category": "character",
+    "assetId": "pet_204"
+  },
+  {
+    "oldPath": "characters/pet_205.png",
+    "newPath": "characters/pet_205/idle.png",
+    "category": "character",
+    "assetId": "pet_205"
+  },
+  {
+    "oldPath": "characters/pet_206.png",
+    "newPath": "characters/pet_206/idle.png",
+    "category": "character",
+    "assetId": "pet_206"
+  },
+  {
+    "oldPath": "characters/pet_207.png",
+    "newPath": "characters/pet_207/idle.png",
+    "category": "character",
+    "assetId": "pet_207"
+  },
+  {
+    "oldPath": "characters/pet_208.png",
+    "newPath": "characters/pet_208/idle.png",
+    "category": "character",
+    "assetId": "pet_208"
+  },
+  {
+    "oldPath": "characters/pet_209.png",
+    "newPath": "characters/pet_209/idle.png",
+    "category": "character",
+    "assetId": "pet_209"
+  },
+  {
+    "oldPath": "characters/pet_210.png",
+    "newPath": "characters/pet_210/idle.png",
+    "category": "character",
+    "assetId": "pet_210"
+  },
+  {
+    "oldPath": "characters/pet_212.png",
+    "newPath": "characters/pet_212/idle.png",
+    "category": "character",
+    "assetId": "pet_212"
+  },
+  {
+    "oldPath": "characters/pet_213.png",
+    "newPath": "characters/pet_213/idle.png",
+    "category": "character",
+    "assetId": "pet_213"
+  },
+  {
+    "oldPath": "characters/pet_214.png",
+    "newPath": "characters/pet_214/idle.png",
+    "category": "character",
+    "assetId": "pet_214"
+  },
+  {
+    "oldPath": "characters/pet_215.png",
+    "newPath": "characters/pet_215/idle.png",
+    "category": "character",
+    "assetId": "pet_215"
+  },
+  {
+    "oldPath": "characters/pet_216.png",
+    "newPath": "characters/pet_216/idle.png",
+    "category": "character",
+    "assetId": "pet_216"
+  },
+  {
+    "oldPath": "characters/pet_217.png",
+    "newPath": "characters/pet_217/idle.png",
+    "category": "character",
+    "assetId": "pet_217"
+  },
+  {
+    "oldPath": "characters/pet_218.png",
+    "newPath": "characters/pet_218/idle.png",
+    "category": "character",
+    "assetId": "pet_218"
+  },
+  {
+    "oldPath": "characters/pet_219.png",
+    "newPath": "characters/pet_219/idle.png",
+    "category": "character",
+    "assetId": "pet_219"
+  },
+  {
+    "oldPath": "characters/pet_220.png",
+    "newPath": "characters/pet_220/idle.png",
+    "category": "character",
+    "assetId": "pet_220"
+  },
+  {
+    "oldPath": "characters/pet_221.png",
+    "newPath": "characters/pet_221/idle.png",
+    "category": "character",
+    "assetId": "pet_221"
+  },
+  {
+    "oldPath": "characters/pet_222.png",
+    "newPath": "characters/pet_222/idle.png",
+    "category": "character",
+    "assetId": "pet_222"
+  },
+  {
+    "oldPath": "characters/pet_223.png",
+    "newPath": "characters/pet_223/idle.png",
+    "category": "character",
+    "assetId": "pet_223"
+  },
+  {
+    "oldPath": "characters/pet_224.png",
+    "newPath": "characters/pet_224/idle.png",
+    "category": "character",
+    "assetId": "pet_224"
+  },
+  {
+    "oldPath": "characters/pet_225.png",
+    "newPath": "characters/pet_225/idle.png",
+    "category": "character",
+    "assetId": "pet_225"
+  },
+  {
+    "oldPath": "characters/pet_226.png",
+    "newPath": "characters/pet_226/idle.png",
+    "category": "character",
+    "assetId": "pet_226"
+  },
+  {
+    "oldPath": "characters/pet_227.png",
+    "newPath": "characters/pet_227/idle.png",
+    "category": "character",
+    "assetId": "pet_227"
+  },
+  {
+    "oldPath": "characters/pet_228.png",
+    "newPath": "characters/pet_228/idle.png",
+    "category": "character",
+    "assetId": "pet_228"
+  },
+  {
+    "oldPath": "characters/pet_229.png",
+    "newPath": "characters/pet_229/idle.png",
+    "category": "character",
+    "assetId": "pet_229"
+  },
+  {
+    "oldPath": "characters/pet_230.png",
+    "newPath": "characters/pet_230/idle.png",
+    "category": "character",
+    "assetId": "pet_230"
+  },
+  {
+    "oldPath": "characters/pet_231.png",
+    "newPath": "characters/pet_231/idle.png",
+    "category": "character",
+    "assetId": "pet_231"
+  },
+  {
+    "oldPath": "characters/pet_232.png",
+    "newPath": "characters/pet_232/idle.png",
+    "category": "character",
+    "assetId": "pet_232"
+  },
+  {
+    "oldPath": "characters/pet_233.png",
+    "newPath": "characters/pet_233/idle.png",
+    "category": "character",
+    "assetId": "pet_233"
+  },
+  {
+    "oldPath": "characters/pet_234.png",
+    "newPath": "characters/pet_234/idle.png",
+    "category": "character",
+    "assetId": "pet_234"
+  },
+  {
+    "oldPath": "characters/pet_235.png",
+    "newPath": "characters/pet_235/idle.png",
+    "category": "character",
+    "assetId": "pet_235"
+  },
+  {
+    "oldPath": "characters/pet_236.png",
+    "newPath": "characters/pet_236/idle.png",
+    "category": "character",
+    "assetId": "pet_236"
+  },
+  {
+    "oldPath": "characters/pet_237.png",
+    "newPath": "characters/pet_237/idle.png",
+    "category": "character",
+    "assetId": "pet_237"
+  },
+  {
+    "oldPath": "characters/pet_238.png",
+    "newPath": "characters/pet_238/idle.png",
+    "category": "character",
+    "assetId": "pet_238"
+  },
+  {
+    "oldPath": "characters/pet_239.png",
+    "newPath": "characters/pet_239/idle.png",
+    "category": "character",
+    "assetId": "pet_239"
+  },
+  {
+    "oldPath": "characters/pet_240.png",
+    "newPath": "characters/pet_240/idle.png",
+    "category": "character",
+    "assetId": "pet_240"
+  },
+  {
+    "oldPath": "characters/pet_241.png",
+    "newPath": "characters/pet_241/idle.png",
+    "category": "character",
+    "assetId": "pet_241"
+  },
+  {
+    "oldPath": "characters/pet_242.png",
+    "newPath": "characters/pet_242/idle.png",
+    "category": "character",
+    "assetId": "pet_242"
+  },
+  {
+    "oldPath": "characters/pet_244.png",
+    "newPath": "characters/pet_244/idle.png",
+    "category": "character",
+    "assetId": "pet_244"
+  },
+  {
+    "oldPath": "characters/pet_245.png",
+    "newPath": "characters/pet_245/idle.png",
+    "category": "character",
+    "assetId": "pet_245"
+  },
+  {
+    "oldPath": "characters/pet_246.png",
+    "newPath": "characters/pet_246/idle.png",
+    "category": "character",
+    "assetId": "pet_246"
+  },
+  {
+    "oldPath": "characters/pet_247.png",
+    "newPath": "characters/pet_247/idle.png",
+    "category": "character",
+    "assetId": "pet_247"
+  },
+  {
+    "oldPath": "characters/pet_248.png",
+    "newPath": "characters/pet_248/idle.png",
+    "category": "character",
+    "assetId": "pet_248"
+  },
+  {
+    "oldPath": "characters/pet_249.png",
+    "newPath": "characters/pet_249/idle.png",
+    "category": "character",
+    "assetId": "pet_249"
+  },
+  {
+    "oldPath": "characters/pet_250.png",
+    "newPath": "characters/pet_250/idle.png",
+    "category": "character",
+    "assetId": "pet_250"
+  },
+  {
+    "oldPath": "characters/pet_251.png",
+    "newPath": "characters/pet_251/idle.png",
+    "category": "character",
+    "assetId": "pet_251"
+  },
+  {
+    "oldPath": "characters/pet_252.png",
+    "newPath": "characters/pet_252/idle.png",
+    "category": "character",
+    "assetId": "pet_252"
+  },
+  {
+    "oldPath": "characters/pet_254.png",
+    "newPath": "characters/pet_254/idle.png",
+    "category": "character",
+    "assetId": "pet_254"
+  },
+  {
+    "oldPath": "characters/pet_255.png",
+    "newPath": "characters/pet_255/idle.png",
+    "category": "character",
+    "assetId": "pet_255"
+  },
+  {
+    "oldPath": "characters/pet_256.png",
+    "newPath": "characters/pet_256/idle.png",
+    "category": "character",
+    "assetId": "pet_256"
+  },
+  {
+    "oldPath": "characters/pet_257.png",
+    "newPath": "characters/pet_257/idle.png",
+    "category": "character",
+    "assetId": "pet_257"
+  },
+  {
+    "oldPath": "characters/pet_258.png",
+    "newPath": "characters/pet_258/idle.png",
+    "category": "character",
+    "assetId": "pet_258"
+  },
+  {
+    "oldPath": "characters/pet_259.png",
+    "newPath": "characters/pet_259/idle.png",
+    "category": "character",
+    "assetId": "pet_259"
+  },
+  {
+    "oldPath": "characters/pet_260.png",
+    "newPath": "characters/pet_260/idle.png",
+    "category": "character",
+    "assetId": "pet_260"
+  },
+  {
+    "oldPath": "characters/pet_261.png",
+    "newPath": "characters/pet_261/idle.png",
+    "category": "character",
+    "assetId": "pet_261"
+  },
+  {
+    "oldPath": "characters/pet_262.png",
+    "newPath": "characters/pet_262/idle.png",
+    "category": "character",
+    "assetId": "pet_262"
+  },
+  {
+    "oldPath": "characters/pet_263.png",
+    "newPath": "characters/pet_263/idle.png",
+    "category": "character",
+    "assetId": "pet_263"
+  },
+  {
+    "oldPath": "characters/pet_264.png",
+    "newPath": "characters/pet_264/idle.png",
+    "category": "character",
+    "assetId": "pet_264"
+  },
+  {
+    "oldPath": "characters/pet_265.png",
+    "newPath": "characters/pet_265/idle.png",
+    "category": "character",
+    "assetId": "pet_265"
+  },
+  {
+    "oldPath": "characters/pet_266.png",
+    "newPath": "characters/pet_266/idle.png",
+    "category": "character",
+    "assetId": "pet_266"
+  },
+  {
+    "oldPath": "characters/pet_267.png",
+    "newPath": "characters/pet_267/idle.png",
+    "category": "character",
+    "assetId": "pet_267"
+  },
+  {
+    "oldPath": "characters/pet_268.png",
+    "newPath": "characters/pet_268/idle.png",
+    "category": "character",
+    "assetId": "pet_268"
+  },
+  {
+    "oldPath": "characters/pet_269.png",
+    "newPath": "characters/pet_269/idle.png",
+    "category": "character",
+    "assetId": "pet_269"
+  },
+  {
+    "oldPath": "characters/pet_270.png",
+    "newPath": "characters/pet_270/idle.png",
+    "category": "character",
+    "assetId": "pet_270"
+  },
+  {
+    "oldPath": "characters/pet_271.png",
+    "newPath": "characters/pet_271/idle.png",
+    "category": "character",
+    "assetId": "pet_271"
+  },
+  {
+    "oldPath": "characters/pet_272.png",
+    "newPath": "characters/pet_272/idle.png",
+    "category": "character",
+    "assetId": "pet_272"
+  },
+  {
+    "oldPath": "characters/pet_273.png",
+    "newPath": "characters/pet_273/idle.png",
+    "category": "character",
+    "assetId": "pet_273"
+  },
+  {
+    "oldPath": "characters/pet_275.png",
+    "newPath": "characters/pet_275/idle.png",
+    "category": "character",
+    "assetId": "pet_275"
+  },
+  {
+    "oldPath": "characters/pet_276.png",
+    "newPath": "characters/pet_276/idle.png",
+    "category": "character",
+    "assetId": "pet_276"
+  },
+  {
+    "oldPath": "characters/pet_277.png",
+    "newPath": "characters/pet_277/idle.png",
+    "category": "character",
+    "assetId": "pet_277"
+  },
+  {
+    "oldPath": "characters/pet_278.png",
+    "newPath": "characters/pet_278/idle.png",
+    "category": "character",
+    "assetId": "pet_278"
+  },
+  {
+    "oldPath": "characters/pet_279.png",
+    "newPath": "characters/pet_279/idle.png",
+    "category": "character",
+    "assetId": "pet_279"
+  },
+  {
+    "oldPath": "characters/pet_280.png",
+    "newPath": "characters/pet_280/idle.png",
+    "category": "character",
+    "assetId": "pet_280"
+  },
+  {
+    "oldPath": "characters/pet_281.png",
+    "newPath": "characters/pet_281/idle.png",
+    "category": "character",
+    "assetId": "pet_281"
+  },
+  {
+    "oldPath": "characters/pet_282.png",
+    "newPath": "characters/pet_282/idle.png",
+    "category": "character",
+    "assetId": "pet_282"
+  },
+  {
+    "oldPath": "characters/pet_283.png",
+    "newPath": "characters/pet_283/idle.png",
+    "category": "character",
+    "assetId": "pet_283"
+  },
+  {
+    "oldPath": "characters/pet_284.png",
+    "newPath": "characters/pet_284/idle.png",
+    "category": "character",
+    "assetId": "pet_284"
+  },
+  {
+    "oldPath": "characters/pet_285.png",
+    "newPath": "characters/pet_285/idle.png",
+    "category": "character",
+    "assetId": "pet_285"
+  },
+  {
+    "oldPath": "characters/pet_286.png",
+    "newPath": "characters/pet_286/idle.png",
+    "category": "character",
+    "assetId": "pet_286"
+  },
+  {
+    "oldPath": "characters/pet_287.png",
+    "newPath": "characters/pet_287/idle.png",
+    "category": "character",
+    "assetId": "pet_287"
+  },
+  {
+    "oldPath": "characters/pet_288.png",
+    "newPath": "characters/pet_288/idle.png",
+    "category": "character",
+    "assetId": "pet_288"
+  },
+  {
+    "oldPath": "characters/pet_289.png",
+    "newPath": "characters/pet_289/idle.png",
+    "category": "character",
+    "assetId": "pet_289"
+  },
+  {
+    "oldPath": "characters/pet_290.png",
+    "newPath": "characters/pet_290/idle.png",
+    "category": "character",
+    "assetId": "pet_290"
+  },
+  {
+    "oldPath": "characters/pet_291.png",
+    "newPath": "characters/pet_291/idle.png",
+    "category": "character",
+    "assetId": "pet_291"
+  },
+  {
+    "oldPath": "characters/pet_292.png",
+    "newPath": "characters/pet_292/idle.png",
+    "category": "character",
+    "assetId": "pet_292"
+  },
+  {
+    "oldPath": "characters/pet_293.png",
+    "newPath": "characters/pet_293/idle.png",
+    "category": "character",
+    "assetId": "pet_293"
+  },
+  {
+    "oldPath": "characters/pet_294.png",
+    "newPath": "characters/pet_294/idle.png",
+    "category": "character",
+    "assetId": "pet_294"
+  },
+  {
+    "oldPath": "characters/pet_295.png",
+    "newPath": "characters/pet_295/idle.png",
+    "category": "character",
+    "assetId": "pet_295"
+  },
+  {
+    "oldPath": "characters/pet_296.png",
+    "newPath": "characters/pet_296/idle.png",
+    "category": "character",
+    "assetId": "pet_296"
+  },
+  {
+    "oldPath": "characters/pet_298.png",
+    "newPath": "characters/pet_298/idle.png",
+    "category": "character",
+    "assetId": "pet_298"
+  },
+  {
+    "oldPath": "characters/pet_299.png",
+    "newPath": "characters/pet_299/idle.png",
+    "category": "character",
+    "assetId": "pet_299"
+  },
+  {
+    "oldPath": "characters/pet_300.png",
+    "newPath": "characters/pet_300/idle.png",
+    "category": "character",
+    "assetId": "pet_300"
+  },
+  {
+    "oldPath": "characters/pet_301.png",
+    "newPath": "characters/pet_301/idle.png",
+    "category": "character",
+    "assetId": "pet_301"
+  },
+  {
+    "oldPath": "characters/pet_302.png",
+    "newPath": "characters/pet_302/idle.png",
+    "category": "character",
+    "assetId": "pet_302"
+  },
+  {
+    "oldPath": "characters/pet_303.png",
+    "newPath": "characters/pet_303/idle.png",
+    "category": "character",
+    "assetId": "pet_303"
+  },
+  {
+    "oldPath": "characters/pet_304.png",
+    "newPath": "characters/pet_304/idle.png",
+    "category": "character",
+    "assetId": "pet_304"
+  },
+  {
+    "oldPath": "characters/pet_305.png",
+    "newPath": "characters/pet_305/idle.png",
+    "category": "character",
+    "assetId": "pet_305"
+  },
+  {
+    "oldPath": "characters/pet_306.png",
+    "newPath": "characters/pet_306/idle.png",
+    "category": "character",
+    "assetId": "pet_306"
+  },
+  {
+    "oldPath": "characters/pet_307.png",
+    "newPath": "characters/pet_307/idle.png",
+    "category": "character",
+    "assetId": "pet_307"
+  },
+  {
+    "oldPath": "characters/pet_308.png",
+    "newPath": "characters/pet_308/idle.png",
+    "category": "character",
+    "assetId": "pet_308"
+  },
+  {
+    "oldPath": "characters/pet_309.png",
+    "newPath": "characters/pet_309/idle.png",
+    "category": "character",
+    "assetId": "pet_309"
+  },
+  {
+    "oldPath": "characters/pet_310.png",
+    "newPath": "characters/pet_310/idle.png",
+    "category": "character",
+    "assetId": "pet_310"
+  },
+  {
+    "oldPath": "characters/pet_311.png",
+    "newPath": "characters/pet_311/idle.png",
+    "category": "character",
+    "assetId": "pet_311"
+  },
+  {
+    "oldPath": "characters/pet_312.png",
+    "newPath": "characters/pet_312/idle.png",
+    "category": "character",
+    "assetId": "pet_312"
+  },
+  {
+    "oldPath": "characters/pet_313.png",
+    "newPath": "characters/pet_313/idle.png",
+    "category": "character",
+    "assetId": "pet_313"
+  },
+  {
+    "oldPath": "characters/pet_314.png",
+    "newPath": "characters/pet_314/idle.png",
+    "category": "character",
+    "assetId": "pet_314"
+  },
+  {
+    "oldPath": "characters/pet_315.png",
+    "newPath": "characters/pet_315/idle.png",
+    "category": "character",
+    "assetId": "pet_315"
+  },
+  {
+    "oldPath": "characters/pet_316.png",
+    "newPath": "characters/pet_316/idle.png",
+    "category": "character",
+    "assetId": "pet_316"
+  },
+  {
+    "oldPath": "characters/pet_317.png",
+    "newPath": "characters/pet_317/idle.png",
+    "category": "character",
+    "assetId": "pet_317"
+  },
+  {
+    "oldPath": "characters/pet_318.png",
+    "newPath": "characters/pet_318/idle.png",
+    "category": "character",
+    "assetId": "pet_318"
+  },
+  {
+    "oldPath": "characters/pet_319.png",
+    "newPath": "characters/pet_319/idle.png",
+    "category": "character",
+    "assetId": "pet_319"
+  },
+  {
+    "oldPath": "characters/pet_320.png",
+    "newPath": "characters/pet_320/idle.png",
+    "category": "character",
+    "assetId": "pet_320"
+  },
+  {
+    "oldPath": "characters/pet_321.png",
+    "newPath": "characters/pet_321/idle.png",
+    "category": "character",
+    "assetId": "pet_321"
+  },
+  {
+    "oldPath": "characters/pet_322.png",
+    "newPath": "characters/pet_322/idle.png",
+    "category": "character",
+    "assetId": "pet_322"
+  },
+  {
+    "oldPath": "characters/pet_323.png",
+    "newPath": "characters/pet_323/idle.png",
+    "category": "character",
+    "assetId": "pet_323"
+  },
+  {
+    "oldPath": "characters/pet_324.png",
+    "newPath": "characters/pet_324/idle.png",
+    "category": "character",
+    "assetId": "pet_324"
+  },
+  {
+    "oldPath": "characters/pet_325.png",
+    "newPath": "characters/pet_325/idle.png",
+    "category": "character",
+    "assetId": "pet_325"
+  },
+  {
+    "oldPath": "characters/pet_326.png",
+    "newPath": "characters/pet_326/idle.png",
+    "category": "character",
+    "assetId": "pet_326"
+  },
+  {
+    "oldPath": "characters/pet_327.png",
+    "newPath": "characters/pet_327/idle.png",
+    "category": "character",
+    "assetId": "pet_327"
+  },
+  {
+    "oldPath": "characters/pet_328.png",
+    "newPath": "characters/pet_328/idle.png",
+    "category": "character",
+    "assetId": "pet_328"
+  },
+  {
+    "oldPath": "characters/pet_329.png",
+    "newPath": "characters/pet_329/idle.png",
+    "category": "character",
+    "assetId": "pet_329"
+  },
+  {
+    "oldPath": "characters/pet_330.png",
+    "newPath": "characters/pet_330/idle.png",
+    "category": "character",
+    "assetId": "pet_330"
+  },
+  {
+    "oldPath": "characters/pet_331.png",
+    "newPath": "characters/pet_331/idle.png",
+    "category": "character",
+    "assetId": "pet_331"
+  },
+  {
+    "oldPath": "characters/pet_332.png",
+    "newPath": "characters/pet_332/idle.png",
+    "category": "character",
+    "assetId": "pet_332"
+  },
+  {
+    "oldPath": "characters/pet_333.png",
+    "newPath": "characters/pet_333/idle.png",
+    "category": "character",
+    "assetId": "pet_333"
+  },
+  {
+    "oldPath": "characters/pet_334.png",
+    "newPath": "characters/pet_334/idle.png",
+    "category": "character",
+    "assetId": "pet_334"
+  },
+  {
+    "oldPath": "characters/pet_335.png",
+    "newPath": "characters/pet_335/idle.png",
+    "category": "character",
+    "assetId": "pet_335"
+  },
+  {
+    "oldPath": "characters/pet_336.png",
+    "newPath": "characters/pet_336/idle.png",
+    "category": "character",
+    "assetId": "pet_336"
+  },
+  {
+    "oldPath": "characters/pet_337.png",
+    "newPath": "characters/pet_337/idle.png",
+    "category": "character",
+    "assetId": "pet_337"
+  },
+  {
+    "oldPath": "characters/pet_338.png",
+    "newPath": "characters/pet_338/idle.png",
+    "category": "character",
+    "assetId": "pet_338"
+  },
+  {
+    "oldPath": "characters/pet_339.png",
+    "newPath": "characters/pet_339/idle.png",
+    "category": "character",
+    "assetId": "pet_339"
+  },
+  {
+    "oldPath": "characters/pet_340.png",
+    "newPath": "characters/pet_340/idle.png",
+    "category": "character",
+    "assetId": "pet_340"
+  },
+  {
+    "oldPath": "characters/pet_341.png",
+    "newPath": "characters/pet_341/idle.png",
+    "category": "character",
+    "assetId": "pet_341"
+  },
+  {
+    "oldPath": "characters/pet_342.png",
+    "newPath": "characters/pet_342/idle.png",
+    "category": "character",
+    "assetId": "pet_342"
+  },
+  {
+    "oldPath": "characters/pet_343.png",
+    "newPath": "characters/pet_343/idle.png",
+    "category": "character",
+    "assetId": "pet_343"
+  },
+  {
+    "oldPath": "characters/pet_344.png",
+    "newPath": "characters/pet_344/idle.png",
+    "category": "character",
+    "assetId": "pet_344"
+  },
+  {
+    "oldPath": "characters/pet_345.png",
+    "newPath": "characters/pet_345/idle.png",
+    "category": "character",
+    "assetId": "pet_345"
+  },
+  {
+    "oldPath": "characters/pet_346.png",
+    "newPath": "characters/pet_346/idle.png",
+    "category": "character",
+    "assetId": "pet_346"
+  },
+  {
+    "oldPath": "characters/pet_347.png",
+    "newPath": "characters/pet_347/idle.png",
+    "category": "character",
+    "assetId": "pet_347"
+  },
+  {
+    "oldPath": "characters/pet_348.png",
+    "newPath": "characters/pet_348/idle.png",
+    "category": "character",
+    "assetId": "pet_348"
+  },
+  {
+    "oldPath": "characters/pet_349.png",
+    "newPath": "characters/pet_349/idle.png",
+    "category": "character",
+    "assetId": "pet_349"
+  },
+  {
+    "oldPath": "characters/pet_350.png",
+    "newPath": "characters/pet_350/idle.png",
+    "category": "character",
+    "assetId": "pet_350"
+  },
+  {
+    "oldPath": "characters/pet_351.png",
+    "newPath": "characters/pet_351/idle.png",
+    "category": "character",
+    "assetId": "pet_351"
+  },
+  {
+    "oldPath": "characters/pet_352.png",
+    "newPath": "characters/pet_352/idle.png",
+    "category": "character",
+    "assetId": "pet_352"
+  },
+  {
+    "oldPath": "characters/pet_353.png",
+    "newPath": "characters/pet_353/idle.png",
+    "category": "character",
+    "assetId": "pet_353"
+  },
+  {
+    "oldPath": "characters/pet_354.png",
+    "newPath": "characters/pet_354/idle.png",
+    "category": "character",
+    "assetId": "pet_354"
+  },
+  {
+    "oldPath": "characters/pet_355.png",
+    "newPath": "characters/pet_355/idle.png",
+    "category": "character",
+    "assetId": "pet_355"
+  },
+  {
+    "oldPath": "characters/pet_356.png",
+    "newPath": "characters/pet_356/idle.png",
+    "category": "character",
+    "assetId": "pet_356"
+  },
+  {
+    "oldPath": "characters/pet_357.png",
+    "newPath": "characters/pet_357/idle.png",
+    "category": "character",
+    "assetId": "pet_357"
+  },
+  {
+    "oldPath": "characters/pet_358.png",
+    "newPath": "characters/pet_358/idle.png",
+    "category": "character",
+    "assetId": "pet_358"
+  },
+  {
+    "oldPath": "characters/pet_359.png",
+    "newPath": "characters/pet_359/idle.png",
+    "category": "character",
+    "assetId": "pet_359"
+  },
+  {
+    "oldPath": "characters/pet_360.png",
+    "newPath": "characters/pet_360/idle.png",
+    "category": "character",
+    "assetId": "pet_360"
+  },
+  {
+    "oldPath": "characters/pet_361.png",
+    "newPath": "characters/pet_361/idle.png",
+    "category": "character",
+    "assetId": "pet_361"
+  },
+  {
+    "oldPath": "characters/pet_362.png",
+    "newPath": "characters/pet_362/idle.png",
+    "category": "character",
+    "assetId": "pet_362"
+  },
+  {
+    "oldPath": "characters/pet_363.png",
+    "newPath": "characters/pet_363/idle.png",
+    "category": "character",
+    "assetId": "pet_363"
+  },
+  {
+    "oldPath": "characters/pet_364.png",
+    "newPath": "characters/pet_364/idle.png",
+    "category": "character",
+    "assetId": "pet_364"
+  },
+  {
+    "oldPath": "characters/pet_365.png",
+    "newPath": "characters/pet_365/idle.png",
+    "category": "character",
+    "assetId": "pet_365"
+  },
+  {
+    "oldPath": "characters/pet_366.png",
+    "newPath": "characters/pet_366/idle.png",
+    "category": "character",
+    "assetId": "pet_366"
+  },
+  {
+    "oldPath": "characters/pet_367.png",
+    "newPath": "characters/pet_367/idle.png",
+    "category": "character",
+    "assetId": "pet_367"
+  },
+  {
+    "oldPath": "characters/pet_368.png",
+    "newPath": "characters/pet_368/idle.png",
+    "category": "character",
+    "assetId": "pet_368"
+  },
+  {
+    "oldPath": "characters/pet_369.png",
+    "newPath": "characters/pet_369/idle.png",
+    "category": "character",
+    "assetId": "pet_369"
+  },
+  {
+    "oldPath": "characters/pet_370.png",
+    "newPath": "characters/pet_370/idle.png",
+    "category": "character",
+    "assetId": "pet_370"
+  },
+  {
+    "oldPath": "characters/pet_371.png",
+    "newPath": "characters/pet_371/idle.png",
+    "category": "character",
+    "assetId": "pet_371"
+  },
+  {
+    "oldPath": "characters/pet_372.png",
+    "newPath": "characters/pet_372/idle.png",
+    "category": "character",
+    "assetId": "pet_372"
+  },
+  {
+    "oldPath": "characters/pet_373.png",
+    "newPath": "characters/pet_373/idle.png",
+    "category": "character",
+    "assetId": "pet_373"
+  },
+  {
+    "oldPath": "characters/pet_374.png",
+    "newPath": "characters/pet_374/idle.png",
+    "category": "character",
+    "assetId": "pet_374"
+  },
+  {
+    "oldPath": "characters/pet_376.png",
+    "newPath": "characters/pet_376/idle.png",
+    "category": "character",
+    "assetId": "pet_376"
+  },
+  {
+    "oldPath": "characters/pet_377.png",
+    "newPath": "characters/pet_377/idle.png",
+    "category": "character",
+    "assetId": "pet_377"
+  },
+  {
+    "oldPath": "characters/pet_378.png",
+    "newPath": "characters/pet_378/idle.png",
+    "category": "character",
+    "assetId": "pet_378"
+  },
+  {
+    "oldPath": "characters/pet_379.png",
+    "newPath": "characters/pet_379/idle.png",
+    "category": "character",
+    "assetId": "pet_379"
+  },
+  {
+    "oldPath": "characters/pet_380.png",
+    "newPath": "characters/pet_380/idle.png",
+    "category": "character",
+    "assetId": "pet_380"
+  },
+  {
+    "oldPath": "characters/pet_381.png",
+    "newPath": "characters/pet_381/idle.png",
+    "category": "character",
+    "assetId": "pet_381"
+  },
+  {
+    "oldPath": "characters/pet_382.png",
+    "newPath": "characters/pet_382/idle.png",
+    "category": "character",
+    "assetId": "pet_382"
+  },
+  {
+    "oldPath": "characters/pet_383.png",
+    "newPath": "characters/pet_383/idle.png",
+    "category": "character",
+    "assetId": "pet_383"
+  },
+  {
+    "oldPath": "characters/pet_384.png",
+    "newPath": "characters/pet_384/idle.png",
+    "category": "character",
+    "assetId": "pet_384"
+  },
+  {
+    "oldPath": "characters/pet_385.png",
+    "newPath": "characters/pet_385/idle.png",
+    "category": "character",
+    "assetId": "pet_385"
+  },
+  {
+    "oldPath": "characters/pet_386.png",
+    "newPath": "characters/pet_386/idle.png",
+    "category": "character",
+    "assetId": "pet_386"
+  },
+  {
+    "oldPath": "characters/pet_387.png",
+    "newPath": "characters/pet_387/idle.png",
+    "category": "character",
+    "assetId": "pet_387"
+  },
+  {
+    "oldPath": "characters/pet_388.png",
+    "newPath": "characters/pet_388/idle.png",
+    "category": "character",
+    "assetId": "pet_388"
+  },
+  {
+    "oldPath": "characters/pet_389.png",
+    "newPath": "characters/pet_389/idle.png",
+    "category": "character",
+    "assetId": "pet_389"
+  },
+  {
+    "oldPath": "characters/pet_390.png",
+    "newPath": "characters/pet_390/idle.png",
+    "category": "character",
+    "assetId": "pet_390"
+  },
+  {
+    "oldPath": "characters/pet_391.png",
+    "newPath": "characters/pet_391/idle.png",
+    "category": "character",
+    "assetId": "pet_391"
+  },
+  {
+    "oldPath": "characters/pet_393.png",
+    "newPath": "characters/pet_393/idle.png",
+    "category": "character",
+    "assetId": "pet_393"
+  },
+  {
+    "oldPath": "characters/pet_394.png",
+    "newPath": "characters/pet_394/idle.png",
+    "category": "character",
+    "assetId": "pet_394"
+  },
+  {
+    "oldPath": "characters/pet_395.png",
+    "newPath": "characters/pet_395/idle.png",
+    "category": "character",
+    "assetId": "pet_395"
+  },
+  {
+    "oldPath": "characters/pet_396.png",
+    "newPath": "characters/pet_396/idle.png",
+    "category": "character",
+    "assetId": "pet_396"
+  },
+  {
+    "oldPath": "characters/pet_397.png",
+    "newPath": "characters/pet_397/idle.png",
+    "category": "character",
+    "assetId": "pet_397"
+  },
+  {
+    "oldPath": "characters/pet_398.png",
+    "newPath": "characters/pet_398/idle.png",
+    "category": "character",
+    "assetId": "pet_398"
+  },
+  {
+    "oldPath": "characters/pet_399.png",
+    "newPath": "characters/pet_399/idle.png",
+    "category": "character",
+    "assetId": "pet_399"
+  },
+  {
+    "oldPath": "characters/pet_400.png",
+    "newPath": "characters/pet_400/idle.png",
+    "category": "character",
+    "assetId": "pet_400"
+  },
+  {
+    "oldPath": "characters/pet_401.png",
+    "newPath": "characters/pet_401/idle.png",
+    "category": "character",
+    "assetId": "pet_401"
+  },
+  {
+    "oldPath": "characters/pet_402.png",
+    "newPath": "characters/pet_402/idle.png",
+    "category": "character",
+    "assetId": "pet_402"
+  },
+  {
+    "oldPath": "characters/pet_403.png",
+    "newPath": "characters/pet_403/idle.png",
+    "category": "character",
+    "assetId": "pet_403"
+  },
+  {
+    "oldPath": "characters/pet_404.png",
+    "newPath": "characters/pet_404/idle.png",
+    "category": "character",
+    "assetId": "pet_404"
+  },
+  {
+    "oldPath": "characters/pet_405.png",
+    "newPath": "characters/pet_405/idle.png",
+    "category": "character",
+    "assetId": "pet_405"
+  },
+  {
+    "oldPath": "characters/pet_406.png",
+    "newPath": "characters/pet_406/idle.png",
+    "category": "character",
+    "assetId": "pet_406"
+  },
+  {
+    "oldPath": "characters/pet_407.png",
+    "newPath": "characters/pet_407/idle.png",
+    "category": "character",
+    "assetId": "pet_407"
+  },
+  {
+    "oldPath": "characters/pet_408.png",
+    "newPath": "characters/pet_408/idle.png",
+    "category": "character",
+    "assetId": "pet_408"
+  },
+  {
+    "oldPath": "characters/pet_409.png",
+    "newPath": "characters/pet_409/idle.png",
+    "category": "character",
+    "assetId": "pet_409"
+  },
+  {
+    "oldPath": "characters/pet_410.png",
+    "newPath": "characters/pet_410/idle.png",
+    "category": "character",
+    "assetId": "pet_410"
+  },
+  {
+    "oldPath": "characters/pet_411.png",
+    "newPath": "characters/pet_411/idle.png",
+    "category": "character",
+    "assetId": "pet_411"
+  },
+  {
+    "oldPath": "characters/pet_412.png",
+    "newPath": "characters/pet_412/idle.png",
+    "category": "character",
+    "assetId": "pet_412"
+  },
+  {
+    "oldPath": "characters/pet_413.png",
+    "newPath": "characters/pet_413/idle.png",
+    "category": "character",
+    "assetId": "pet_413"
+  },
+  {
+    "oldPath": "characters/pet_414.png",
+    "newPath": "characters/pet_414/idle.png",
+    "category": "character",
+    "assetId": "pet_414"
+  },
+  {
+    "oldPath": "characters/pet_415.png",
+    "newPath": "characters/pet_415/idle.png",
+    "category": "character",
+    "assetId": "pet_415"
+  },
+  {
+    "oldPath": "characters/pet_416.png",
+    "newPath": "characters/pet_416/idle.png",
+    "category": "character",
+    "assetId": "pet_416"
+  },
+  {
+    "oldPath": "characters/pet_417.png",
+    "newPath": "characters/pet_417/idle.png",
+    "category": "character",
+    "assetId": "pet_417"
+  },
+  {
+    "oldPath": "characters/pet_418.png",
+    "newPath": "characters/pet_418/idle.png",
+    "category": "character",
+    "assetId": "pet_418"
+  },
+  {
+    "oldPath": "characters/pet_419.png",
+    "newPath": "characters/pet_419/idle.png",
+    "category": "character",
+    "assetId": "pet_419"
+  },
+  {
+    "oldPath": "characters/pet_420.png",
+    "newPath": "characters/pet_420/idle.png",
+    "category": "character",
+    "assetId": "pet_420"
+  },
+  {
+    "oldPath": "characters/pet_421.png",
+    "newPath": "characters/pet_421/idle.png",
+    "category": "character",
+    "assetId": "pet_421"
+  },
+  {
+    "oldPath": "characters/pet_422.png",
+    "newPath": "characters/pet_422/idle.png",
+    "category": "character",
+    "assetId": "pet_422"
+  },
+  {
+    "oldPath": "characters/pet_423.png",
+    "newPath": "characters/pet_423/idle.png",
+    "category": "character",
+    "assetId": "pet_423"
+  },
+  {
+    "oldPath": "characters/pet_424.png",
+    "newPath": "characters/pet_424/idle.png",
+    "category": "character",
+    "assetId": "pet_424"
+  },
+  {
+    "oldPath": "characters/pet_425.png",
+    "newPath": "characters/pet_425/idle.png",
+    "category": "character",
+    "assetId": "pet_425"
+  },
+  {
+    "oldPath": "characters/pet_426.png",
+    "newPath": "characters/pet_426/idle.png",
+    "category": "character",
+    "assetId": "pet_426"
+  },
+  {
+    "oldPath": "characters/pet_427.png",
+    "newPath": "characters/pet_427/idle.png",
+    "category": "character",
+    "assetId": "pet_427"
+  },
+  {
+    "oldPath": "characters/pet_428.png",
+    "newPath": "characters/pet_428/idle.png",
+    "category": "character",
+    "assetId": "pet_428"
+  },
+  {
+    "oldPath": "characters/pet_429.png",
+    "newPath": "characters/pet_429/idle.png",
+    "category": "character",
+    "assetId": "pet_429"
+  },
+  {
+    "oldPath": "characters/pet_430.png",
+    "newPath": "characters/pet_430/idle.png",
+    "category": "character",
+    "assetId": "pet_430"
+  },
+  {
+    "oldPath": "characters/pet_431.png",
+    "newPath": "characters/pet_431/idle.png",
+    "category": "character",
+    "assetId": "pet_431"
+  },
+  {
+    "oldPath": "characters/pet_432.png",
+    "newPath": "characters/pet_432/idle.png",
+    "category": "character",
+    "assetId": "pet_432"
+  },
+  {
+    "oldPath": "characters/pet_433.png",
+    "newPath": "characters/pet_433/idle.png",
+    "category": "character",
+    "assetId": "pet_433"
+  },
+  {
+    "oldPath": "characters/pet_434.png",
+    "newPath": "characters/pet_434/idle.png",
+    "category": "character",
+    "assetId": "pet_434"
+  },
+  {
+    "oldPath": "characters/pet_435.png",
+    "newPath": "characters/pet_435/idle.png",
+    "category": "character",
+    "assetId": "pet_435"
+  },
+  {
+    "oldPath": "characters/pet_436.png",
+    "newPath": "characters/pet_436/idle.png",
+    "category": "character",
+    "assetId": "pet_436"
+  },
+  {
+    "oldPath": "characters/pet_437.png",
+    "newPath": "characters/pet_437/idle.png",
+    "category": "character",
+    "assetId": "pet_437"
+  },
+  {
+    "oldPath": "characters/pet_438.png",
+    "newPath": "characters/pet_438/idle.png",
+    "category": "character",
+    "assetId": "pet_438"
+  },
+  {
+    "oldPath": "characters/pet_439.png",
+    "newPath": "characters/pet_439/idle.png",
+    "category": "character",
+    "assetId": "pet_439"
+  },
+  {
+    "oldPath": "characters/pet_440.png",
+    "newPath": "characters/pet_440/idle.png",
+    "category": "character",
+    "assetId": "pet_440"
+  },
+  {
+    "oldPath": "characters/pet_441.png",
+    "newPath": "characters/pet_441/idle.png",
+    "category": "character",
+    "assetId": "pet_441"
+  },
+  {
+    "oldPath": "characters/pet_442.png",
+    "newPath": "characters/pet_442/idle.png",
+    "category": "character",
+    "assetId": "pet_442"
+  },
+  {
+    "oldPath": "characters/pet_443.png",
+    "newPath": "characters/pet_443/idle.png",
+    "category": "character",
+    "assetId": "pet_443"
+  },
+  {
+    "oldPath": "characters/pet_444.png",
+    "newPath": "characters/pet_444/idle.png",
+    "category": "character",
+    "assetId": "pet_444"
+  },
+  {
+    "oldPath": "characters/pet_445.png",
+    "newPath": "characters/pet_445/idle.png",
+    "category": "character",
+    "assetId": "pet_445"
+  },
+  {
+    "oldPath": "characters/pet_446.png",
+    "newPath": "characters/pet_446/idle.png",
+    "category": "character",
+    "assetId": "pet_446"
+  },
+  {
+    "oldPath": "characters/pet_447.png",
+    "newPath": "characters/pet_447/idle.png",
+    "category": "character",
+    "assetId": "pet_447"
+  },
+  {
+    "oldPath": "characters/pet_448.png",
+    "newPath": "characters/pet_448/idle.png",
+    "category": "character",
+    "assetId": "pet_448"
+  },
+  {
+    "oldPath": "characters/pet_449.png",
+    "newPath": "characters/pet_449/idle.png",
+    "category": "character",
+    "assetId": "pet_449"
+  },
+  {
+    "oldPath": "characters/pet_450.png",
+    "newPath": "characters/pet_450/idle.png",
+    "category": "character",
+    "assetId": "pet_450"
+  },
+  {
+    "oldPath": "characters/pet_451.png",
+    "newPath": "characters/pet_451/idle.png",
+    "category": "character",
+    "assetId": "pet_451"
+  },
+  {
+    "oldPath": "characters/pet_452.png",
+    "newPath": "characters/pet_452/idle.png",
+    "category": "character",
+    "assetId": "pet_452"
+  },
+  {
+    "oldPath": "characters/pet_453.png",
+    "newPath": "characters/pet_453/idle.png",
+    "category": "character",
+    "assetId": "pet_453"
+  },
+  {
+    "oldPath": "characters/pet_454.png",
+    "newPath": "characters/pet_454/idle.png",
+    "category": "character",
+    "assetId": "pet_454"
+  },
+  {
+    "oldPath": "characters/pet_455.png",
+    "newPath": "characters/pet_455/idle.png",
+    "category": "character",
+    "assetId": "pet_455"
+  },
+  {
+    "oldPath": "characters/pet_456.png",
+    "newPath": "characters/pet_456/idle.png",
+    "category": "character",
+    "assetId": "pet_456"
+  },
+  {
+    "oldPath": "characters/pet_457.png",
+    "newPath": "characters/pet_457/idle.png",
+    "category": "character",
+    "assetId": "pet_457"
+  },
+  {
+    "oldPath": "characters/pet_458.png",
+    "newPath": "characters/pet_458/idle.png",
+    "category": "character",
+    "assetId": "pet_458"
+  },
+  {
+    "oldPath": "characters/pet_459.png",
+    "newPath": "characters/pet_459/idle.png",
+    "category": "character",
+    "assetId": "pet_459"
+  },
+  {
+    "oldPath": "characters/pet_460.png",
+    "newPath": "characters/pet_460/idle.png",
+    "category": "character",
+    "assetId": "pet_460"
+  },
+  {
+    "oldPath": "characters/pet_461.png",
+    "newPath": "characters/pet_461/idle.png",
+    "category": "character",
+    "assetId": "pet_461"
+  },
+  {
+    "oldPath": "characters/pet_462.png",
+    "newPath": "characters/pet_462/idle.png",
+    "category": "character",
+    "assetId": "pet_462"
+  },
+  {
+    "oldPath": "characters/pet_463.png",
+    "newPath": "characters/pet_463/idle.png",
+    "category": "character",
+    "assetId": "pet_463"
+  },
+  {
+    "oldPath": "characters/pet_464.png",
+    "newPath": "characters/pet_464/idle.png",
+    "category": "character",
+    "assetId": "pet_464"
+  },
+  {
+    "oldPath": "characters/pet_465.png",
+    "newPath": "characters/pet_465/idle.png",
+    "category": "character",
+    "assetId": "pet_465"
+  },
+  {
+    "oldPath": "characters/pet_466.png",
+    "newPath": "characters/pet_466/idle.png",
+    "category": "character",
+    "assetId": "pet_466"
+  },
+  {
+    "oldPath": "characters/pet_467.png",
+    "newPath": "characters/pet_467/idle.png",
+    "category": "character",
+    "assetId": "pet_467"
+  },
+  {
+    "oldPath": "characters/pet_468.png",
+    "newPath": "characters/pet_468/idle.png",
+    "category": "character",
+    "assetId": "pet_468"
+  },
+  {
+    "oldPath": "characters/pet_469.png",
+    "newPath": "characters/pet_469/idle.png",
+    "category": "character",
+    "assetId": "pet_469"
+  },
+  {
+    "oldPath": "characters/pet_470.png",
+    "newPath": "characters/pet_470/idle.png",
+    "category": "character",
+    "assetId": "pet_470"
+  },
+  {
+    "oldPath": "characters/pet_471.png",
+    "newPath": "characters/pet_471/idle.png",
+    "category": "character",
+    "assetId": "pet_471"
+  },
+  {
+    "oldPath": "characters/pet_472.png",
+    "newPath": "characters/pet_472/idle.png",
+    "category": "character",
+    "assetId": "pet_472"
+  },
+  {
+    "oldPath": "characters/pet_473.png",
+    "newPath": "characters/pet_473/idle.png",
+    "category": "character",
+    "assetId": "pet_473"
+  },
+  {
+    "oldPath": "characters/pet_474.png",
+    "newPath": "characters/pet_474/idle.png",
+    "category": "character",
+    "assetId": "pet_474"
+  },
+  {
+    "oldPath": "characters/pet_475.png",
+    "newPath": "characters/pet_475/idle.png",
+    "category": "character",
+    "assetId": "pet_475"
+  },
+  {
+    "oldPath": "characters/pet_476.png",
+    "newPath": "characters/pet_476/idle.png",
+    "category": "character",
+    "assetId": "pet_476"
+  },
+  {
+    "oldPath": "characters/pet_477.png",
+    "newPath": "characters/pet_477/idle.png",
+    "category": "character",
+    "assetId": "pet_477"
+  },
+  {
+    "oldPath": "characters/pet_478.png",
+    "newPath": "characters/pet_478/idle.png",
+    "category": "character",
+    "assetId": "pet_478"
+  },
+  {
+    "oldPath": "characters/pet_479.png",
+    "newPath": "characters/pet_479/idle.png",
+    "category": "character",
+    "assetId": "pet_479"
+  },
+  {
+    "oldPath": "characters/pet_480.png",
+    "newPath": "characters/pet_480/idle.png",
+    "category": "character",
+    "assetId": "pet_480"
+  },
+  {
+    "oldPath": "eggs/0알.png",
+    "newPath": "eggs/hatch-sequence/stage-00.png",
+    "category": "egg-hatch-stage",
+    "assetId": "egg-hatch-stage-0"
+  },
+  {
+    "oldPath": "eggs/1알.png",
+    "newPath": "eggs/hatch-sequence/stage-01.png",
+    "category": "egg-hatch-stage",
+    "assetId": "egg-hatch-stage-1"
+  },
+  {
+    "oldPath": "eggs/2알.png",
+    "newPath": "eggs/hatch-sequence/stage-02.png",
+    "category": "egg-hatch-stage",
+    "assetId": "egg-hatch-stage-2"
+  },
+  {
+    "oldPath": "eggs/3알.png",
+    "newPath": "eggs/hatch-sequence/stage-03.png",
+    "category": "egg-hatch-stage",
+    "assetId": "egg-hatch-stage-3"
+  },
+  {
+    "oldPath": "eggs/4알.png",
+    "newPath": "eggs/hatch-sequence/stage-04.png",
+    "category": "egg-hatch-stage",
+    "assetId": "egg-hatch-stage-4"
+  },
+  {
+    "oldPath": "eggs/5알.png",
+    "newPath": "eggs/hatch-sequence/stage-05.png",
+    "category": "egg-hatch-stage",
+    "assetId": "egg-hatch-stage-5"
+  },
+  {
+    "oldPath": "eggs/6알.png",
+    "newPath": "eggs/hatch-sequence/stage-06.png",
+    "category": "egg-hatch-stage",
+    "assetId": "egg-hatch-stage-6"
+  },
+  {
+    "oldPath": "eggs/egg_001.png",
+    "newPath": "eggs/designs/egg-001.png",
+    "category": "egg-design",
+    "assetId": "egg-001"
+  },
+  {
+    "oldPath": "eggs/egg_002.png",
+    "newPath": "eggs/designs/egg-002.png",
+    "category": "egg-design",
+    "assetId": "egg-002"
+  },
+  {
+    "oldPath": "eggs/egg_003.png",
+    "newPath": "eggs/designs/egg-003.png",
+    "category": "egg-design",
+    "assetId": "egg-003"
+  },
+  {
+    "oldPath": "eggs/egg_004.png",
+    "newPath": "eggs/designs/egg-004.png",
+    "category": "egg-design",
+    "assetId": "egg-004"
+  },
+  {
+    "oldPath": "eggs/egg_005.png",
+    "newPath": "eggs/designs/egg-005.png",
+    "category": "egg-design",
+    "assetId": "egg-005"
+  },
+  {
+    "oldPath": "eggs/egg_006.png",
+    "newPath": "eggs/designs/egg-006.png",
+    "category": "egg-design",
+    "assetId": "egg-006"
+  },
+  {
+    "oldPath": "eggs/egg_007.png",
+    "newPath": "eggs/designs/egg-007.png",
+    "category": "egg-design",
+    "assetId": "egg-007"
+  },
+  {
+    "oldPath": "eggs/egg_008.png",
+    "newPath": "eggs/designs/egg-008.png",
+    "category": "egg-design",
+    "assetId": "egg-008"
+  },
+  {
+    "oldPath": "eggs/egg_009.png",
+    "newPath": "eggs/designs/egg-009.png",
+    "category": "egg-design",
+    "assetId": "egg-009"
+  },
+  {
+    "oldPath": "eggs/egg_010.png",
+    "newPath": "eggs/designs/egg-010.png",
+    "category": "egg-design",
+    "assetId": "egg-010"
+  },
+  {
+    "oldPath": "eggs/egg_011.png",
+    "newPath": "eggs/designs/egg-011.png",
+    "category": "egg-design",
+    "assetId": "egg-011"
+  },
+  {
+    "oldPath": "eggs/egg_012.png",
+    "newPath": "eggs/designs/egg-012.png",
+    "category": "egg-design",
+    "assetId": "egg-012"
+  },
+  {
+    "oldPath": "eggs/egg_013.png",
+    "newPath": "eggs/designs/egg-013.png",
+    "category": "egg-design",
+    "assetId": "egg-013"
+  },
+  {
+    "oldPath": "eggs/egg_014.png",
+    "newPath": "eggs/designs/egg-014.png",
+    "category": "egg-design",
+    "assetId": "egg-014"
+  },
+  {
+    "oldPath": "eggs/egg_015.png",
+    "newPath": "eggs/designs/egg-015.png",
+    "category": "egg-design",
+    "assetId": "egg-015"
+  },
+  {
+    "oldPath": "eggs/egg_016.png",
+    "newPath": "eggs/designs/egg-016.png",
+    "category": "egg-design",
+    "assetId": "egg-016"
+  },
+  {
+    "oldPath": "eggs/egg_017.png",
+    "newPath": "eggs/designs/egg-017.png",
+    "category": "egg-design",
+    "assetId": "egg-017"
+  },
+  {
+    "oldPath": "eggs/egg_018.png",
+    "newPath": "eggs/designs/egg-018.png",
+    "category": "egg-design",
+    "assetId": "egg-018"
+  },
+  {
+    "oldPath": "eggs/egg_019.png",
+    "newPath": "eggs/designs/egg-019.png",
+    "category": "egg-design",
+    "assetId": "egg-019"
+  },
+  {
+    "oldPath": "eggs/egg_020.png",
+    "newPath": "eggs/designs/egg-020.png",
+    "category": "egg-design",
+    "assetId": "egg-020"
+  },
+  {
+    "oldPath": "eggs/egg_021.png",
+    "newPath": "eggs/designs/egg-021.png",
+    "category": "egg-design",
+    "assetId": "egg-021"
+  },
+  {
+    "oldPath": "eggs/egg_022.png",
+    "newPath": "eggs/designs/egg-022.png",
+    "category": "egg-design",
+    "assetId": "egg-022"
+  },
+  {
+    "oldPath": "eggs/egg_023.png",
+    "newPath": "eggs/designs/egg-023.png",
+    "category": "egg-design",
+    "assetId": "egg-023"
+  },
+  {
+    "oldPath": "eggs/egg_024.png",
+    "newPath": "eggs/designs/egg-024.png",
+    "category": "egg-design",
+    "assetId": "egg-024"
+  },
+  {
+    "oldPath": "eggs/egg_025.png",
+    "newPath": "eggs/designs/egg-025.png",
+    "category": "egg-design",
+    "assetId": "egg-025"
+  },
+  {
+    "oldPath": "eggs/egg_026.png",
+    "newPath": "eggs/designs/egg-026.png",
+    "category": "egg-design",
+    "assetId": "egg-026"
+  },
+  {
+    "oldPath": "eggs/egg_027.png",
+    "newPath": "eggs/designs/egg-027.png",
+    "category": "egg-design",
+    "assetId": "egg-027"
+  },
+  {
+    "oldPath": "eggs/egg_028.png",
+    "newPath": "eggs/designs/egg-028.png",
+    "category": "egg-design",
+    "assetId": "egg-028"
+  },
+  {
+    "oldPath": "eggs/egg_029.png",
+    "newPath": "eggs/designs/egg-029.png",
+    "category": "egg-design",
+    "assetId": "egg-029"
+  },
+  {
+    "oldPath": "eggs/egg_030.png",
+    "newPath": "eggs/designs/egg-030.png",
+    "category": "egg-design",
+    "assetId": "egg-030"
+  },
+  {
+    "oldPath": "eggs/egg_031.png",
+    "newPath": "eggs/designs/egg-031.png",
+    "category": "egg-design",
+    "assetId": "egg-031"
+  },
+  {
+    "oldPath": "eggs/egg_032.png",
+    "newPath": "eggs/designs/egg-032.png",
+    "category": "egg-design",
+    "assetId": "egg-032"
+  },
+  {
+    "oldPath": "eggs/egg_033.png",
+    "newPath": "eggs/designs/egg-033.png",
+    "category": "egg-design",
+    "assetId": "egg-033"
+  },
+  {
+    "oldPath": "eggs/egg_034.png",
+    "newPath": "eggs/designs/egg-034.png",
+    "category": "egg-design",
+    "assetId": "egg-034"
+  },
+  {
+    "oldPath": "eggs/egg_035.png",
+    "newPath": "eggs/designs/egg-035.png",
+    "category": "egg-design",
+    "assetId": "egg-035"
+  },
+  {
+    "oldPath": "eggs/egg_036.png",
+    "newPath": "eggs/designs/egg-036.png",
+    "category": "egg-design",
+    "assetId": "egg-036"
+  },
+  {
+    "oldPath": "eggs/egg_037.png",
+    "newPath": "eggs/designs/egg-037.png",
+    "category": "egg-design",
+    "assetId": "egg-037"
+  },
+  {
+    "oldPath": "eggs/egg_038.png",
+    "newPath": "eggs/designs/egg-038.png",
+    "category": "egg-design",
+    "assetId": "egg-038"
+  },
+  {
+    "oldPath": "eggs/egg_039.png",
+    "newPath": "eggs/designs/egg-039.png",
+    "category": "egg-design",
+    "assetId": "egg-039"
+  },
+  {
+    "oldPath": "eggs/egg_040.png",
+    "newPath": "eggs/designs/egg-040.png",
+    "category": "egg-design",
+    "assetId": "egg-040"
+  },
+  {
+    "oldPath": "eggs/egg_041.png",
+    "newPath": "eggs/designs/egg-041.png",
+    "category": "egg-design",
+    "assetId": "egg-041"
+  },
+  {
+    "oldPath": "eggs/egg_042.png",
+    "newPath": "eggs/designs/egg-042.png",
+    "category": "egg-design",
+    "assetId": "egg-042"
+  },
+  {
+    "oldPath": "eggs/egg_043.png",
+    "newPath": "eggs/designs/egg-043.png",
+    "category": "egg-design",
+    "assetId": "egg-043"
+  },
+  {
+    "oldPath": "eggs/egg_044.png",
+    "newPath": "eggs/designs/egg-044.png",
+    "category": "egg-design",
+    "assetId": "egg-044"
+  },
+  {
+    "oldPath": "eggs/egg_045.png",
+    "newPath": "eggs/designs/egg-045.png",
+    "category": "egg-design",
+    "assetId": "egg-045"
+  },
+  {
+    "oldPath": "eggs/egg_046.png",
+    "newPath": "eggs/designs/egg-046.png",
+    "category": "egg-design",
+    "assetId": "egg-046"
+  },
+  {
+    "oldPath": "eggs/egg_047.png",
+    "newPath": "eggs/designs/egg-047.png",
+    "category": "egg-design",
+    "assetId": "egg-047"
+  },
+  {
+    "oldPath": "eggs/egg_048.png",
+    "newPath": "eggs/designs/egg-048.png",
+    "category": "egg-design",
+    "assetId": "egg-048"
+  },
+  {
+    "oldPath": "eggs/egg_049.png",
+    "newPath": "eggs/designs/egg-049.png",
+    "category": "egg-design",
+    "assetId": "egg-049"
+  },
+  {
+    "oldPath": "eggs/egg_050.png",
+    "newPath": "eggs/designs/egg-050.png",
+    "category": "egg-design",
+    "assetId": "egg-050"
+  },
+  {
+    "oldPath": "eggs/egg_051.png",
+    "newPath": "eggs/designs/egg-051.png",
+    "category": "egg-design",
+    "assetId": "egg-051"
+  },
+  {
+    "oldPath": "eggs/egg_052.png",
+    "newPath": "eggs/designs/egg-052.png",
+    "category": "egg-design",
+    "assetId": "egg-052"
+  },
+  {
+    "oldPath": "eggs/egg_053.png",
+    "newPath": "eggs/designs/egg-053.png",
+    "category": "egg-design",
+    "assetId": "egg-053"
+  },
+  {
+    "oldPath": "eggs/egg_054.png",
+    "newPath": "eggs/designs/egg-054.png",
+    "category": "egg-design",
+    "assetId": "egg-054"
+  },
+  {
+    "oldPath": "eggs/egg_055.png",
+    "newPath": "eggs/designs/egg-055.png",
+    "category": "egg-design",
+    "assetId": "egg-055"
+  },
+  {
+    "oldPath": "eggs/egg_056.png",
+    "newPath": "eggs/designs/egg-056.png",
+    "category": "egg-design",
+    "assetId": "egg-056"
+  },
+  {
+    "oldPath": "eggs/egg_057.png",
+    "newPath": "eggs/designs/egg-057.png",
+    "category": "egg-design",
+    "assetId": "egg-057"
+  },
+  {
+    "oldPath": "eggs/egg_058.png",
+    "newPath": "eggs/designs/egg-058.png",
+    "category": "egg-design",
+    "assetId": "egg-058"
+  },
+  {
+    "oldPath": "eggs/egg_059.png",
+    "newPath": "eggs/designs/egg-059.png",
+    "category": "egg-design",
+    "assetId": "egg-059"
+  },
+  {
+    "oldPath": "eggs/egg_060.png",
+    "newPath": "eggs/designs/egg-060.png",
+    "category": "egg-design",
+    "assetId": "egg-060"
+  },
+  {
+    "oldPath": "eggs/egg_061.png",
+    "newPath": "eggs/designs/egg-061.png",
+    "category": "egg-design",
+    "assetId": "egg-061"
+  },
+  {
+    "oldPath": "eggs/egg_062.png",
+    "newPath": "eggs/designs/egg-062.png",
+    "category": "egg-design",
+    "assetId": "egg-062"
+  },
+  {
+    "oldPath": "eggs/egg_063.png",
+    "newPath": "eggs/designs/egg-063.png",
+    "category": "egg-design",
+    "assetId": "egg-063"
+  },
+  {
+    "oldPath": "eggs/egg_064.png",
+    "newPath": "eggs/designs/egg-064.png",
+    "category": "egg-design",
+    "assetId": "egg-064"
+  },
+  {
+    "oldPath": "eggs/egg_065.png",
+    "newPath": "eggs/designs/egg-065.png",
+    "category": "egg-design",
+    "assetId": "egg-065"
+  },
+  {
+    "oldPath": "eggs/egg_066.png",
+    "newPath": "eggs/designs/egg-066.png",
+    "category": "egg-design",
+    "assetId": "egg-066"
+  },
+  {
+    "oldPath": "eggs/egg_067.png",
+    "newPath": "eggs/designs/egg-067.png",
+    "category": "egg-design",
+    "assetId": "egg-067"
+  },
+  {
+    "oldPath": "eggs/egg_068.png",
+    "newPath": "eggs/designs/egg-068.png",
+    "category": "egg-design",
+    "assetId": "egg-068"
+  },
+  {
+    "oldPath": "eggs/egg_069.png",
+    "newPath": "eggs/designs/egg-069.png",
+    "category": "egg-design",
+    "assetId": "egg-069"
+  },
+  {
+    "oldPath": "eggs/egg_070.png",
+    "newPath": "eggs/designs/egg-070.png",
+    "category": "egg-design",
+    "assetId": "egg-070"
+  },
+  {
+    "oldPath": "eggs/egg_071.png",
+    "newPath": "eggs/designs/egg-071.png",
+    "category": "egg-design",
+    "assetId": "egg-071"
+  },
+  {
+    "oldPath": "eggs/egg_072.png",
+    "newPath": "eggs/designs/egg-072.png",
+    "category": "egg-design",
+    "assetId": "egg-072"
+  },
+  {
+    "oldPath": "eggs/egg_073.png",
+    "newPath": "eggs/designs/egg-073.png",
+    "category": "egg-design",
+    "assetId": "egg-073"
+  },
+  {
+    "oldPath": "eggs/egg_074.png",
+    "newPath": "eggs/designs/egg-074.png",
+    "category": "egg-design",
+    "assetId": "egg-074"
+  },
+  {
+    "oldPath": "eggs/egg_075.png",
+    "newPath": "eggs/designs/egg-075.png",
+    "category": "egg-design",
+    "assetId": "egg-075"
+  },
+  {
+    "oldPath": "eggs/egg_076.png",
+    "newPath": "eggs/designs/egg-076.png",
+    "category": "egg-design",
+    "assetId": "egg-076"
+  },
+  {
+    "oldPath": "eggs/egg_077.png",
+    "newPath": "eggs/designs/egg-077.png",
+    "category": "egg-design",
+    "assetId": "egg-077"
+  },
+  {
+    "oldPath": "eggs/egg_078.png",
+    "newPath": "eggs/designs/egg-078.png",
+    "category": "egg-design",
+    "assetId": "egg-078"
+  },
+  {
+    "oldPath": "eggs/egg_079.png",
+    "newPath": "eggs/designs/egg-079.png",
+    "category": "egg-design",
+    "assetId": "egg-079"
+  },
+  {
+    "oldPath": "eggs/egg_080.png",
+    "newPath": "eggs/designs/egg-080.png",
+    "category": "egg-design",
+    "assetId": "egg-080"
+  },
+  {
+    "oldPath": "eggs/egg_081.png",
+    "newPath": "eggs/designs/egg-081.png",
+    "category": "egg-design",
+    "assetId": "egg-081"
+  },
+  {
+    "oldPath": "eggs/egg_082.png",
+    "newPath": "eggs/designs/egg-082.png",
+    "category": "egg-design",
+    "assetId": "egg-082"
+  },
+  {
+    "oldPath": "eggs/egg_083.png",
+    "newPath": "eggs/designs/egg-083.png",
+    "category": "egg-design",
+    "assetId": "egg-083"
+  },
+  {
+    "oldPath": "eggs/egg_084.png",
+    "newPath": "eggs/designs/egg-084.png",
+    "category": "egg-design",
+    "assetId": "egg-084"
+  },
+  {
+    "oldPath": "eggs/egg_085.png",
+    "newPath": "eggs/designs/egg-085.png",
+    "category": "egg-design",
+    "assetId": "egg-085"
+  },
+  {
+    "oldPath": "eggs/egg_086.png",
+    "newPath": "eggs/designs/egg-086.png",
+    "category": "egg-design",
+    "assetId": "egg-086"
+  },
+  {
+    "oldPath": "eggs/egg_087.png",
+    "newPath": "eggs/designs/egg-087.png",
+    "category": "egg-design",
+    "assetId": "egg-087"
+  },
+  {
+    "oldPath": "eggs/egg_088.png",
+    "newPath": "eggs/designs/egg-088.png",
+    "category": "egg-design",
+    "assetId": "egg-088"
+  },
+  {
+    "oldPath": "eggs/egg_089.png",
+    "newPath": "eggs/designs/egg-089.png",
+    "category": "egg-design",
+    "assetId": "egg-089"
+  },
+  {
+    "oldPath": "eggs/egg_090.png",
+    "newPath": "eggs/designs/egg-090.png",
+    "category": "egg-design",
+    "assetId": "egg-090"
+  },
+  {
+    "oldPath": "eggs/egg_091.png",
+    "newPath": "eggs/designs/egg-091.png",
+    "category": "egg-design",
+    "assetId": "egg-091"
+  },
+  {
+    "oldPath": "eggs/egg_092.png",
+    "newPath": "eggs/designs/egg-092.png",
+    "category": "egg-design",
+    "assetId": "egg-092"
+  },
+  {
+    "oldPath": "eggs/egg_093.png",
+    "newPath": "eggs/designs/egg-093.png",
+    "category": "egg-design",
+    "assetId": "egg-093"
+  },
+  {
+    "oldPath": "eggs/egg_094.png",
+    "newPath": "eggs/designs/egg-094.png",
+    "category": "egg-design",
+    "assetId": "egg-094"
+  },
+  {
+    "oldPath": "eggs/egg_095.png",
+    "newPath": "eggs/designs/egg-095.png",
+    "category": "egg-design",
+    "assetId": "egg-095"
+  },
+  {
+    "oldPath": "eggs/egg_096.png",
+    "newPath": "eggs/designs/egg-096.png",
+    "category": "egg-design",
+    "assetId": "egg-096"
+  },
+  {
+    "oldPath": "eggs/egg_097.png",
+    "newPath": "eggs/designs/egg-097.png",
+    "category": "egg-design",
+    "assetId": "egg-097"
+  },
+  {
+    "oldPath": "eggs/egg_098.png",
+    "newPath": "eggs/designs/egg-098.png",
+    "category": "egg-design",
+    "assetId": "egg-098"
+  },
+  {
+    "oldPath": "eggs/egg_099.png",
+    "newPath": "eggs/designs/egg-099.png",
+    "category": "egg-design",
+    "assetId": "egg-099"
+  },
+  {
+    "oldPath": "eggs/egg_100.png",
+    "newPath": "eggs/designs/egg-100.png",
+    "category": "egg-design",
+    "assetId": "egg-100"
+  },
+  {
+    "oldPath": "eggs/egg_101.png",
+    "newPath": "eggs/designs/egg-101.png",
+    "category": "egg-design",
+    "assetId": "egg-101"
+  },
+  {
+    "oldPath": "eggs/egg_102.png",
+    "newPath": "eggs/designs/egg-102.png",
+    "category": "egg-design",
+    "assetId": "egg-102"
+  },
+  {
+    "oldPath": "eggs/egg_103.png",
+    "newPath": "eggs/designs/egg-103.png",
+    "category": "egg-design",
+    "assetId": "egg-103"
+  },
+  {
+    "oldPath": "eggs/egg_104.png",
+    "newPath": "eggs/designs/egg-104.png",
+    "category": "egg-design",
+    "assetId": "egg-104"
+  },
+  {
+    "oldPath": "eggs/egg_105.png",
+    "newPath": "eggs/designs/egg-105.png",
+    "category": "egg-design",
+    "assetId": "egg-105"
+  },
+  {
+    "oldPath": "eggs/egg_106.png",
+    "newPath": "eggs/designs/egg-106.png",
+    "category": "egg-design",
+    "assetId": "egg-106"
+  },
+  {
+    "oldPath": "eggs/egg_107.png",
+    "newPath": "eggs/designs/egg-107.png",
+    "category": "egg-design",
+    "assetId": "egg-107"
+  },
+  {
+    "oldPath": "eggs/egg_108.png",
+    "newPath": "eggs/designs/egg-108.png",
+    "category": "egg-design",
+    "assetId": "egg-108"
+  },
+  {
+    "oldPath": "eggs/egg_109.png",
+    "newPath": "eggs/designs/egg-109.png",
+    "category": "egg-design",
+    "assetId": "egg-109"
+  },
+  {
+    "oldPath": "eggs/egg_110.png",
+    "newPath": "eggs/designs/egg-110.png",
+    "category": "egg-design",
+    "assetId": "egg-110"
+  },
+  {
+    "oldPath": "eggs/egg_111.png",
+    "newPath": "eggs/designs/egg-111.png",
+    "category": "egg-design",
+    "assetId": "egg-111"
+  },
+  {
+    "oldPath": "eggs/egg_112.png",
+    "newPath": "eggs/designs/egg-112.png",
+    "category": "egg-design",
+    "assetId": "egg-112"
+  },
+  {
+    "oldPath": "eggs/egg_113.png",
+    "newPath": "eggs/designs/egg-113.png",
+    "category": "egg-design",
+    "assetId": "egg-113"
+  },
+  {
+    "oldPath": "eggs/egg_114.png",
+    "newPath": "eggs/designs/egg-114.png",
+    "category": "egg-design",
+    "assetId": "egg-114"
+  },
+  {
+    "oldPath": "eggs/egg_115.png",
+    "newPath": "eggs/designs/egg-115.png",
+    "category": "egg-design",
+    "assetId": "egg-115"
+  },
+  {
+    "oldPath": "eggs/egg_116.png",
+    "newPath": "eggs/designs/egg-116.png",
+    "category": "egg-design",
+    "assetId": "egg-116"
+  },
+  {
+    "oldPath": "eggs/egg_117.png",
+    "newPath": "eggs/designs/egg-117.png",
+    "category": "egg-design",
+    "assetId": "egg-117"
+  },
+  {
+    "oldPath": "eggs/egg_118.png",
+    "newPath": "eggs/designs/egg-118.png",
+    "category": "egg-design",
+    "assetId": "egg-118"
+  },
+  {
+    "oldPath": "eggs/egg_119.png",
+    "newPath": "eggs/designs/egg-119.png",
+    "category": "egg-design",
+    "assetId": "egg-119"
+  },
+  {
+    "oldPath": "eggs/egg_120.png",
+    "newPath": "eggs/designs/egg-120.png",
+    "category": "egg-design",
+    "assetId": "egg-120"
+  },
+  {
+    "oldPath": "eggs/egg_121.png",
+    "newPath": "eggs/designs/egg-121.png",
+    "category": "egg-design",
+    "assetId": "egg-121"
+  },
+  {
+    "oldPath": "eggs/egg_122.png",
+    "newPath": "eggs/designs/egg-122.png",
+    "category": "egg-design",
+    "assetId": "egg-122"
+  },
+  {
+    "oldPath": "eggs/egg_123.png",
+    "newPath": "eggs/designs/egg-123.png",
+    "category": "egg-design",
+    "assetId": "egg-123"
+  },
+  {
+    "oldPath": "eggs/egg_124.png",
+    "newPath": "eggs/designs/egg-124.png",
+    "category": "egg-design",
+    "assetId": "egg-124"
+  },
+  {
+    "oldPath": "eggs/egg_125.png",
+    "newPath": "eggs/designs/egg-125.png",
+    "category": "egg-design",
+    "assetId": "egg-125"
+  },
+  {
+    "oldPath": "eggs/egg_126.png",
+    "newPath": "eggs/designs/egg-126.png",
+    "category": "egg-design",
+    "assetId": "egg-126"
+  },
+  {
+    "oldPath": "eggs/egg_127.png",
+    "newPath": "eggs/designs/egg-127.png",
+    "category": "egg-design",
+    "assetId": "egg-127"
+  },
+  {
+    "oldPath": "eggs/egg_128.png",
+    "newPath": "eggs/designs/egg-128.png",
+    "category": "egg-design",
+    "assetId": "egg-128"
+  },
+  {
+    "oldPath": "eggs/egg_129.png",
+    "newPath": "eggs/designs/egg-129.png",
+    "category": "egg-design",
+    "assetId": "egg-129"
+  },
+  {
+    "oldPath": "eggs/egg_130.png",
+    "newPath": "eggs/designs/egg-130.png",
+    "category": "egg-design",
+    "assetId": "egg-130"
+  },
+  {
+    "oldPath": "eggs/egg_131.png",
+    "newPath": "eggs/designs/egg-131.png",
+    "category": "egg-design",
+    "assetId": "egg-131"
+  },
+  {
+    "oldPath": "eggs/egg_132.png",
+    "newPath": "eggs/designs/egg-132.png",
+    "category": "egg-design",
+    "assetId": "egg-132"
+  },
+  {
+    "oldPath": "eggs/egg_133.png",
+    "newPath": "eggs/designs/egg-133.png",
+    "category": "egg-design",
+    "assetId": "egg-133"
+  },
+  {
+    "oldPath": "eggs/egg_134.png",
+    "newPath": "eggs/designs/egg-134.png",
+    "category": "egg-design",
+    "assetId": "egg-134"
+  },
+  {
+    "oldPath": "eggs/egg_135.png",
+    "newPath": "eggs/designs/egg-135.png",
+    "category": "egg-design",
+    "assetId": "egg-135"
+  },
+  {
+    "oldPath": "eggs/egg_136.png",
+    "newPath": "eggs/designs/egg-136.png",
+    "category": "egg-design",
+    "assetId": "egg-136"
+  },
+  {
+    "oldPath": "eggs/egg_137.png",
+    "newPath": "eggs/designs/egg-137.png",
+    "category": "egg-design",
+    "assetId": "egg-137"
+  },
+  {
+    "oldPath": "eggs/egg_138.png",
+    "newPath": "eggs/designs/egg-138.png",
+    "category": "egg-design",
+    "assetId": "egg-138"
+  },
+  {
+    "oldPath": "eggs/egg_139.png",
+    "newPath": "eggs/designs/egg-139.png",
+    "category": "egg-design",
+    "assetId": "egg-139"
+  },
+  {
+    "oldPath": "eggs/egg_140.png",
+    "newPath": "eggs/designs/egg-140.png",
+    "category": "egg-design",
+    "assetId": "egg-140"
+  },
+  {
+    "oldPath": "eggs/egg_141.png",
+    "newPath": "eggs/designs/egg-141.png",
+    "category": "egg-design",
+    "assetId": "egg-141"
+  },
+  {
+    "oldPath": "eggs/egg_142.png",
+    "newPath": "eggs/designs/egg-142.png",
+    "category": "egg-design",
+    "assetId": "egg-142"
+  },
+  {
+    "oldPath": "eggs/egg_143.png",
+    "newPath": "eggs/designs/egg-143.png",
+    "category": "egg-design",
+    "assetId": "egg-143"
+  },
+  {
+    "oldPath": "eggs/egg_144.png",
+    "newPath": "eggs/designs/egg-144.png",
+    "category": "egg-design",
+    "assetId": "egg-144"
+  },
+  {
+    "oldPath": "eggs/egg_145.png",
+    "newPath": "eggs/designs/egg-145.png",
+    "category": "egg-design",
+    "assetId": "egg-145"
+  },
+  {
+    "oldPath": "eggs/egg_146.png",
+    "newPath": "eggs/designs/egg-146.png",
+    "category": "egg-design",
+    "assetId": "egg-146"
+  },
+  {
+    "oldPath": "eggs/egg_147.png",
+    "newPath": "eggs/designs/egg-147.png",
+    "category": "egg-design",
+    "assetId": "egg-147"
+  },
+  {
+    "oldPath": "eggs/egg_148.png",
+    "newPath": "eggs/designs/egg-148.png",
+    "category": "egg-design",
+    "assetId": "egg-148"
+  },
+  {
+    "oldPath": "eggs/egg_149.png",
+    "newPath": "eggs/designs/egg-149.png",
+    "category": "egg-design",
+    "assetId": "egg-149"
+  },
+  {
+    "oldPath": "eggs/egg_150.png",
+    "newPath": "eggs/designs/egg-150.png",
+    "category": "egg-design",
+    "assetId": "egg-150"
+  },
+  {
+    "oldPath": "eggs/egg_151.png",
+    "newPath": "eggs/designs/egg-151.png",
+    "category": "egg-design",
+    "assetId": "egg-151"
+  },
+  {
+    "oldPath": "eggs/egg_152.png",
+    "newPath": "eggs/designs/egg-152.png",
+    "category": "egg-design",
+    "assetId": "egg-152"
+  },
+  {
+    "oldPath": "eggs/egg_153.png",
+    "newPath": "eggs/designs/egg-153.png",
+    "category": "egg-design",
+    "assetId": "egg-153"
+  },
+  {
+    "oldPath": "eggs/egg_154.png",
+    "newPath": "eggs/designs/egg-154.png",
+    "category": "egg-design",
+    "assetId": "egg-154"
+  },
+  {
+    "oldPath": "eggs/egg_155.png",
+    "newPath": "eggs/designs/egg-155.png",
+    "category": "egg-design",
+    "assetId": "egg-155"
+  },
+  {
+    "oldPath": "eggs/egg_156.png",
+    "newPath": "eggs/designs/egg-156.png",
+    "category": "egg-design",
+    "assetId": "egg-156"
+  },
+  {
+    "oldPath": "eggs/egg_157.png",
+    "newPath": "eggs/designs/egg-157.png",
+    "category": "egg-design",
+    "assetId": "egg-157"
+  },
+  {
+    "oldPath": "eggs/egg_158.png",
+    "newPath": "eggs/designs/egg-158.png",
+    "category": "egg-design",
+    "assetId": "egg-158"
+  },
+  {
+    "oldPath": "eggs/egg_159.png",
+    "newPath": "eggs/designs/egg-159.png",
+    "category": "egg-design",
+    "assetId": "egg-159"
+  },
+  {
+    "oldPath": "eggs/egg_160.png",
+    "newPath": "eggs/designs/egg-160.png",
+    "category": "egg-design",
+    "assetId": "egg-160"
+  },
+  {
+    "oldPath": "eggs/egg_161.png",
+    "newPath": "eggs/designs/egg-161.png",
+    "category": "egg-design",
+    "assetId": "egg-161"
+  },
+  {
+    "oldPath": "eggs/egg_162.png",
+    "newPath": "eggs/designs/egg-162.png",
+    "category": "egg-design",
+    "assetId": "egg-162"
+  },
+  {
+    "oldPath": "eggs/egg_163.png",
+    "newPath": "eggs/designs/egg-163.png",
+    "category": "egg-design",
+    "assetId": "egg-163"
+  },
+  {
+    "oldPath": "eggs/egg_164.png",
+    "newPath": "eggs/designs/egg-164.png",
+    "category": "egg-design",
+    "assetId": "egg-164"
+  },
+  {
+    "oldPath": "eggs/egg_165.png",
+    "newPath": "eggs/designs/egg-165.png",
+    "category": "egg-design",
+    "assetId": "egg-165"
+  },
+  {
+    "oldPath": "eggs/egg_166.png",
+    "newPath": "eggs/designs/egg-166.png",
+    "category": "egg-design",
+    "assetId": "egg-166"
+  },
+  {
+    "oldPath": "eggs/egg_167.png",
+    "newPath": "eggs/designs/egg-167.png",
+    "category": "egg-design",
+    "assetId": "egg-167"
+  },
+  {
+    "oldPath": "eggs/egg_168.png",
+    "newPath": "eggs/designs/egg-168.png",
+    "category": "egg-design",
+    "assetId": "egg-168"
+  },
+  {
+    "oldPath": "eggs/egg_169.png",
+    "newPath": "eggs/designs/egg-169.png",
+    "category": "egg-design",
+    "assetId": "egg-169"
+  },
+  {
+    "oldPath": "eggs/egg_170.png",
+    "newPath": "eggs/designs/egg-170.png",
+    "category": "egg-design",
+    "assetId": "egg-170"
+  },
+  {
+    "oldPath": "eggs/egg_171.png",
+    "newPath": "eggs/designs/egg-171.png",
+    "category": "egg-design",
+    "assetId": "egg-171"
+  },
+  {
+    "oldPath": "eggs/egg_172.png",
+    "newPath": "eggs/designs/egg-172.png",
+    "category": "egg-design",
+    "assetId": "egg-172"
+  },
+  {
+    "oldPath": "eggs/egg_173.png",
+    "newPath": "eggs/designs/egg-173.png",
+    "category": "egg-design",
+    "assetId": "egg-173"
+  },
+  {
+    "oldPath": "eggs/egg_174.png",
+    "newPath": "eggs/designs/egg-174.png",
+    "category": "egg-design",
+    "assetId": "egg-174"
+  },
+  {
+    "oldPath": "eggs/egg_175.png",
+    "newPath": "eggs/designs/egg-175.png",
+    "category": "egg-design",
+    "assetId": "egg-175"
+  },
+  {
+    "oldPath": "eggs/egg_176.png",
+    "newPath": "eggs/designs/egg-176.png",
+    "category": "egg-design",
+    "assetId": "egg-176"
+  },
+  {
+    "oldPath": "eggs/egg_177.png",
+    "newPath": "eggs/designs/egg-177.png",
+    "category": "egg-design",
+    "assetId": "egg-177"
+  },
+  {
+    "oldPath": "eggs/egg_178.png",
+    "newPath": "eggs/designs/egg-178.png",
+    "category": "egg-design",
+    "assetId": "egg-178"
+  },
+  {
+    "oldPath": "eggs/egg_179.png",
+    "newPath": "eggs/designs/egg-179.png",
+    "category": "egg-design",
+    "assetId": "egg-179"
+  },
+  {
+    "oldPath": "eggs/egg_180.png",
+    "newPath": "eggs/designs/egg-180.png",
+    "category": "egg-design",
+    "assetId": "egg-180"
+  },
+  {
+    "oldPath": "eggs/egg_181.png",
+    "newPath": "eggs/designs/egg-181.png",
+    "category": "egg-design",
+    "assetId": "egg-181"
+  },
+  {
+    "oldPath": "eggs/egg_182.png",
+    "newPath": "eggs/designs/egg-182.png",
+    "category": "egg-design",
+    "assetId": "egg-182"
+  },
+  {
+    "oldPath": "eggs/egg_183.png",
+    "newPath": "eggs/designs/egg-183.png",
+    "category": "egg-design",
+    "assetId": "egg-183"
+  },
+  {
+    "oldPath": "eggs/egg_184.png",
+    "newPath": "eggs/designs/egg-184.png",
+    "category": "egg-design",
+    "assetId": "egg-184"
+  },
+  {
+    "oldPath": "eggs/egg_185.png",
+    "newPath": "eggs/designs/egg-185.png",
+    "category": "egg-design",
+    "assetId": "egg-185"
+  },
+  {
+    "oldPath": "eggs/egg_186.png",
+    "newPath": "eggs/designs/egg-186.png",
+    "category": "egg-design",
+    "assetId": "egg-186"
+  },
+  {
+    "oldPath": "eggs/egg_187.png",
+    "newPath": "eggs/designs/egg-187.png",
+    "category": "egg-design",
+    "assetId": "egg-187"
+  },
+  {
+    "oldPath": "eggs/egg_188.png",
+    "newPath": "eggs/designs/egg-188.png",
+    "category": "egg-design",
+    "assetId": "egg-188"
+  },
+  {
+    "oldPath": "eggs/egg_189.png",
+    "newPath": "eggs/designs/egg-189.png",
+    "category": "egg-design",
+    "assetId": "egg-189"
+  },
+  {
+    "oldPath": "eggs/egg_190.png",
+    "newPath": "eggs/designs/egg-190.png",
+    "category": "egg-design",
+    "assetId": "egg-190"
+  },
+  {
+    "oldPath": "eggs/egg_191.png",
+    "newPath": "eggs/designs/egg-191.png",
+    "category": "egg-design",
+    "assetId": "egg-191"
+  },
+  {
+    "oldPath": "eggs/egg_192.png",
+    "newPath": "eggs/designs/egg-192.png",
+    "category": "egg-design",
+    "assetId": "egg-192"
+  },
+  {
+    "oldPath": "eggs/egg_193.png",
+    "newPath": "eggs/designs/egg-193.png",
+    "category": "egg-design",
+    "assetId": "egg-193"
+  },
+  {
+    "oldPath": "eggs/egg_194.png",
+    "newPath": "eggs/designs/egg-194.png",
+    "category": "egg-design",
+    "assetId": "egg-194"
+  },
+  {
+    "oldPath": "eggs/egg_195.png",
+    "newPath": "eggs/designs/egg-195.png",
+    "category": "egg-design",
+    "assetId": "egg-195"
+  },
+  {
+    "oldPath": "eggs/egg_196.png",
+    "newPath": "eggs/designs/egg-196.png",
+    "category": "egg-design",
+    "assetId": "egg-196"
+  },
+  {
+    "oldPath": "eggs/egg_197.png",
+    "newPath": "eggs/designs/egg-197.png",
+    "category": "egg-design",
+    "assetId": "egg-197"
+  },
+  {
+    "oldPath": "eggs/egg_198.png",
+    "newPath": "eggs/designs/egg-198.png",
+    "category": "egg-design",
+    "assetId": "egg-198"
+  },
+  {
+    "oldPath": "eggs/egg_199.png",
+    "newPath": "eggs/designs/egg-199.png",
+    "category": "egg-design",
+    "assetId": "egg-199"
+  },
+  {
+    "oldPath": "eggs/egg_200.png",
+    "newPath": "eggs/designs/egg-200.png",
+    "category": "egg-design",
+    "assetId": "egg-200"
+  },
+  {
+    "oldPath": "eggs/egg_201.png",
+    "newPath": "eggs/designs/egg-201.png",
+    "category": "egg-design",
+    "assetId": "egg-201"
+  },
+  {
+    "oldPath": "eggs/egg_202.png",
+    "newPath": "eggs/designs/egg-202.png",
+    "category": "egg-design",
+    "assetId": "egg-202"
+  },
+  {
+    "oldPath": "eggs/egg_203.png",
+    "newPath": "eggs/designs/egg-203.png",
+    "category": "egg-design",
+    "assetId": "egg-203"
+  },
+  {
+    "oldPath": "eggs/egg_204.png",
+    "newPath": "eggs/designs/egg-204.png",
+    "category": "egg-design",
+    "assetId": "egg-204"
+  },
+  {
+    "oldPath": "eggs/egg_205.png",
+    "newPath": "eggs/designs/egg-205.png",
+    "category": "egg-design",
+    "assetId": "egg-205"
+  },
+  {
+    "oldPath": "eggs/egg_206.png",
+    "newPath": "eggs/designs/egg-206.png",
+    "category": "egg-design",
+    "assetId": "egg-206"
+  },
+  {
+    "oldPath": "eggs/egg_207.png",
+    "newPath": "eggs/designs/egg-207.png",
+    "category": "egg-design",
+    "assetId": "egg-207"
+  },
+  {
+    "oldPath": "eggs/egg_208.png",
+    "newPath": "eggs/designs/egg-208.png",
+    "category": "egg-design",
+    "assetId": "egg-208"
+  },
+  {
+    "oldPath": "eggs/egg_209.png",
+    "newPath": "eggs/designs/egg-209.png",
+    "category": "egg-design",
+    "assetId": "egg-209"
+  },
+  {
+    "oldPath": "eggs/egg_210.png",
+    "newPath": "eggs/designs/egg-210.png",
+    "category": "egg-design",
+    "assetId": "egg-210"
+  },
+  {
+    "oldPath": "eggs/egg_211.png",
+    "newPath": "eggs/designs/egg-211.png",
+    "category": "egg-design",
+    "assetId": "egg-211"
+  },
+  {
+    "oldPath": "eggs/egg_212.png",
+    "newPath": "eggs/designs/egg-212.png",
+    "category": "egg-design",
+    "assetId": "egg-212"
+  },
+  {
+    "oldPath": "eggs/egg_213.png",
+    "newPath": "eggs/designs/egg-213.png",
+    "category": "egg-design",
+    "assetId": "egg-213"
+  },
+  {
+    "oldPath": "eggs/egg_214.png",
+    "newPath": "eggs/designs/egg-214.png",
+    "category": "egg-design",
+    "assetId": "egg-214"
+  },
+  {
+    "oldPath": "eggs/egg_215.png",
+    "newPath": "eggs/designs/egg-215.png",
+    "category": "egg-design",
+    "assetId": "egg-215"
+  },
+  {
+    "oldPath": "eggs/egg_216.png",
+    "newPath": "eggs/designs/egg-216.png",
+    "category": "egg-design",
+    "assetId": "egg-216"
+  },
+  {
+    "oldPath": "eggs/egg_217.png",
+    "newPath": "eggs/designs/egg-217.png",
+    "category": "egg-design",
+    "assetId": "egg-217"
+  },
+  {
+    "oldPath": "eggs/egg_218.png",
+    "newPath": "eggs/designs/egg-218.png",
+    "category": "egg-design",
+    "assetId": "egg-218"
+  },
+  {
+    "oldPath": "eggs/egg_219.png",
+    "newPath": "eggs/designs/egg-219.png",
+    "category": "egg-design",
+    "assetId": "egg-219"
+  },
+  {
+    "oldPath": "eggs/egg_220.png",
+    "newPath": "eggs/designs/egg-220.png",
+    "category": "egg-design",
+    "assetId": "egg-220"
+  },
+  {
+    "oldPath": "eggs/egg_221.png",
+    "newPath": "eggs/designs/egg-221.png",
+    "category": "egg-design",
+    "assetId": "egg-221"
+  },
+  {
+    "oldPath": "eggs/egg_222.png",
+    "newPath": "eggs/designs/egg-222.png",
+    "category": "egg-design",
+    "assetId": "egg-222"
+  },
+  {
+    "oldPath": "eggs/egg_223.png",
+    "newPath": "eggs/designs/egg-223.png",
+    "category": "egg-design",
+    "assetId": "egg-223"
+  },
+  {
+    "oldPath": "eggs/egg_224.png",
+    "newPath": "eggs/designs/egg-224.png",
+    "category": "egg-design",
+    "assetId": "egg-224"
+  },
+  {
+    "oldPath": "eggs/egg_225.png",
+    "newPath": "eggs/designs/egg-225.png",
+    "category": "egg-design",
+    "assetId": "egg-225"
+  },
+  {
+    "oldPath": "eggs/egg_226.png",
+    "newPath": "eggs/designs/egg-226.png",
+    "category": "egg-design",
+    "assetId": "egg-226"
+  },
+  {
+    "oldPath": "eggs/egg_227.png",
+    "newPath": "eggs/designs/egg-227.png",
+    "category": "egg-design",
+    "assetId": "egg-227"
+  },
+  {
+    "oldPath": "eggs/egg_228.png",
+    "newPath": "eggs/designs/egg-228.png",
+    "category": "egg-design",
+    "assetId": "egg-228"
+  },
+  {
+    "oldPath": "eggs/egg_229.png",
+    "newPath": "eggs/designs/egg-229.png",
+    "category": "egg-design",
+    "assetId": "egg-229"
+  },
+  {
+    "oldPath": "eggs/egg_230.png",
+    "newPath": "eggs/designs/egg-230.png",
+    "category": "egg-design",
+    "assetId": "egg-230"
+  },
+  {
+    "oldPath": "eggs/egg_231.png",
+    "newPath": "eggs/designs/egg-231.png",
+    "category": "egg-design",
+    "assetId": "egg-231"
+  },
+  {
+    "oldPath": "eggs/egg_232.png",
+    "newPath": "eggs/designs/egg-232.png",
+    "category": "egg-design",
+    "assetId": "egg-232"
+  },
+  {
+    "oldPath": "eggs/egg_233.png",
+    "newPath": "eggs/designs/egg-233.png",
+    "category": "egg-design",
+    "assetId": "egg-233"
+  },
+  {
+    "oldPath": "eggs/egg_234.png",
+    "newPath": "eggs/designs/egg-234.png",
+    "category": "egg-design",
+    "assetId": "egg-234"
+  },
+  {
+    "oldPath": "eggs/egg_235.png",
+    "newPath": "eggs/designs/egg-235.png",
+    "category": "egg-design",
+    "assetId": "egg-235"
+  },
+  {
+    "oldPath": "eggs/egg_236.png",
+    "newPath": "eggs/designs/egg-236.png",
+    "category": "egg-design",
+    "assetId": "egg-236"
+  },
+  {
+    "oldPath": "eggs/egg_237.png",
+    "newPath": "eggs/designs/egg-237.png",
+    "category": "egg-design",
+    "assetId": "egg-237"
+  },
+  {
+    "oldPath": "eggs/egg_238.png",
+    "newPath": "eggs/designs/egg-238.png",
+    "category": "egg-design",
+    "assetId": "egg-238"
+  },
+  {
+    "oldPath": "eggs/egg_239.png",
+    "newPath": "eggs/designs/egg-239.png",
+    "category": "egg-design",
+    "assetId": "egg-239"
+  },
+  {
+    "oldPath": "eggs/egg_240.png",
+    "newPath": "eggs/designs/egg-240.png",
+    "category": "egg-design",
+    "assetId": "egg-240"
+  },
+  {
+    "oldPath": "eggs/egg_241.png",
+    "newPath": "eggs/designs/egg-241.png",
+    "category": "egg-design",
+    "assetId": "egg-241"
+  },
+  {
+    "oldPath": "eggs/egg_242.png",
+    "newPath": "eggs/designs/egg-242.png",
+    "category": "egg-design",
+    "assetId": "egg-242"
+  },
+  {
+    "oldPath": "eggs/egg_243.png",
+    "newPath": "eggs/designs/egg-243.png",
+    "category": "egg-design",
+    "assetId": "egg-243"
+  },
+  {
+    "oldPath": "eggs/egg_244.png",
+    "newPath": "eggs/designs/egg-244.png",
+    "category": "egg-design",
+    "assetId": "egg-244"
+  },
+  {
+    "oldPath": "eggs/egg_245.png",
+    "newPath": "eggs/designs/egg-245.png",
+    "category": "egg-design",
+    "assetId": "egg-245"
+  },
+  {
+    "oldPath": "eggs/egg_246.png",
+    "newPath": "eggs/designs/egg-246.png",
+    "category": "egg-design",
+    "assetId": "egg-246"
+  },
+  {
+    "oldPath": "eggs/egg_247.png",
+    "newPath": "eggs/designs/egg-247.png",
+    "category": "egg-design",
+    "assetId": "egg-247"
+  },
+  {
+    "oldPath": "eggs/egg_248.png",
+    "newPath": "eggs/designs/egg-248.png",
+    "category": "egg-design",
+    "assetId": "egg-248"
+  },
+  {
+    "oldPath": "eggs/egg_249.png",
+    "newPath": "eggs/designs/egg-249.png",
+    "category": "egg-design",
+    "assetId": "egg-249"
+  },
+  {
+    "oldPath": "eggs/egg_250.png",
+    "newPath": "eggs/designs/egg-250.png",
+    "category": "egg-design",
+    "assetId": "egg-250"
+  },
+  {
+    "oldPath": "eggs/egg_251.png",
+    "newPath": "eggs/designs/egg-251.png",
+    "category": "egg-design",
+    "assetId": "egg-251"
+  },
+  {
+    "oldPath": "eggs/egg_252.png",
+    "newPath": "eggs/designs/egg-252.png",
+    "category": "egg-design",
+    "assetId": "egg-252"
+  },
+  {
+    "oldPath": "eggs/egg_253.png",
+    "newPath": "eggs/designs/egg-253.png",
+    "category": "egg-design",
+    "assetId": "egg-253"
+  },
+  {
+    "oldPath": "eggs/egg_254.png",
+    "newPath": "eggs/designs/egg-254.png",
+    "category": "egg-design",
+    "assetId": "egg-254"
+  },
+  {
+    "oldPath": "eggs/egg_255.png",
+    "newPath": "eggs/designs/egg-255.png",
+    "category": "egg-design",
+    "assetId": "egg-255"
+  },
+  {
+    "oldPath": "eggs/egg_256.png",
+    "newPath": "eggs/designs/egg-256.png",
+    "category": "egg-design",
+    "assetId": "egg-256"
+  },
+  {
+    "oldPath": "eggs/egg_257.png",
+    "newPath": "eggs/designs/egg-257.png",
+    "category": "egg-design",
+    "assetId": "egg-257"
+  },
+  {
+    "oldPath": "eggs/egg_258.png",
+    "newPath": "eggs/designs/egg-258.png",
+    "category": "egg-design",
+    "assetId": "egg-258"
+  },
+  {
+    "oldPath": "eggs/egg_259.png",
+    "newPath": "eggs/designs/egg-259.png",
+    "category": "egg-design",
+    "assetId": "egg-259"
+  },
+  {
+    "oldPath": "eggs/egg_260.png",
+    "newPath": "eggs/designs/egg-260.png",
+    "category": "egg-design",
+    "assetId": "egg-260"
+  },
+  {
+    "oldPath": "eggs/egg_261.png",
+    "newPath": "eggs/designs/egg-261.png",
+    "category": "egg-design",
+    "assetId": "egg-261"
+  },
+  {
+    "oldPath": "eggs/egg_262.png",
+    "newPath": "eggs/designs/egg-262.png",
+    "category": "egg-design",
+    "assetId": "egg-262"
+  },
+  {
+    "oldPath": "eggs/egg_263.png",
+    "newPath": "eggs/designs/egg-263.png",
+    "category": "egg-design",
+    "assetId": "egg-263"
+  },
+  {
+    "oldPath": "eggs/egg_264.png",
+    "newPath": "eggs/designs/egg-264.png",
+    "category": "egg-design",
+    "assetId": "egg-264"
+  },
+  {
+    "oldPath": "eggs/egg_265.png",
+    "newPath": "eggs/designs/egg-265.png",
+    "category": "egg-design",
+    "assetId": "egg-265"
+  },
+  {
+    "oldPath": "eggs/egg_266.png",
+    "newPath": "eggs/designs/egg-266.png",
+    "category": "egg-design",
+    "assetId": "egg-266"
+  },
+  {
+    "oldPath": "eggs/egg_267.png",
+    "newPath": "eggs/designs/egg-267.png",
+    "category": "egg-design",
+    "assetId": "egg-267"
+  },
+  {
+    "oldPath": "eggs/egg_268.png",
+    "newPath": "eggs/designs/egg-268.png",
+    "category": "egg-design",
+    "assetId": "egg-268"
+  },
+  {
+    "oldPath": "eggs/egg_269.png",
+    "newPath": "eggs/designs/egg-269.png",
+    "category": "egg-design",
+    "assetId": "egg-269"
+  },
+  {
+    "oldPath": "eggs/egg_270.png",
+    "newPath": "eggs/designs/egg-270.png",
+    "category": "egg-design",
+    "assetId": "egg-270"
+  },
+  {
+    "oldPath": "eggs/egg_271.png",
+    "newPath": "eggs/designs/egg-271.png",
+    "category": "egg-design",
+    "assetId": "egg-271"
+  },
+  {
+    "oldPath": "eggs/egg_272.png",
+    "newPath": "eggs/designs/egg-272.png",
+    "category": "egg-design",
+    "assetId": "egg-272"
+  },
+  {
+    "oldPath": "eggs/egg_273.png",
+    "newPath": "eggs/designs/egg-273.png",
+    "category": "egg-design",
+    "assetId": "egg-273"
+  },
+  {
+    "oldPath": "eggs/egg_274.png",
+    "newPath": "eggs/designs/egg-274.png",
+    "category": "egg-design",
+    "assetId": "egg-274"
+  },
+  {
+    "oldPath": "eggs/egg_275.png",
+    "newPath": "eggs/designs/egg-275.png",
+    "category": "egg-design",
+    "assetId": "egg-275"
+  },
+  {
+    "oldPath": "eggs/egg_276.png",
+    "newPath": "eggs/designs/egg-276.png",
+    "category": "egg-design",
+    "assetId": "egg-276"
+  },
+  {
+    "oldPath": "eggs/egg_277.png",
+    "newPath": "eggs/designs/egg-277.png",
+    "category": "egg-design",
+    "assetId": "egg-277"
+  },
+  {
+    "oldPath": "eggs/egg_278.png",
+    "newPath": "eggs/designs/egg-278.png",
+    "category": "egg-design",
+    "assetId": "egg-278"
+  },
+  {
+    "oldPath": "eggs/egg_279.png",
+    "newPath": "eggs/designs/egg-279.png",
+    "category": "egg-design",
+    "assetId": "egg-279"
+  },
+  {
+    "oldPath": "eggs/egg_280.png",
+    "newPath": "eggs/designs/egg-280.png",
+    "category": "egg-design",
+    "assetId": "egg-280"
+  },
+  {
+    "oldPath": "eggs/egg_281.png",
+    "newPath": "eggs/designs/egg-281.png",
+    "category": "egg-design",
+    "assetId": "egg-281"
+  },
+  {
+    "oldPath": "eggs/egg_282.png",
+    "newPath": "eggs/designs/egg-282.png",
+    "category": "egg-design",
+    "assetId": "egg-282"
+  },
+  {
+    "oldPath": "eggs/egg_283.png",
+    "newPath": "eggs/designs/egg-283.png",
+    "category": "egg-design",
+    "assetId": "egg-283"
+  },
+  {
+    "oldPath": "eggs/egg_284.png",
+    "newPath": "eggs/designs/egg-284.png",
+    "category": "egg-design",
+    "assetId": "egg-284"
+  },
+  {
+    "oldPath": "eggs/egg_285.png",
+    "newPath": "eggs/designs/egg-285.png",
+    "category": "egg-design",
+    "assetId": "egg-285"
+  },
+  {
+    "oldPath": "eggs/egg_286.png",
+    "newPath": "eggs/designs/egg-286.png",
+    "category": "egg-design",
+    "assetId": "egg-286"
+  },
+  {
+    "oldPath": "eggs/egg_287.png",
+    "newPath": "eggs/designs/egg-287.png",
+    "category": "egg-design",
+    "assetId": "egg-287"
+  },
+  {
+    "oldPath": "eggs/egg_288.png",
+    "newPath": "eggs/designs/egg-288.png",
+    "category": "egg-design",
+    "assetId": "egg-288"
+  },
+  {
+    "oldPath": "eggs/egg_289.png",
+    "newPath": "eggs/designs/egg-289.png",
+    "category": "egg-design",
+    "assetId": "egg-289"
+  },
+  {
+    "oldPath": "eggs/egg_290.png",
+    "newPath": "eggs/designs/egg-290.png",
+    "category": "egg-design",
+    "assetId": "egg-290"
+  },
+  {
+    "oldPath": "eggs/egg_291.png",
+    "newPath": "eggs/designs/egg-291.png",
+    "category": "egg-design",
+    "assetId": "egg-291"
+  },
+  {
+    "oldPath": "eggs/egg_292.png",
+    "newPath": "eggs/designs/egg-292.png",
+    "category": "egg-design",
+    "assetId": "egg-292"
+  },
+  {
+    "oldPath": "eggs/egg_293.png",
+    "newPath": "eggs/designs/egg-293.png",
+    "category": "egg-design",
+    "assetId": "egg-293"
+  },
+  {
+    "oldPath": "eggs/egg_294.png",
+    "newPath": "eggs/designs/egg-294.png",
+    "category": "egg-design",
+    "assetId": "egg-294"
+  },
+  {
+    "oldPath": "eggs/egg_295.png",
+    "newPath": "eggs/designs/egg-295.png",
+    "category": "egg-design",
+    "assetId": "egg-295"
+  },
+  {
+    "oldPath": "eggs/egg_296.png",
+    "newPath": "eggs/designs/egg-296.png",
+    "category": "egg-design",
+    "assetId": "egg-296"
+  },
+  {
+    "oldPath": "eggs/egg_297.png",
+    "newPath": "eggs/designs/egg-297.png",
+    "category": "egg-design",
+    "assetId": "egg-297"
+  },
+  {
+    "oldPath": "eggs/egg_298.png",
+    "newPath": "eggs/designs/egg-298.png",
+    "category": "egg-design",
+    "assetId": "egg-298"
+  },
+  {
+    "oldPath": "eggs/egg_299.png",
+    "newPath": "eggs/designs/egg-299.png",
+    "category": "egg-design",
+    "assetId": "egg-299"
+  },
+  {
+    "oldPath": "eggs/egg_300.png",
+    "newPath": "eggs/designs/egg-300.png",
+    "category": "egg-design",
+    "assetId": "egg-300"
+  },
+  {
+    "oldPath": "eggs/egg_301.png",
+    "newPath": "eggs/designs/egg-301.png",
+    "category": "egg-design",
+    "assetId": "egg-301"
+  },
+  {
+    "oldPath": "eggs/egg_302.png",
+    "newPath": "eggs/designs/egg-302.png",
+    "category": "egg-design",
+    "assetId": "egg-302"
+  },
+  {
+    "oldPath": "eggs/egg_303.png",
+    "newPath": "eggs/designs/egg-303.png",
+    "category": "egg-design",
+    "assetId": "egg-303"
+  },
+  {
+    "oldPath": "eggs/egg_304.png",
+    "newPath": "eggs/designs/egg-304.png",
+    "category": "egg-design",
+    "assetId": "egg-304"
+  },
+  {
+    "oldPath": "eggs/egg_305.png",
+    "newPath": "eggs/designs/egg-305.png",
+    "category": "egg-design",
+    "assetId": "egg-305"
+  },
+  {
+    "oldPath": "eggs/egg_306.png",
+    "newPath": "eggs/designs/egg-306.png",
+    "category": "egg-design",
+    "assetId": "egg-306"
+  },
+  {
+    "oldPath": "eggs/egg_307.png",
+    "newPath": "eggs/designs/egg-307.png",
+    "category": "egg-design",
+    "assetId": "egg-307"
+  },
+  {
+    "oldPath": "eggs/egg_308.png",
+    "newPath": "eggs/designs/egg-308.png",
+    "category": "egg-design",
+    "assetId": "egg-308"
+  },
+  {
+    "oldPath": "eggs/egg_309.png",
+    "newPath": "eggs/designs/egg-309.png",
+    "category": "egg-design",
+    "assetId": "egg-309"
+  },
+  {
+    "oldPath": "eggs/egg_310.png",
+    "newPath": "eggs/designs/egg-310.png",
+    "category": "egg-design",
+    "assetId": "egg-310"
+  },
+  {
+    "oldPath": "eggs/egg_311.png",
+    "newPath": "eggs/designs/egg-311.png",
+    "category": "egg-design",
+    "assetId": "egg-311"
+  },
+  {
+    "oldPath": "eggs/egg_312.png",
+    "newPath": "eggs/designs/egg-312.png",
+    "category": "egg-design",
+    "assetId": "egg-312"
+  },
+  {
+    "oldPath": "eggs/egg_313.png",
+    "newPath": "eggs/designs/egg-313.png",
+    "category": "egg-design",
+    "assetId": "egg-313"
+  },
+  {
+    "oldPath": "eggs/egg_314.png",
+    "newPath": "eggs/designs/egg-314.png",
+    "category": "egg-design",
+    "assetId": "egg-314"
+  },
+  {
+    "oldPath": "eggs/egg_315.png",
+    "newPath": "eggs/designs/egg-315.png",
+    "category": "egg-design",
+    "assetId": "egg-315"
+  },
+  {
+    "oldPath": "eggs/egg_316.png",
+    "newPath": "eggs/designs/egg-316.png",
+    "category": "egg-design",
+    "assetId": "egg-316"
+  },
+  {
+    "oldPath": "eggs/egg_317.png",
+    "newPath": "eggs/designs/egg-317.png",
+    "category": "egg-design",
+    "assetId": "egg-317"
+  },
+  {
+    "oldPath": "eggs/egg_318.png",
+    "newPath": "eggs/designs/egg-318.png",
+    "category": "egg-design",
+    "assetId": "egg-318"
+  },
+  {
+    "oldPath": "eggs/egg_319.png",
+    "newPath": "eggs/designs/egg-319.png",
+    "category": "egg-design",
+    "assetId": "egg-319"
+  },
+  {
+    "oldPath": "eggs/egg_320.png",
+    "newPath": "eggs/designs/egg-320.png",
+    "category": "egg-design",
+    "assetId": "egg-320"
+  },
+  {
+    "oldPath": "eggs/egg_321.png",
+    "newPath": "eggs/designs/egg-321.png",
+    "category": "egg-design",
+    "assetId": "egg-321"
+  },
+  {
+    "oldPath": "eggs/egg_322.png",
+    "newPath": "eggs/designs/egg-322.png",
+    "category": "egg-design",
+    "assetId": "egg-322"
+  },
+  {
+    "oldPath": "eggs/egg_323.png",
+    "newPath": "eggs/designs/egg-323.png",
+    "category": "egg-design",
+    "assetId": "egg-323"
+  },
+  {
+    "oldPath": "eggs/egg_324.png",
+    "newPath": "eggs/designs/egg-324.png",
+    "category": "egg-design",
+    "assetId": "egg-324"
+  },
+  {
+    "oldPath": "eggs/egg_325.png",
+    "newPath": "eggs/designs/egg-325.png",
+    "category": "egg-design",
+    "assetId": "egg-325"
+  },
+  {
+    "oldPath": "eggs/egg_326.png",
+    "newPath": "eggs/designs/egg-326.png",
+    "category": "egg-design",
+    "assetId": "egg-326"
+  },
+  {
+    "oldPath": "eggs/egg_327.png",
+    "newPath": "eggs/designs/egg-327.png",
+    "category": "egg-design",
+    "assetId": "egg-327"
+  },
+  {
+    "oldPath": "eggs/egg_328.png",
+    "newPath": "eggs/designs/egg-328.png",
+    "category": "egg-design",
+    "assetId": "egg-328"
+  },
+  {
+    "oldPath": "eggs/egg_329.png",
+    "newPath": "eggs/designs/egg-329.png",
+    "category": "egg-design",
+    "assetId": "egg-329"
+  },
+  {
+    "oldPath": "eggs/egg_330.png",
+    "newPath": "eggs/designs/egg-330.png",
+    "category": "egg-design",
+    "assetId": "egg-330"
+  },
+  {
+    "oldPath": "eggs/egg_331.png",
+    "newPath": "eggs/designs/egg-331.png",
+    "category": "egg-design",
+    "assetId": "egg-331"
+  },
+  {
+    "oldPath": "eggs/egg_332.png",
+    "newPath": "eggs/designs/egg-332.png",
+    "category": "egg-design",
+    "assetId": "egg-332"
+  },
+  {
+    "oldPath": "eggs/egg_333.png",
+    "newPath": "eggs/designs/egg-333.png",
+    "category": "egg-design",
+    "assetId": "egg-333"
+  },
+  {
+    "oldPath": "eggs/egg_334.png",
+    "newPath": "eggs/designs/egg-334.png",
+    "category": "egg-design",
+    "assetId": "egg-334"
+  },
+  {
+    "oldPath": "eggs/egg_335.png",
+    "newPath": "eggs/designs/egg-335.png",
+    "category": "egg-design",
+    "assetId": "egg-335"
+  },
+  {
+    "oldPath": "eggs/egg_336.png",
+    "newPath": "eggs/designs/egg-336.png",
+    "category": "egg-design",
+    "assetId": "egg-336"
+  },
+  {
+    "oldPath": "eggs/egg_337.png",
+    "newPath": "eggs/designs/egg-337.png",
+    "category": "egg-design",
+    "assetId": "egg-337"
+  },
+  {
+    "oldPath": "eggs/egg_338.png",
+    "newPath": "eggs/designs/egg-338.png",
+    "category": "egg-design",
+    "assetId": "egg-338"
+  },
+  {
+    "oldPath": "eggs/egg_339.png",
+    "newPath": "eggs/designs/egg-339.png",
+    "category": "egg-design",
+    "assetId": "egg-339"
+  },
+  {
+    "oldPath": "eggs/egg_340.png",
+    "newPath": "eggs/designs/egg-340.png",
+    "category": "egg-design",
+    "assetId": "egg-340"
+  },
+  {
+    "oldPath": "eggs/egg_341.png",
+    "newPath": "eggs/designs/egg-341.png",
+    "category": "egg-design",
+    "assetId": "egg-341"
+  },
+  {
+    "oldPath": "eggs/egg_342.png",
+    "newPath": "eggs/designs/egg-342.png",
+    "category": "egg-design",
+    "assetId": "egg-342"
+  },
+  {
+    "oldPath": "eggs/egg_343.png",
+    "newPath": "eggs/designs/egg-343.png",
+    "category": "egg-design",
+    "assetId": "egg-343"
+  },
+  {
+    "oldPath": "eggs/egg_344.png",
+    "newPath": "eggs/designs/egg-344.png",
+    "category": "egg-design",
+    "assetId": "egg-344"
+  },
+  {
+    "oldPath": "eggs/egg_345.png",
+    "newPath": "eggs/designs/egg-345.png",
+    "category": "egg-design",
+    "assetId": "egg-345"
+  },
+  {
+    "oldPath": "eggs/egg_346.png",
+    "newPath": "eggs/designs/egg-346.png",
+    "category": "egg-design",
+    "assetId": "egg-346"
+  },
+  {
+    "oldPath": "eggs/egg_347.png",
+    "newPath": "eggs/designs/egg-347.png",
+    "category": "egg-design",
+    "assetId": "egg-347"
+  },
+  {
+    "oldPath": "eggs/egg_348.png",
+    "newPath": "eggs/designs/egg-348.png",
+    "category": "egg-design",
+    "assetId": "egg-348"
+  },
+  {
+    "oldPath": "eggs/egg_349.png",
+    "newPath": "eggs/designs/egg-349.png",
+    "category": "egg-design",
+    "assetId": "egg-349"
+  },
+  {
+    "oldPath": "eggs/egg_350.png",
+    "newPath": "eggs/designs/egg-350.png",
+    "category": "egg-design",
+    "assetId": "egg-350"
+  },
+  {
+    "oldPath": "eggs/egg_351.png",
+    "newPath": "eggs/designs/egg-351.png",
+    "category": "egg-design",
+    "assetId": "egg-351"
+  },
+  {
+    "oldPath": "eggs/egg_352.png",
+    "newPath": "eggs/designs/egg-352.png",
+    "category": "egg-design",
+    "assetId": "egg-352"
+  },
+  {
+    "oldPath": "eggs/egg_353.png",
+    "newPath": "eggs/designs/egg-353.png",
+    "category": "egg-design",
+    "assetId": "egg-353"
+  },
+  {
+    "oldPath": "eggs/egg_354.png",
+    "newPath": "eggs/designs/egg-354.png",
+    "category": "egg-design",
+    "assetId": "egg-354"
+  },
+  {
+    "oldPath": "eggs/egg_355.png",
+    "newPath": "eggs/designs/egg-355.png",
+    "category": "egg-design",
+    "assetId": "egg-355"
+  },
+  {
+    "oldPath": "eggs/egg_356.png",
+    "newPath": "eggs/designs/egg-356.png",
+    "category": "egg-design",
+    "assetId": "egg-356"
+  },
+  {
+    "oldPath": "eggs/egg_357.png",
+    "newPath": "eggs/designs/egg-357.png",
+    "category": "egg-design",
+    "assetId": "egg-357"
+  },
+  {
+    "oldPath": "eggs/egg_358.png",
+    "newPath": "eggs/designs/egg-358.png",
+    "category": "egg-design",
+    "assetId": "egg-358"
+  },
+  {
+    "oldPath": "eggs/egg_359.png",
+    "newPath": "eggs/designs/egg-359.png",
+    "category": "egg-design",
+    "assetId": "egg-359"
+  },
+  {
+    "oldPath": "eggs/egg_360.png",
+    "newPath": "eggs/designs/egg-360.png",
+    "category": "egg-design",
+    "assetId": "egg-360"
+  },
+  {
+    "oldPath": "eggs/egg_361.png",
+    "newPath": "eggs/designs/egg-361.png",
+    "category": "egg-design",
+    "assetId": "egg-361"
+  },
+  {
+    "oldPath": "eggs/egg_362.png",
+    "newPath": "eggs/designs/egg-362.png",
+    "category": "egg-design",
+    "assetId": "egg-362"
+  },
+  {
+    "oldPath": "eggs/egg_363.png",
+    "newPath": "eggs/designs/egg-363.png",
+    "category": "egg-design",
+    "assetId": "egg-363"
+  },
+  {
+    "oldPath": "eggs/egg_364.png",
+    "newPath": "eggs/designs/egg-364.png",
+    "category": "egg-design",
+    "assetId": "egg-364"
+  },
+  {
+    "oldPath": "eggs/egg_365.png",
+    "newPath": "eggs/designs/egg-365.png",
+    "category": "egg-design",
+    "assetId": "egg-365"
+  },
+  {
+    "oldPath": "eggs/egg_366.png",
+    "newPath": "eggs/designs/egg-366.png",
+    "category": "egg-design",
+    "assetId": "egg-366"
+  },
+  {
+    "oldPath": "eggs/egg_367.png",
+    "newPath": "eggs/designs/egg-367.png",
+    "category": "egg-design",
+    "assetId": "egg-367"
+  },
+  {
+    "oldPath": "eggs/egg_368.png",
+    "newPath": "eggs/designs/egg-368.png",
+    "category": "egg-design",
+    "assetId": "egg-368"
+  },
+  {
+    "oldPath": "eggs/egg_369.png",
+    "newPath": "eggs/designs/egg-369.png",
+    "category": "egg-design",
+    "assetId": "egg-369"
+  },
+  {
+    "oldPath": "eggs/egg_370.png",
+    "newPath": "eggs/designs/egg-370.png",
+    "category": "egg-design",
+    "assetId": "egg-370"
+  },
+  {
+    "oldPath": "eggs/egg_371.png",
+    "newPath": "eggs/designs/egg-371.png",
+    "category": "egg-design",
+    "assetId": "egg-371"
+  },
+  {
+    "oldPath": "eggs/egg_372.png",
+    "newPath": "eggs/designs/egg-372.png",
+    "category": "egg-design",
+    "assetId": "egg-372"
+  },
+  {
+    "oldPath": "eggs/egg_373.png",
+    "newPath": "eggs/designs/egg-373.png",
+    "category": "egg-design",
+    "assetId": "egg-373"
+  },
+  {
+    "oldPath": "eggs/egg_374.png",
+    "newPath": "eggs/designs/egg-374.png",
+    "category": "egg-design",
+    "assetId": "egg-374"
+  },
+  {
+    "oldPath": "eggs/egg_375.png",
+    "newPath": "eggs/designs/egg-375.png",
+    "category": "egg-design",
+    "assetId": "egg-375"
+  },
+  {
+    "oldPath": "eggs/egg_376.png",
+    "newPath": "eggs/designs/egg-376.png",
+    "category": "egg-design",
+    "assetId": "egg-376"
+  },
+  {
+    "oldPath": "eggs/egg_377.png",
+    "newPath": "eggs/designs/egg-377.png",
+    "category": "egg-design",
+    "assetId": "egg-377"
+  },
+  {
+    "oldPath": "eggs/egg_378.png",
+    "newPath": "eggs/designs/egg-378.png",
+    "category": "egg-design",
+    "assetId": "egg-378"
+  },
+  {
+    "oldPath": "eggs/egg_379.png",
+    "newPath": "eggs/designs/egg-379.png",
+    "category": "egg-design",
+    "assetId": "egg-379"
+  },
+  {
+    "oldPath": "eggs/egg_380.png",
+    "newPath": "eggs/designs/egg-380.png",
+    "category": "egg-design",
+    "assetId": "egg-380"
+  },
+  {
+    "oldPath": "eggs/egg_381.png",
+    "newPath": "eggs/designs/egg-381.png",
+    "category": "egg-design",
+    "assetId": "egg-381"
+  },
+  {
+    "oldPath": "eggs/egg_382.png",
+    "newPath": "eggs/designs/egg-382.png",
+    "category": "egg-design",
+    "assetId": "egg-382"
+  },
+  {
+    "oldPath": "eggs/egg_383.png",
+    "newPath": "eggs/designs/egg-383.png",
+    "category": "egg-design",
+    "assetId": "egg-383"
+  },
+  {
+    "oldPath": "eggs/egg_384.png",
+    "newPath": "eggs/designs/egg-384.png",
+    "category": "egg-design",
+    "assetId": "egg-384"
+  },
+  {
+    "oldPath": "eggs/egg_385.png",
+    "newPath": "eggs/designs/egg-385.png",
+    "category": "egg-design",
+    "assetId": "egg-385"
+  },
+  {
+    "oldPath": "eggs/egg_386.png",
+    "newPath": "eggs/designs/egg-386.png",
+    "category": "egg-design",
+    "assetId": "egg-386"
+  },
+  {
+    "oldPath": "eggs/egg_387.png",
+    "newPath": "eggs/designs/egg-387.png",
+    "category": "egg-design",
+    "assetId": "egg-387"
+  },
+  {
+    "oldPath": "eggs/egg_388.png",
+    "newPath": "eggs/designs/egg-388.png",
+    "category": "egg-design",
+    "assetId": "egg-388"
+  },
+  {
+    "oldPath": "eggs/egg_389.png",
+    "newPath": "eggs/designs/egg-389.png",
+    "category": "egg-design",
+    "assetId": "egg-389"
+  },
+  {
+    "oldPath": "eggs/egg_390.png",
+    "newPath": "eggs/designs/egg-390.png",
+    "category": "egg-design",
+    "assetId": "egg-390"
+  },
+  {
+    "oldPath": "eggs/egg_391.png",
+    "newPath": "eggs/designs/egg-391.png",
+    "category": "egg-design",
+    "assetId": "egg-391"
+  },
+  {
+    "oldPath": "eggs/egg_392.png",
+    "newPath": "eggs/designs/egg-392.png",
+    "category": "egg-design",
+    "assetId": "egg-392"
+  },
+  {
+    "oldPath": "eggs/egg_393.png",
+    "newPath": "eggs/designs/egg-393.png",
+    "category": "egg-design",
+    "assetId": "egg-393"
+  },
+  {
+    "oldPath": "eggs/egg_394.png",
+    "newPath": "eggs/designs/egg-394.png",
+    "category": "egg-design",
+    "assetId": "egg-394"
+  },
+  {
+    "oldPath": "eggs/egg_395.png",
+    "newPath": "eggs/designs/egg-395.png",
+    "category": "egg-design",
+    "assetId": "egg-395"
+  },
+  {
+    "oldPath": "eggs/egg_396.png",
+    "newPath": "eggs/designs/egg-396.png",
+    "category": "egg-design",
+    "assetId": "egg-396"
+  },
+  {
+    "oldPath": "eggs/egg_397.png",
+    "newPath": "eggs/designs/egg-397.png",
+    "category": "egg-design",
+    "assetId": "egg-397"
+  },
+  {
+    "oldPath": "eggs/egg_398.png",
+    "newPath": "eggs/designs/egg-398.png",
+    "category": "egg-design",
+    "assetId": "egg-398"
+  },
+  {
+    "oldPath": "eggs/egg_399.png",
+    "newPath": "eggs/designs/egg-399.png",
+    "category": "egg-design",
+    "assetId": "egg-399"
+  },
+  {
+    "oldPath": "eggs/egg_400.png",
+    "newPath": "eggs/designs/egg-400.png",
+    "category": "egg-design",
+    "assetId": "egg-400"
+  },
+  {
+    "oldPath": "eggs/egg_401.png",
+    "newPath": "eggs/designs/egg-401.png",
+    "category": "egg-design",
+    "assetId": "egg-401"
+  },
+  {
+    "oldPath": "eggs/egg_402.png",
+    "newPath": "eggs/designs/egg-402.png",
+    "category": "egg-design",
+    "assetId": "egg-402"
+  },
+  {
+    "oldPath": "eggs/egg_403.png",
+    "newPath": "eggs/designs/egg-403.png",
+    "category": "egg-design",
+    "assetId": "egg-403"
+  },
+  {
+    "oldPath": "eggs/egg_404.png",
+    "newPath": "eggs/designs/egg-404.png",
+    "category": "egg-design",
+    "assetId": "egg-404"
+  },
+  {
+    "oldPath": "eggs/egg_405.png",
+    "newPath": "eggs/designs/egg-405.png",
+    "category": "egg-design",
+    "assetId": "egg-405"
+  },
+  {
+    "oldPath": "eggs/egg_406.png",
+    "newPath": "eggs/designs/egg-406.png",
+    "category": "egg-design",
+    "assetId": "egg-406"
+  },
+  {
+    "oldPath": "eggs/egg_407.png",
+    "newPath": "eggs/designs/egg-407.png",
+    "category": "egg-design",
+    "assetId": "egg-407"
+  },
+  {
+    "oldPath": "eggs/egg_408.png",
+    "newPath": "eggs/designs/egg-408.png",
+    "category": "egg-design",
+    "assetId": "egg-408"
+  },
+  {
+    "oldPath": "eggs/egg_409.png",
+    "newPath": "eggs/designs/egg-409.png",
+    "category": "egg-design",
+    "assetId": "egg-409"
+  },
+  {
+    "oldPath": "eggs/egg_410.png",
+    "newPath": "eggs/designs/egg-410.png",
+    "category": "egg-design",
+    "assetId": "egg-410"
+  },
+  {
+    "oldPath": "eggs/egg_411.png",
+    "newPath": "eggs/designs/egg-411.png",
+    "category": "egg-design",
+    "assetId": "egg-411"
+  },
+  {
+    "oldPath": "eggs/egg_412.png",
+    "newPath": "eggs/designs/egg-412.png",
+    "category": "egg-design",
+    "assetId": "egg-412"
+  },
+  {
+    "oldPath": "eggs/egg_413.png",
+    "newPath": "eggs/designs/egg-413.png",
+    "category": "egg-design",
+    "assetId": "egg-413"
+  },
+  {
+    "oldPath": "eggs/egg_414.png",
+    "newPath": "eggs/designs/egg-414.png",
+    "category": "egg-design",
+    "assetId": "egg-414"
+  },
+  {
+    "oldPath": "eggs/egg_415.png",
+    "newPath": "eggs/designs/egg-415.png",
+    "category": "egg-design",
+    "assetId": "egg-415"
+  },
+  {
+    "oldPath": "eggs/egg_416.png",
+    "newPath": "eggs/designs/egg-416.png",
+    "category": "egg-design",
+    "assetId": "egg-416"
+  },
+  {
+    "oldPath": "eggs/egg_417.png",
+    "newPath": "eggs/designs/egg-417.png",
+    "category": "egg-design",
+    "assetId": "egg-417"
+  },
+  {
+    "oldPath": "eggs/egg_418.png",
+    "newPath": "eggs/designs/egg-418.png",
+    "category": "egg-design",
+    "assetId": "egg-418"
+  },
+  {
+    "oldPath": "eggs/egg_419.png",
+    "newPath": "eggs/designs/egg-419.png",
+    "category": "egg-design",
+    "assetId": "egg-419"
+  },
+  {
+    "oldPath": "eggs/egg_420.png",
+    "newPath": "eggs/designs/egg-420.png",
+    "category": "egg-design",
+    "assetId": "egg-420"
+  },
+  {
+    "oldPath": "eggs/egg_421.png",
+    "newPath": "eggs/designs/egg-421.png",
+    "category": "egg-design",
+    "assetId": "egg-421"
+  },
+  {
+    "oldPath": "eggs/egg_422.png",
+    "newPath": "eggs/designs/egg-422.png",
+    "category": "egg-design",
+    "assetId": "egg-422"
+  },
+  {
+    "oldPath": "eggs/egg_423.png",
+    "newPath": "eggs/designs/egg-423.png",
+    "category": "egg-design",
+    "assetId": "egg-423"
+  },
+  {
+    "oldPath": "eggs/egg_424.png",
+    "newPath": "eggs/designs/egg-424.png",
+    "category": "egg-design",
+    "assetId": "egg-424"
+  },
+  {
+    "oldPath": "eggs/egg_425.png",
+    "newPath": "eggs/designs/egg-425.png",
+    "category": "egg-design",
+    "assetId": "egg-425"
+  },
+  {
+    "oldPath": "eggs/egg_426.png",
+    "newPath": "eggs/designs/egg-426.png",
+    "category": "egg-design",
+    "assetId": "egg-426"
+  },
+  {
+    "oldPath": "eggs/egg_427.png",
+    "newPath": "eggs/designs/egg-427.png",
+    "category": "egg-design",
+    "assetId": "egg-427"
+  },
+  {
+    "oldPath": "eggs/egg_428.png",
+    "newPath": "eggs/designs/egg-428.png",
+    "category": "egg-design",
+    "assetId": "egg-428"
+  },
+  {
+    "oldPath": "eggs/egg_429.png",
+    "newPath": "eggs/designs/egg-429.png",
+    "category": "egg-design",
+    "assetId": "egg-429"
+  },
+  {
+    "oldPath": "eggs/egg_430.png",
+    "newPath": "eggs/designs/egg-430.png",
+    "category": "egg-design",
+    "assetId": "egg-430"
+  },
+  {
+    "oldPath": "eggs/egg_431.png",
+    "newPath": "eggs/designs/egg-431.png",
+    "category": "egg-design",
+    "assetId": "egg-431"
+  },
+  {
+    "oldPath": "eggs/egg_432.png",
+    "newPath": "eggs/designs/egg-432.png",
+    "category": "egg-design",
+    "assetId": "egg-432"
+  },
+  {
+    "oldPath": "eggs/egg_433.png",
+    "newPath": "eggs/designs/egg-433.png",
+    "category": "egg-design",
+    "assetId": "egg-433"
+  },
+  {
+    "oldPath": "eggs/egg_434.png",
+    "newPath": "eggs/designs/egg-434.png",
+    "category": "egg-design",
+    "assetId": "egg-434"
+  },
+  {
+    "oldPath": "eggs/egg_435.png",
+    "newPath": "eggs/designs/egg-435.png",
+    "category": "egg-design",
+    "assetId": "egg-435"
+  },
+  {
+    "oldPath": "eggs/egg_436.png",
+    "newPath": "eggs/designs/egg-436.png",
+    "category": "egg-design",
+    "assetId": "egg-436"
+  },
+  {
+    "oldPath": "eggs/egg_437.png",
+    "newPath": "eggs/designs/egg-437.png",
+    "category": "egg-design",
+    "assetId": "egg-437"
+  },
+  {
+    "oldPath": "eggs/egg_438.png",
+    "newPath": "eggs/designs/egg-438.png",
+    "category": "egg-design",
+    "assetId": "egg-438"
+  },
+  {
+    "oldPath": "eggs/egg_439.png",
+    "newPath": "eggs/designs/egg-439.png",
+    "category": "egg-design",
+    "assetId": "egg-439"
+  },
+  {
+    "oldPath": "eggs/egg_440.png",
+    "newPath": "eggs/designs/egg-440.png",
+    "category": "egg-design",
+    "assetId": "egg-440"
+  },
+  {
+    "oldPath": "eggs/egg_441.png",
+    "newPath": "eggs/designs/egg-441.png",
+    "category": "egg-design",
+    "assetId": "egg-441"
+  },
+  {
+    "oldPath": "eggs/egg_442.png",
+    "newPath": "eggs/designs/egg-442.png",
+    "category": "egg-design",
+    "assetId": "egg-442"
+  },
+  {
+    "oldPath": "eggs/egg_443.png",
+    "newPath": "eggs/designs/egg-443.png",
+    "category": "egg-design",
+    "assetId": "egg-443"
+  },
+  {
+    "oldPath": "eggs/egg_444.png",
+    "newPath": "eggs/designs/egg-444.png",
+    "category": "egg-design",
+    "assetId": "egg-444"
+  },
+  {
+    "oldPath": "eggs/egg_445.png",
+    "newPath": "eggs/designs/egg-445.png",
+    "category": "egg-design",
+    "assetId": "egg-445"
+  },
+  {
+    "oldPath": "eggs/egg_446.png",
+    "newPath": "eggs/designs/egg-446.png",
+    "category": "egg-design",
+    "assetId": "egg-446"
+  },
+  {
+    "oldPath": "eggs/egg_447.png",
+    "newPath": "eggs/designs/egg-447.png",
+    "category": "egg-design",
+    "assetId": "egg-447"
+  },
+  {
+    "oldPath": "eggs/egg_448.png",
+    "newPath": "eggs/designs/egg-448.png",
+    "category": "egg-design",
+    "assetId": "egg-448"
+  },
+  {
+    "oldPath": "eggs/egg_449.png",
+    "newPath": "eggs/designs/egg-449.png",
+    "category": "egg-design",
+    "assetId": "egg-449"
+  },
+  {
+    "oldPath": "eggs/egg_450.png",
+    "newPath": "eggs/designs/egg-450.png",
+    "category": "egg-design",
+    "assetId": "egg-450"
+  },
+  {
+    "oldPath": "eggs/egg_451.png",
+    "newPath": "eggs/designs/egg-451.png",
+    "category": "egg-design",
+    "assetId": "egg-451"
+  },
+  {
+    "oldPath": "eggs/egg_452.png",
+    "newPath": "eggs/designs/egg-452.png",
+    "category": "egg-design",
+    "assetId": "egg-452"
+  },
+  {
+    "oldPath": "eggs/egg_453.png",
+    "newPath": "eggs/designs/egg-453.png",
+    "category": "egg-design",
+    "assetId": "egg-453"
+  },
+  {
+    "oldPath": "eggs/egg_454.png",
+    "newPath": "eggs/designs/egg-454.png",
+    "category": "egg-design",
+    "assetId": "egg-454"
+  },
+  {
+    "oldPath": "eggs/egg_455.png",
+    "newPath": "eggs/designs/egg-455.png",
+    "category": "egg-design",
+    "assetId": "egg-455"
+  },
+  {
+    "oldPath": "eggs/egg_456.png",
+    "newPath": "eggs/designs/egg-456.png",
+    "category": "egg-design",
+    "assetId": "egg-456"
+  },
+  {
+    "oldPath": "eggs/egg_457.png",
+    "newPath": "eggs/designs/egg-457.png",
+    "category": "egg-design",
+    "assetId": "egg-457"
+  },
+  {
+    "oldPath": "eggs/egg_458.png",
+    "newPath": "eggs/designs/egg-458.png",
+    "category": "egg-design",
+    "assetId": "egg-458"
+  },
+  {
+    "oldPath": "eggs/egg_459.png",
+    "newPath": "eggs/designs/egg-459.png",
+    "category": "egg-design",
+    "assetId": "egg-459"
+  },
+  {
+    "oldPath": "eggs/egg_460.png",
+    "newPath": "eggs/designs/egg-460.png",
+    "category": "egg-design",
+    "assetId": "egg-460"
+  },
+  {
+    "oldPath": "eggs/egg_461.png",
+    "newPath": "eggs/designs/egg-461.png",
+    "category": "egg-design",
+    "assetId": "egg-461"
+  },
+  {
+    "oldPath": "eggs/egg_462.png",
+    "newPath": "eggs/designs/egg-462.png",
+    "category": "egg-design",
+    "assetId": "egg-462"
+  },
+  {
+    "oldPath": "eggs/egg_463.png",
+    "newPath": "eggs/designs/egg-463.png",
+    "category": "egg-design",
+    "assetId": "egg-463"
+  },
+  {
+    "oldPath": "eggs/egg_464.png",
+    "newPath": "eggs/designs/egg-464.png",
+    "category": "egg-design",
+    "assetId": "egg-464"
+  },
+  {
+    "oldPath": "eggs/egg_465.png",
+    "newPath": "eggs/designs/egg-465.png",
+    "category": "egg-design",
+    "assetId": "egg-465"
+  },
+  {
+    "oldPath": "eggs/egg_466.png",
+    "newPath": "eggs/designs/egg-466.png",
+    "category": "egg-design",
+    "assetId": "egg-466"
+  },
+  {
+    "oldPath": "eggs/egg_467.png",
+    "newPath": "eggs/designs/egg-467.png",
+    "category": "egg-design",
+    "assetId": "egg-467"
+  },
+  {
+    "oldPath": "eggs/egg_468.png",
+    "newPath": "eggs/designs/egg-468.png",
+    "category": "egg-design",
+    "assetId": "egg-468"
+  },
+  {
+    "oldPath": "eggs/egg_469.png",
+    "newPath": "eggs/designs/egg-469.png",
+    "category": "egg-design",
+    "assetId": "egg-469"
+  },
+  {
+    "oldPath": "eggs/egg_470.png",
+    "newPath": "eggs/designs/egg-470.png",
+    "category": "egg-design",
+    "assetId": "egg-470"
+  },
+  {
+    "oldPath": "eggs/egg_471.png",
+    "newPath": "eggs/designs/egg-471.png",
+    "category": "egg-design",
+    "assetId": "egg-471"
+  },
+  {
+    "oldPath": "eggs/egg_472.png",
+    "newPath": "eggs/designs/egg-472.png",
+    "category": "egg-design",
+    "assetId": "egg-472"
+  },
+  {
+    "oldPath": "eggs/egg_473.png",
+    "newPath": "eggs/designs/egg-473.png",
+    "category": "egg-design",
+    "assetId": "egg-473"
+  },
+  {
+    "oldPath": "eggs/egg_474.png",
+    "newPath": "eggs/designs/egg-474.png",
+    "category": "egg-design",
+    "assetId": "egg-474"
+  },
+  {
+    "oldPath": "eggs/egg_475.png",
+    "newPath": "eggs/designs/egg-475.png",
+    "category": "egg-design",
+    "assetId": "egg-475"
+  },
+  {
+    "oldPath": "eggs/egg_476.png",
+    "newPath": "eggs/designs/egg-476.png",
+    "category": "egg-design",
+    "assetId": "egg-476"
+  },
+  {
+    "oldPath": "eggs/egg_477.png",
+    "newPath": "eggs/designs/egg-477.png",
+    "category": "egg-design",
+    "assetId": "egg-477"
+  },
+  {
+    "oldPath": "eggs/egg_478.png",
+    "newPath": "eggs/designs/egg-478.png",
+    "category": "egg-design",
+    "assetId": "egg-478"
+  },
+  {
+    "oldPath": "eggs/egg_479.png",
+    "newPath": "eggs/designs/egg-479.png",
+    "category": "egg-design",
+    "assetId": "egg-479"
+  },
+  {
+    "oldPath": "eggs/egg_480.png",
+    "newPath": "eggs/designs/egg-480.png",
+    "category": "egg-design",
+    "assetId": "egg-480"
+  },
+  {
+    "oldPath": "characters/deco/accessory_001.png",
+    "newPath": "characters/deco/unknown/accessory_001.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_001"
+  },
+  {
+    "oldPath": "characters/deco/accessory_002.png",
+    "newPath": "characters/deco/unknown/accessory_002.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_002"
+  },
+  {
+    "oldPath": "characters/deco/accessory_003.png",
+    "newPath": "characters/deco/unknown/accessory_003.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_003"
+  },
+  {
+    "oldPath": "characters/deco/accessory_004.png",
+    "newPath": "characters/deco/unknown/accessory_004.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_004"
+  },
+  {
+    "oldPath": "characters/deco/accessory_005.png",
+    "newPath": "characters/deco/unknown/accessory_005.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_005"
+  },
+  {
+    "oldPath": "characters/deco/accessory_006.png",
+    "newPath": "characters/deco/unknown/accessory_006.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_006"
+  },
+  {
+    "oldPath": "characters/deco/accessory_007.png",
+    "newPath": "characters/deco/unknown/accessory_007.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_007"
+  },
+  {
+    "oldPath": "characters/deco/accessory_008.png",
+    "newPath": "characters/deco/unknown/accessory_008.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_008"
+  },
+  {
+    "oldPath": "characters/deco/accessory_009.png",
+    "newPath": "characters/deco/unknown/accessory_009.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_009"
+  },
+  {
+    "oldPath": "characters/deco/accessory_010.png",
+    "newPath": "characters/deco/unknown/accessory_010.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_010"
+  },
+  {
+    "oldPath": "characters/deco/accessory_011.png",
+    "newPath": "characters/deco/unknown/accessory_011.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_011"
+  },
+  {
+    "oldPath": "characters/deco/accessory_012.png",
+    "newPath": "characters/deco/unknown/accessory_012.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_012"
+  },
+  {
+    "oldPath": "characters/deco/accessory_013.png",
+    "newPath": "characters/deco/unknown/accessory_013.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_013"
+  },
+  {
+    "oldPath": "characters/deco/accessory_014.png",
+    "newPath": "characters/deco/unknown/accessory_014.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_014"
+  },
+  {
+    "oldPath": "characters/deco/accessory_015.png",
+    "newPath": "characters/deco/unknown/accessory_015.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_015"
+  },
+  {
+    "oldPath": "characters/deco/accessory_016.png",
+    "newPath": "characters/deco/unknown/accessory_016.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_016"
+  },
+  {
+    "oldPath": "characters/deco/accessory_017.png",
+    "newPath": "characters/deco/unknown/accessory_017.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_017"
+  },
+  {
+    "oldPath": "characters/deco/accessory_018.png",
+    "newPath": "characters/deco/unknown/accessory_018.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_018"
+  },
+  {
+    "oldPath": "characters/deco/accessory_019.png",
+    "newPath": "characters/deco/unknown/accessory_019.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_019"
+  },
+  {
+    "oldPath": "characters/deco/accessory_020.png",
+    "newPath": "characters/deco/unknown/accessory_020.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_020"
+  },
+  {
+    "oldPath": "characters/deco/accessory_021.png",
+    "newPath": "characters/deco/unknown/accessory_021.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_021"
+  },
+  {
+    "oldPath": "characters/deco/accessory_022.png",
+    "newPath": "characters/deco/unknown/accessory_022.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_022"
+  },
+  {
+    "oldPath": "characters/deco/accessory_023.png",
+    "newPath": "characters/deco/unknown/accessory_023.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_023"
+  },
+  {
+    "oldPath": "characters/deco/accessory_024.png",
+    "newPath": "characters/deco/unknown/accessory_024.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_024"
+  },
+  {
+    "oldPath": "characters/deco/accessory_025.png",
+    "newPath": "characters/deco/unknown/accessory_025.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_025"
+  },
+  {
+    "oldPath": "characters/deco/accessory_026.png",
+    "newPath": "characters/deco/unknown/accessory_026.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_026"
+  },
+  {
+    "oldPath": "characters/deco/accessory_027.png",
+    "newPath": "characters/deco/unknown/accessory_027.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_027"
+  },
+  {
+    "oldPath": "characters/deco/accessory_028.png",
+    "newPath": "characters/deco/unknown/accessory_028.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_028"
+  },
+  {
+    "oldPath": "characters/deco/accessory_029.png",
+    "newPath": "characters/deco/unknown/accessory_029.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_029"
+  },
+  {
+    "oldPath": "characters/deco/accessory_030.png",
+    "newPath": "characters/deco/unknown/accessory_030.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_030"
+  },
+  {
+    "oldPath": "characters/deco/accessory_031.png",
+    "newPath": "characters/deco/unknown/accessory_031.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_031"
+  },
+  {
+    "oldPath": "characters/deco/accessory_032.png",
+    "newPath": "characters/deco/unknown/accessory_032.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_032"
+  },
+  {
+    "oldPath": "characters/deco/accessory_033.png",
+    "newPath": "characters/deco/unknown/accessory_033.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_033"
+  },
+  {
+    "oldPath": "characters/deco/accessory_034.png",
+    "newPath": "characters/deco/unknown/accessory_034.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_034"
+  },
+  {
+    "oldPath": "characters/deco/accessory_035.png",
+    "newPath": "characters/deco/unknown/accessory_035.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_035"
+  },
+  {
+    "oldPath": "characters/deco/accessory_036.png",
+    "newPath": "characters/deco/unknown/accessory_036.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_036"
+  },
+  {
+    "oldPath": "characters/deco/accessory_037.png",
+    "newPath": "characters/deco/unknown/accessory_037.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_037"
+  },
+  {
+    "oldPath": "characters/deco/accessory_038.png",
+    "newPath": "characters/deco/unknown/accessory_038.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_038"
+  },
+  {
+    "oldPath": "characters/deco/accessory_039.png",
+    "newPath": "characters/deco/unknown/accessory_039.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_039"
+  },
+  {
+    "oldPath": "characters/deco/accessory_040.png",
+    "newPath": "characters/deco/unknown/accessory_040.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_040"
+  },
+  {
+    "oldPath": "characters/deco/accessory_041.png",
+    "newPath": "characters/deco/unknown/accessory_041.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_041"
+  },
+  {
+    "oldPath": "characters/deco/accessory_042.png",
+    "newPath": "characters/deco/unknown/accessory_042.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_042"
+  },
+  {
+    "oldPath": "characters/deco/accessory_043.png",
+    "newPath": "characters/deco/unknown/accessory_043.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_043"
+  },
+  {
+    "oldPath": "characters/deco/accessory_044.png",
+    "newPath": "characters/deco/unknown/accessory_044.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_044"
+  },
+  {
+    "oldPath": "characters/deco/accessory_045.png",
+    "newPath": "characters/deco/unknown/accessory_045.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_045"
+  },
+  {
+    "oldPath": "characters/deco/accessory_046.png",
+    "newPath": "characters/deco/unknown/accessory_046.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_046"
+  },
+  {
+    "oldPath": "characters/deco/accessory_047.png",
+    "newPath": "characters/deco/unknown/accessory_047.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_047"
+  },
+  {
+    "oldPath": "characters/deco/accessory_048.png",
+    "newPath": "characters/deco/unknown/accessory_048.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_048"
+  },
+  {
+    "oldPath": "characters/deco/accessory_049.png",
+    "newPath": "characters/deco/unknown/accessory_049.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_049"
+  },
+  {
+    "oldPath": "characters/deco/accessory_050.png",
+    "newPath": "characters/deco/unknown/accessory_050.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_050"
+  },
+  {
+    "oldPath": "characters/deco/accessory_051.png",
+    "newPath": "characters/deco/unknown/accessory_051.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_051"
+  },
+  {
+    "oldPath": "characters/deco/accessory_052.png",
+    "newPath": "characters/deco/unknown/accessory_052.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_052"
+  },
+  {
+    "oldPath": "characters/deco/accessory_053.png",
+    "newPath": "characters/deco/unknown/accessory_053.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_053"
+  },
+  {
+    "oldPath": "characters/deco/accessory_054.png",
+    "newPath": "characters/deco/unknown/accessory_054.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_054"
+  },
+  {
+    "oldPath": "characters/deco/accessory_055.png",
+    "newPath": "characters/deco/unknown/accessory_055.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_055"
+  },
+  {
+    "oldPath": "characters/deco/accessory_056.png",
+    "newPath": "characters/deco/unknown/accessory_056.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_056"
+  },
+  {
+    "oldPath": "characters/deco/accessory_057.png",
+    "newPath": "characters/deco/unknown/accessory_057.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_057"
+  },
+  {
+    "oldPath": "characters/deco/accessory_058.png",
+    "newPath": "characters/deco/unknown/accessory_058.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_058"
+  },
+  {
+    "oldPath": "characters/deco/accessory_059.png",
+    "newPath": "characters/deco/unknown/accessory_059.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_059"
+  },
+  {
+    "oldPath": "characters/deco/accessory_060.png",
+    "newPath": "characters/deco/unknown/accessory_060.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_060"
+  },
+  {
+    "oldPath": "characters/deco/accessory_061.png",
+    "newPath": "characters/deco/unknown/accessory_061.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_061"
+  },
+  {
+    "oldPath": "characters/deco/accessory_062.png",
+    "newPath": "characters/deco/unknown/accessory_062.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_062"
+  },
+  {
+    "oldPath": "characters/deco/accessory_063.png",
+    "newPath": "characters/deco/unknown/accessory_063.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_063"
+  },
+  {
+    "oldPath": "characters/deco/accessory_064.png",
+    "newPath": "characters/deco/unknown/accessory_064.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_064"
+  },
+  {
+    "oldPath": "characters/deco/accessory_065.png",
+    "newPath": "characters/deco/unknown/accessory_065.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_065"
+  },
+  {
+    "oldPath": "characters/deco/accessory_066.png",
+    "newPath": "characters/deco/unknown/accessory_066.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_066"
+  },
+  {
+    "oldPath": "characters/deco/accessory_067.png",
+    "newPath": "characters/deco/unknown/accessory_067.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_067"
+  },
+  {
+    "oldPath": "characters/deco/accessory_068.png",
+    "newPath": "characters/deco/unknown/accessory_068.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_068"
+  },
+  {
+    "oldPath": "characters/deco/accessory_069.png",
+    "newPath": "characters/deco/unknown/accessory_069.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_069"
+  },
+  {
+    "oldPath": "characters/deco/accessory_070.png",
+    "newPath": "characters/deco/unknown/accessory_070.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_070"
+  },
+  {
+    "oldPath": "characters/deco/accessory_071.png",
+    "newPath": "characters/deco/unknown/accessory_071.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_071"
+  },
+  {
+    "oldPath": "characters/deco/accessory_072.png",
+    "newPath": "characters/deco/unknown/accessory_072.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_072"
+  },
+  {
+    "oldPath": "characters/deco/accessory_073.png",
+    "newPath": "characters/deco/unknown/accessory_073.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_073"
+  },
+  {
+    "oldPath": "characters/deco/accessory_074.png",
+    "newPath": "characters/deco/unknown/accessory_074.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_074"
+  },
+  {
+    "oldPath": "characters/deco/accessory_075.png",
+    "newPath": "characters/deco/unknown/accessory_075.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_075"
+  },
+  {
+    "oldPath": "characters/deco/accessory_076.png",
+    "newPath": "characters/deco/unknown/accessory_076.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_076"
+  },
+  {
+    "oldPath": "characters/deco/accessory_077.png",
+    "newPath": "characters/deco/unknown/accessory_077.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_077"
+  },
+  {
+    "oldPath": "characters/deco/accessory_078.png",
+    "newPath": "characters/deco/unknown/accessory_078.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_078"
+  },
+  {
+    "oldPath": "characters/deco/accessory_079.png",
+    "newPath": "characters/deco/unknown/accessory_079.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_079"
+  },
+  {
+    "oldPath": "characters/deco/accessory_080.png",
+    "newPath": "characters/deco/unknown/accessory_080.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_080"
+  },
+  {
+    "oldPath": "characters/deco/accessory_081.png",
+    "newPath": "characters/deco/unknown/accessory_081.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_081"
+  },
+  {
+    "oldPath": "characters/deco/accessory_082.png",
+    "newPath": "characters/deco/unknown/accessory_082.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_082"
+  },
+  {
+    "oldPath": "characters/deco/accessory_083.png",
+    "newPath": "characters/deco/unknown/accessory_083.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_083"
+  },
+  {
+    "oldPath": "characters/deco/accessory_084.png",
+    "newPath": "characters/deco/unknown/accessory_084.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_084"
+  },
+  {
+    "oldPath": "characters/deco/accessory_085.png",
+    "newPath": "characters/deco/unknown/accessory_085.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_085"
+  },
+  {
+    "oldPath": "characters/deco/accessory_086.png",
+    "newPath": "characters/deco/unknown/accessory_086.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_086"
+  },
+  {
+    "oldPath": "characters/deco/accessory_087.png",
+    "newPath": "characters/deco/unknown/accessory_087.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_087"
+  },
+  {
+    "oldPath": "characters/deco/accessory_088.png",
+    "newPath": "characters/deco/unknown/accessory_088.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_088"
+  },
+  {
+    "oldPath": "characters/deco/accessory_089.png",
+    "newPath": "characters/deco/unknown/accessory_089.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_089"
+  },
+  {
+    "oldPath": "characters/deco/accessory_090.png",
+    "newPath": "characters/deco/unknown/accessory_090.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_090"
+  },
+  {
+    "oldPath": "characters/deco/accessory_091.png",
+    "newPath": "characters/deco/unknown/accessory_091.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_091"
+  },
+  {
+    "oldPath": "characters/deco/accessory_092.png",
+    "newPath": "characters/deco/unknown/accessory_092.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_092"
+  },
+  {
+    "oldPath": "characters/deco/accessory_093.png",
+    "newPath": "characters/deco/unknown/accessory_093.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_093"
+  },
+  {
+    "oldPath": "characters/deco/accessory_094.png",
+    "newPath": "characters/deco/unknown/accessory_094.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_094"
+  },
+  {
+    "oldPath": "characters/deco/accessory_095.png",
+    "newPath": "characters/deco/unknown/accessory_095.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_095"
+  },
+  {
+    "oldPath": "characters/deco/accessory_096.png",
+    "newPath": "characters/deco/unknown/accessory_096.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_096"
+  },
+  {
+    "oldPath": "characters/deco/accessory_097.png",
+    "newPath": "characters/deco/unknown/accessory_097.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_097"
+  },
+  {
+    "oldPath": "characters/deco/accessory_098.png",
+    "newPath": "characters/deco/unknown/accessory_098.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_098"
+  },
+  {
+    "oldPath": "characters/deco/accessory_099.png",
+    "newPath": "characters/deco/unknown/accessory_099.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_099"
+  },
+  {
+    "oldPath": "characters/deco/accessory_100.png",
+    "newPath": "characters/deco/unknown/accessory_100.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_100"
+  },
+  {
+    "oldPath": "characters/deco/accessory_101.png",
+    "newPath": "characters/deco/unknown/accessory_101.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_101"
+  },
+  {
+    "oldPath": "characters/deco/accessory_102.png",
+    "newPath": "characters/deco/unknown/accessory_102.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_102"
+  },
+  {
+    "oldPath": "characters/deco/accessory_103.png",
+    "newPath": "characters/deco/unknown/accessory_103.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_103"
+  },
+  {
+    "oldPath": "characters/deco/accessory_104.png",
+    "newPath": "characters/deco/unknown/accessory_104.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_104"
+  },
+  {
+    "oldPath": "characters/deco/accessory_105.png",
+    "newPath": "characters/deco/unknown/accessory_105.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_105"
+  },
+  {
+    "oldPath": "characters/deco/accessory_106.png",
+    "newPath": "characters/deco/unknown/accessory_106.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_106"
+  },
+  {
+    "oldPath": "characters/deco/accessory_107.png",
+    "newPath": "characters/deco/unknown/accessory_107.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_107"
+  },
+  {
+    "oldPath": "characters/deco/accessory_108.png",
+    "newPath": "characters/deco/unknown/accessory_108.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_108"
+  },
+  {
+    "oldPath": "characters/deco/accessory_109.png",
+    "newPath": "characters/deco/unknown/accessory_109.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_109"
+  },
+  {
+    "oldPath": "characters/deco/accessory_110.png",
+    "newPath": "characters/deco/unknown/accessory_110.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_110"
+  },
+  {
+    "oldPath": "characters/deco/accessory_111.png",
+    "newPath": "characters/deco/unknown/accessory_111.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_111"
+  },
+  {
+    "oldPath": "characters/deco/accessory_112.png",
+    "newPath": "characters/deco/unknown/accessory_112.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_112"
+  },
+  {
+    "oldPath": "characters/deco/accessory_113.png",
+    "newPath": "characters/deco/unknown/accessory_113.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_113"
+  },
+  {
+    "oldPath": "characters/deco/accessory_114.png",
+    "newPath": "characters/deco/unknown/accessory_114.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_114"
+  },
+  {
+    "oldPath": "characters/deco/accessory_115.png",
+    "newPath": "characters/deco/unknown/accessory_115.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_115"
+  },
+  {
+    "oldPath": "characters/deco/accessory_116.png",
+    "newPath": "characters/deco/unknown/accessory_116.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_116"
+  },
+  {
+    "oldPath": "characters/deco/accessory_117.png",
+    "newPath": "characters/deco/unknown/accessory_117.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_117"
+  },
+  {
+    "oldPath": "characters/deco/accessory_118.png",
+    "newPath": "characters/deco/unknown/accessory_118.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_118"
+  },
+  {
+    "oldPath": "characters/deco/accessory_119.png",
+    "newPath": "characters/deco/unknown/accessory_119.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_119"
+  },
+  {
+    "oldPath": "characters/deco/accessory_120.png",
+    "newPath": "characters/deco/unknown/accessory_120.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_120"
+  },
+  {
+    "oldPath": "characters/deco/accessory_121.png",
+    "newPath": "characters/deco/unknown/accessory_121.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_121"
+  },
+  {
+    "oldPath": "characters/deco/accessory_122.png",
+    "newPath": "characters/deco/unknown/accessory_122.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_122"
+  },
+  {
+    "oldPath": "characters/deco/accessory_123.png",
+    "newPath": "characters/deco/unknown/accessory_123.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_123"
+  },
+  {
+    "oldPath": "characters/deco/accessory_124.png",
+    "newPath": "characters/deco/unknown/accessory_124.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_124"
+  },
+  {
+    "oldPath": "characters/deco/accessory_125.png",
+    "newPath": "characters/deco/unknown/accessory_125.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_125"
+  },
+  {
+    "oldPath": "characters/deco/accessory_126.png",
+    "newPath": "characters/deco/unknown/accessory_126.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_126"
+  },
+  {
+    "oldPath": "characters/deco/accessory_127.png",
+    "newPath": "characters/deco/unknown/accessory_127.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_127"
+  },
+  {
+    "oldPath": "characters/deco/accessory_128.png",
+    "newPath": "characters/deco/unknown/accessory_128.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_128"
+  },
+  {
+    "oldPath": "characters/deco/accessory_129.png",
+    "newPath": "characters/deco/unknown/accessory_129.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_129"
+  },
+  {
+    "oldPath": "characters/deco/accessory_130.png",
+    "newPath": "characters/deco/unknown/accessory_130.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_130"
+  },
+  {
+    "oldPath": "characters/deco/accessory_131.png",
+    "newPath": "characters/deco/unknown/accessory_131.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_131"
+  },
+  {
+    "oldPath": "characters/deco/accessory_132.png",
+    "newPath": "characters/deco/unknown/accessory_132.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_132"
+  },
+  {
+    "oldPath": "characters/deco/accessory_133.png",
+    "newPath": "characters/deco/unknown/accessory_133.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_133"
+  },
+  {
+    "oldPath": "characters/deco/accessory_134.png",
+    "newPath": "characters/deco/unknown/accessory_134.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_134"
+  },
+  {
+    "oldPath": "characters/deco/accessory_135.png",
+    "newPath": "characters/deco/unknown/accessory_135.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_135"
+  },
+  {
+    "oldPath": "characters/deco/accessory_136.png",
+    "newPath": "characters/deco/unknown/accessory_136.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_136"
+  },
+  {
+    "oldPath": "characters/deco/accessory_137.png",
+    "newPath": "characters/deco/unknown/accessory_137.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_137"
+  },
+  {
+    "oldPath": "characters/deco/accessory_138.png",
+    "newPath": "characters/deco/unknown/accessory_138.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_138"
+  },
+  {
+    "oldPath": "characters/deco/accessory_139.png",
+    "newPath": "characters/deco/unknown/accessory_139.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_139"
+  },
+  {
+    "oldPath": "characters/deco/accessory_140.png",
+    "newPath": "characters/deco/unknown/accessory_140.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_140"
+  },
+  {
+    "oldPath": "characters/deco/accessory_141.png",
+    "newPath": "characters/deco/unknown/accessory_141.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_141"
+  },
+  {
+    "oldPath": "characters/deco/accessory_142.png",
+    "newPath": "characters/deco/unknown/accessory_142.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_142"
+  },
+  {
+    "oldPath": "characters/deco/accessory_143.png",
+    "newPath": "characters/deco/unknown/accessory_143.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_143"
+  },
+  {
+    "oldPath": "characters/deco/accessory_144.png",
+    "newPath": "characters/deco/unknown/accessory_144.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_144"
+  },
+  {
+    "oldPath": "characters/deco/accessory_145.png",
+    "newPath": "characters/deco/unknown/accessory_145.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_145"
+  },
+  {
+    "oldPath": "characters/deco/accessory_146.png",
+    "newPath": "characters/deco/unknown/accessory_146.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_146"
+  },
+  {
+    "oldPath": "characters/deco/accessory_147.png",
+    "newPath": "characters/deco/unknown/accessory_147.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_147"
+  },
+  {
+    "oldPath": "characters/deco/accessory_148.png",
+    "newPath": "characters/deco/unknown/accessory_148.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_148"
+  },
+  {
+    "oldPath": "characters/deco/accessory_149.png",
+    "newPath": "characters/deco/unknown/accessory_149.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_149"
+  },
+  {
+    "oldPath": "characters/deco/accessory_150.png",
+    "newPath": "characters/deco/unknown/accessory_150.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_150"
+  },
+  {
+    "oldPath": "characters/deco/accessory_151.png",
+    "newPath": "characters/deco/unknown/accessory_151.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_151"
+  },
+  {
+    "oldPath": "characters/deco/accessory_152.png",
+    "newPath": "characters/deco/unknown/accessory_152.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_152"
+  },
+  {
+    "oldPath": "characters/deco/accessory_153.png",
+    "newPath": "characters/deco/unknown/accessory_153.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_153"
+  },
+  {
+    "oldPath": "characters/deco/accessory_154.png",
+    "newPath": "characters/deco/unknown/accessory_154.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_154"
+  },
+  {
+    "oldPath": "characters/deco/accessory_155.png",
+    "newPath": "characters/deco/unknown/accessory_155.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_155"
+  },
+  {
+    "oldPath": "characters/deco/accessory_156.png",
+    "newPath": "characters/deco/unknown/accessory_156.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_156"
+  },
+  {
+    "oldPath": "characters/deco/accessory_157.png",
+    "newPath": "characters/deco/unknown/accessory_157.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_157"
+  },
+  {
+    "oldPath": "characters/deco/accessory_158.png",
+    "newPath": "characters/deco/unknown/accessory_158.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_158"
+  },
+  {
+    "oldPath": "characters/deco/accessory_159.png",
+    "newPath": "characters/deco/unknown/accessory_159.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_159"
+  },
+  {
+    "oldPath": "characters/deco/accessory_160.png",
+    "newPath": "characters/deco/unknown/accessory_160.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_160"
+  },
+  {
+    "oldPath": "characters/deco/accessory_161.png",
+    "newPath": "characters/deco/unknown/accessory_161.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_161"
+  },
+  {
+    "oldPath": "characters/deco/accessory_162.png",
+    "newPath": "characters/deco/unknown/accessory_162.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_162"
+  },
+  {
+    "oldPath": "characters/deco/accessory_163.png",
+    "newPath": "characters/deco/unknown/accessory_163.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_163"
+  },
+  {
+    "oldPath": "characters/deco/accessory_164.png",
+    "newPath": "characters/deco/unknown/accessory_164.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_164"
+  },
+  {
+    "oldPath": "characters/deco/accessory_165.png",
+    "newPath": "characters/deco/unknown/accessory_165.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_165"
+  },
+  {
+    "oldPath": "characters/deco/accessory_166.png",
+    "newPath": "characters/deco/unknown/accessory_166.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_166"
+  },
+  {
+    "oldPath": "characters/deco/accessory_167.png",
+    "newPath": "characters/deco/unknown/accessory_167.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_167"
+  },
+  {
+    "oldPath": "characters/deco/accessory_168.png",
+    "newPath": "characters/deco/unknown/accessory_168.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_168"
+  },
+  {
+    "oldPath": "characters/deco/accessory_169.png",
+    "newPath": "characters/deco/unknown/accessory_169.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_169"
+  },
+  {
+    "oldPath": "characters/deco/accessory_170.png",
+    "newPath": "characters/deco/unknown/accessory_170.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_170"
+  },
+  {
+    "oldPath": "characters/deco/accessory_171.png",
+    "newPath": "characters/deco/unknown/accessory_171.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_171"
+  },
+  {
+    "oldPath": "characters/deco/accessory_172.png",
+    "newPath": "characters/deco/unknown/accessory_172.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_172"
+  },
+  {
+    "oldPath": "characters/deco/accessory_173.png",
+    "newPath": "characters/deco/unknown/accessory_173.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_173"
+  },
+  {
+    "oldPath": "characters/deco/accessory_174.png",
+    "newPath": "characters/deco/unknown/accessory_174.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_174"
+  },
+  {
+    "oldPath": "characters/deco/accessory_175.png",
+    "newPath": "characters/deco/unknown/accessory_175.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_175"
+  },
+  {
+    "oldPath": "characters/deco/accessory_176.png",
+    "newPath": "characters/deco/unknown/accessory_176.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_176"
+  },
+  {
+    "oldPath": "characters/deco/accessory_177.png",
+    "newPath": "characters/deco/unknown/accessory_177.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_177"
+  },
+  {
+    "oldPath": "characters/deco/accessory_178.png",
+    "newPath": "characters/deco/unknown/accessory_178.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_178"
+  },
+  {
+    "oldPath": "characters/deco/accessory_179.png",
+    "newPath": "characters/deco/unknown/accessory_179.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_179"
+  },
+  {
+    "oldPath": "characters/deco/accessory_180.png",
+    "newPath": "characters/deco/unknown/accessory_180.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_180"
+  },
+  {
+    "oldPath": "characters/deco/accessory_181.png",
+    "newPath": "characters/deco/unknown/accessory_181.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_181"
+  },
+  {
+    "oldPath": "characters/deco/accessory_182.png",
+    "newPath": "characters/deco/unknown/accessory_182.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_182"
+  },
+  {
+    "oldPath": "characters/deco/accessory_183.png",
+    "newPath": "characters/deco/unknown/accessory_183.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_183"
+  },
+  {
+    "oldPath": "characters/deco/accessory_184.png",
+    "newPath": "characters/deco/unknown/accessory_184.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_184"
+  },
+  {
+    "oldPath": "characters/deco/accessory_185.png",
+    "newPath": "characters/deco/unknown/accessory_185.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_185"
+  },
+  {
+    "oldPath": "characters/deco/accessory_186.png",
+    "newPath": "characters/deco/unknown/accessory_186.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_186"
+  },
+  {
+    "oldPath": "characters/deco/accessory_187.png",
+    "newPath": "characters/deco/unknown/accessory_187.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_187"
+  },
+  {
+    "oldPath": "characters/deco/accessory_188.png",
+    "newPath": "characters/deco/unknown/accessory_188.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_188"
+  },
+  {
+    "oldPath": "characters/deco/accessory_189.png",
+    "newPath": "characters/deco/unknown/accessory_189.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_189"
+  },
+  {
+    "oldPath": "characters/deco/accessory_190.png",
+    "newPath": "characters/deco/unknown/accessory_190.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_190"
+  },
+  {
+    "oldPath": "characters/deco/accessory_191.png",
+    "newPath": "characters/deco/unknown/accessory_191.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_191"
+  },
+  {
+    "oldPath": "characters/deco/accessory_192.png",
+    "newPath": "characters/deco/unknown/accessory_192.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_192"
+  },
+  {
+    "oldPath": "characters/deco/accessory_193.png",
+    "newPath": "characters/deco/unknown/accessory_193.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_193"
+  },
+  {
+    "oldPath": "characters/deco/accessory_194.png",
+    "newPath": "characters/deco/unknown/accessory_194.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_194"
+  },
+  {
+    "oldPath": "characters/deco/accessory_195.png",
+    "newPath": "characters/deco/unknown/accessory_195.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_195"
+  },
+  {
+    "oldPath": "characters/deco/accessory_196.png",
+    "newPath": "characters/deco/unknown/accessory_196.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_196"
+  },
+  {
+    "oldPath": "characters/deco/accessory_197.png",
+    "newPath": "characters/deco/unknown/accessory_197.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_197"
+  },
+  {
+    "oldPath": "characters/deco/accessory_198.png",
+    "newPath": "characters/deco/unknown/accessory_198.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_198"
+  },
+  {
+    "oldPath": "characters/deco/accessory_199.png",
+    "newPath": "characters/deco/unknown/accessory_199.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_199"
+  },
+  {
+    "oldPath": "characters/deco/accessory_200.png",
+    "newPath": "characters/deco/unknown/accessory_200.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_200"
+  },
+  {
+    "oldPath": "characters/deco/accessory_201.png",
+    "newPath": "characters/deco/unknown/accessory_201.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_201"
+  },
+  {
+    "oldPath": "characters/deco/accessory_202.png",
+    "newPath": "characters/deco/unknown/accessory_202.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_202"
+  },
+  {
+    "oldPath": "characters/deco/accessory_203.png",
+    "newPath": "characters/deco/unknown/accessory_203.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_203"
+  },
+  {
+    "oldPath": "characters/deco/accessory_204.png",
+    "newPath": "characters/deco/unknown/accessory_204.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_204"
+  },
+  {
+    "oldPath": "characters/deco/accessory_205.png",
+    "newPath": "characters/deco/unknown/accessory_205.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_205"
+  },
+  {
+    "oldPath": "characters/deco/accessory_206.png",
+    "newPath": "characters/deco/unknown/accessory_206.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_206"
+  },
+  {
+    "oldPath": "characters/deco/accessory_207.png",
+    "newPath": "characters/deco/unknown/accessory_207.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_207"
+  },
+  {
+    "oldPath": "characters/deco/accessory_208.png",
+    "newPath": "characters/deco/unknown/accessory_208.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_208"
+  },
+  {
+    "oldPath": "characters/deco/accessory_209.png",
+    "newPath": "characters/deco/unknown/accessory_209.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_209"
+  },
+  {
+    "oldPath": "characters/deco/accessory_210.png",
+    "newPath": "characters/deco/unknown/accessory_210.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_210"
+  },
+  {
+    "oldPath": "characters/deco/accessory_211.png",
+    "newPath": "characters/deco/unknown/accessory_211.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_211"
+  },
+  {
+    "oldPath": "characters/deco/accessory_212.png",
+    "newPath": "characters/deco/unknown/accessory_212.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_212"
+  },
+  {
+    "oldPath": "characters/deco/accessory_213.png",
+    "newPath": "characters/deco/unknown/accessory_213.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_213"
+  },
+  {
+    "oldPath": "characters/deco/accessory_214.png",
+    "newPath": "characters/deco/unknown/accessory_214.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_214"
+  },
+  {
+    "oldPath": "characters/deco/accessory_215.png",
+    "newPath": "characters/deco/unknown/accessory_215.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_215"
+  },
+  {
+    "oldPath": "characters/deco/accessory_216.png",
+    "newPath": "characters/deco/unknown/accessory_216.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_216"
+  },
+  {
+    "oldPath": "characters/deco/accessory_217.png",
+    "newPath": "characters/deco/unknown/accessory_217.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_217"
+  },
+  {
+    "oldPath": "characters/deco/accessory_218.png",
+    "newPath": "characters/deco/unknown/accessory_218.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_218"
+  },
+  {
+    "oldPath": "characters/deco/accessory_219.png",
+    "newPath": "characters/deco/unknown/accessory_219.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_219"
+  },
+  {
+    "oldPath": "characters/deco/accessory_220.png",
+    "newPath": "characters/deco/unknown/accessory_220.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_220"
+  },
+  {
+    "oldPath": "characters/deco/accessory_221.png",
+    "newPath": "characters/deco/unknown/accessory_221.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_221"
+  },
+  {
+    "oldPath": "characters/deco/accessory_222.png",
+    "newPath": "characters/deco/unknown/accessory_222.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_222"
+  },
+  {
+    "oldPath": "characters/deco/accessory_223.png",
+    "newPath": "characters/deco/unknown/accessory_223.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_223"
+  },
+  {
+    "oldPath": "characters/deco/accessory_224.png",
+    "newPath": "characters/deco/unknown/accessory_224.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_224"
+  },
+  {
+    "oldPath": "characters/deco/accessory_225.png",
+    "newPath": "characters/deco/unknown/accessory_225.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_225"
+  },
+  {
+    "oldPath": "characters/deco/accessory_226.png",
+    "newPath": "characters/deco/unknown/accessory_226.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_226"
+  },
+  {
+    "oldPath": "characters/deco/accessory_227.png",
+    "newPath": "characters/deco/unknown/accessory_227.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_227"
+  },
+  {
+    "oldPath": "characters/deco/accessory_228.png",
+    "newPath": "characters/deco/unknown/accessory_228.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_228"
+  },
+  {
+    "oldPath": "characters/deco/accessory_229.png",
+    "newPath": "characters/deco/unknown/accessory_229.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_229"
+  },
+  {
+    "oldPath": "characters/deco/accessory_230.png",
+    "newPath": "characters/deco/unknown/accessory_230.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_230"
+  },
+  {
+    "oldPath": "characters/deco/accessory_231.png",
+    "newPath": "characters/deco/unknown/accessory_231.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_231"
+  },
+  {
+    "oldPath": "characters/deco/accessory_232.png",
+    "newPath": "characters/deco/unknown/accessory_232.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_232"
+  },
+  {
+    "oldPath": "characters/deco/accessory_233.png",
+    "newPath": "characters/deco/unknown/accessory_233.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_233"
+  },
+  {
+    "oldPath": "characters/deco/accessory_234.png",
+    "newPath": "characters/deco/unknown/accessory_234.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_234"
+  },
+  {
+    "oldPath": "characters/deco/accessory_235.png",
+    "newPath": "characters/deco/unknown/accessory_235.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_235"
+  },
+  {
+    "oldPath": "characters/deco/accessory_236.png",
+    "newPath": "characters/deco/unknown/accessory_236.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_236"
+  },
+  {
+    "oldPath": "characters/deco/accessory_237.png",
+    "newPath": "characters/deco/unknown/accessory_237.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_237"
+  },
+  {
+    "oldPath": "characters/deco/accessory_238.png",
+    "newPath": "characters/deco/unknown/accessory_238.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_238"
+  },
+  {
+    "oldPath": "characters/deco/accessory_239.png",
+    "newPath": "characters/deco/unknown/accessory_239.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_239"
+  },
+  {
+    "oldPath": "characters/deco/accessory_240.png",
+    "newPath": "characters/deco/unknown/accessory_240.png",
+    "category": "deco-unknown",
+    "assetId": "accessory_240"
+  }
+]

@@ -18,10 +18,12 @@ import {
   MEMORY_TUTORIAL_TRANSITION_MS,
   type MemoryDifficultyLevel,
 } from '@/lib/config/memory.config'
+import { detectDevice } from '@/lib/game/device'
 import { pickRandomTargetCells } from '@/lib/game/memory-grid'
 import type { MemoryRawSummary, MemoryRoundTrial } from '@/lib/game/types'
 import { calculateMemoryScore, summarizeMemoryRounds } from '@/lib/scoring/memory'
 import { cn } from '@/lib/utils'
+import { useSound } from '@/hooks/use-sound'
 
 type Stage = 'intro' | 'showing' | 'selecting' | 'feedback'
 type Round = 'practice' | 'real'
@@ -50,6 +52,7 @@ const INSTRUCTION_TEXT = '분홍색으로 깜빡이는 타일의 위치를 기�
  */
 export function MemoryGame({ index, mode, onComplete }: MemoryGameProps) {
   const stat = STATS.memory
+  const { play } = useSound()
 
   const [stage, setStage] = useState<Stage>('intro')
   const [round, setRound] = useState<Round>('practice')
@@ -117,6 +120,7 @@ export function MemoryGame({ index, mode, onComplete }: MemoryGameProps) {
   }
 
   const startGame = () => {
+    play('game-start')
     setRound('practice')
     setRounds([])
     setRealRoundIndex(0)
@@ -168,7 +172,7 @@ export function MemoryGame({ index, mode, onComplete }: MemoryGameProps) {
 
     if (updatedRounds.length >= MEMORY_REAL_ROUNDS) {
       const rawSummary = summarizeMemoryRounds(updatedRounds)
-      const gameScore = calculateMemoryScore(rawSummary)
+      const gameScore = calculateMemoryScore(rawSummary, detectDevice().inputType)
       schedule(() => {
         onComplete({ rounds: updatedRounds, rawSummary, gameScore })
       }, MEMORY_ROUND_FEEDBACK_MS)
@@ -186,6 +190,7 @@ export function MemoryGame({ index, mode, onComplete }: MemoryGameProps) {
     if (stage !== 'selecting' || selectedCells.includes(cellId)) return
 
     const isCorrect = targetCells.includes(cellId)
+    play(isCorrect ? 'answer-correct' : 'answer-wrong-soft')
     const newSelected = [...selectedCells, cellId]
     const newCorrect = correctCount + (isCorrect ? 1 : 0)
     const newWrong = wrongCount + (isCorrect ? 0 : 1)
@@ -266,6 +271,7 @@ export function MemoryGame({ index, mode, onComplete }: MemoryGameProps) {
       {stage === 'intro' ? (
         <button
           type="button"
+          data-sfx-skip
           onClick={startGame}
           className="mt-5 flex flex-1 flex-col items-center justify-center gap-5 rounded-3xl bg-card px-6 py-12 text-center toy-border toy-shadow-lg transition-colors duration-150"
         >

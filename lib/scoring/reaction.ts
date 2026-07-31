@@ -3,7 +3,8 @@ import {
   REACTION_ABNORMAL_MS_THRESHOLD,
   REACTION_ABNORMAL_REPEAT_COUNT,
 } from '@/lib/config/reaction.config'
-import type { InvalidReason, ReactionRawSummary, ReactionTrial } from '@/lib/game/types'
+import type { InputType, InvalidReason, ReactionRawSummary, ReactionTrial } from '@/lib/game/types'
+import { clampScore, normalizeForInput, scoreFromReactionTime } from '@/lib/scoring/shared'
 
 function median(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b)
@@ -22,12 +23,23 @@ function standardDeviation(values: number[]): number {
   return Math.sqrt(variance)
 }
 
-/** Summarizes valid trials into the aggregate fields GAME_SPEC §29-30 lists. */
+/**
+ * Summarizes valid trials into the aggregate fields GAME_SPEC §29-30 lists.
+ * Falls back to all-zero timing fields when every trial was a false start
+ * (validTimes empty) — previously this let `medianReactionMs` come out `NaN`
+ * (median of an empty array) and `bestReactionMs` come out `Infinity`
+ * (`Math.min()` of nothing), both of which could reach the user as literal
+ * "NaN ms" / "Best Infinity ms" on the result screen.
+ */
 export function summarizeReactionTrials(trials: ReactionTrial[]): ReactionRawSummary {
   const validTimes = trials
     .filter((t) => !t.isFalseStart && t.reactionMs != null)
     .map((t) => t.reactionMs as number)
   const falseStarts = trials.filter((t) => t.isFalseStart).length
+
+  if (validTimes.length === 0) {
+    return { validTrials: 0, falseStarts, averageReactionMs: 0, medianReactionMs: 0, bestReactionMs: 0, consistency: 0 }
+  }
 
   return {
     validTrials: validTimes.length,
@@ -40,48 +52,60 @@ export function summarizeReactionTrials(trials: ReactionTrial[]): ReactionRawSum
 }
 
 /**
- * Reaction Game Score — internal only, draft formula (GAME_SPEC §128 rule 14:
- * "정확한 Score Formula는 실제 테스트 및 데이터 확보 후 보정 가능하도록 구성").
- * Never shown to the user, never used for Percentile/Ranking yet. Weights are
- * constants so they're easy to retune once real usage data exists.
+ * Reaction Game Score — normalizedScore = 반응속도 70% + 유효시행비율 30%.
+ * 다른 5개 스탯과 달리 "정확도 우선" 원칙을 그대로 적용하지 않는다 —
+ * Reaction은 정답 개념이 없고, validityRatio(false start 안 하기)는 집중만
+ * 하면 대부분 1.0에 가깝게 나와 실력 변별력이 거의 없다. "순발력"이라는
+ * 스탯명이 실제로 측정하겠다고 약속하는 값은 속도이므로, 속도를 지배적
+ * 가중치로 둔다. validity를 완전히 빼지 않는 이유는, 신호가 뜨기 전에
+ * 마구 눌러 운 좋은 시행을 노리는 전략을 점수에서도 어느 정도 억제하기
+ * 위함 — evaluateReactionValidity의 이상치 감지는 신호 이후 비정상적으로
+ * 빠른 반응만 걸러내고 false start 자체는 걸러내지 않는다.
+ * consistency(반응 편차)는 원래 공식에서도 base 1000 대비 0.5 가중치로
+ * 사실상 영향이 없었으므로 점수에서 제외하고, raw record 표시용 참고
+ * 값으로만 남긴다. 0–100으로 클램프되어 다른 게임(장애물 피하기 포함)의
+ * gameScore와 직접 비교 가능하다.
  */
 export const REACTION_SCORE_WEIGHTS = {
-  /** Base score chosen so a typical ~250ms median lands near a readable mid-range number. */
-  base: 1000,
-  falseStartPenalty: 20,
-  consistencyPenalty: 0.5,
-}
-
-export function calculateReactionScore(summary: ReactionRawSummary): number {
-  const { base, falseStartPenalty, consistencyPenalty } = REACTION_SCORE_WEIGHTS
-  return Math.round(
-    base -
-      summary.medianReactionMs -
-      summary.falseStarts * falseStartPenalty -
-      summary.consistency * consistencyPenalty,
-  )
+  /** speedScore(0-1, scoreFromReactionTime 결과) × this — 순발력의 핵심 지표. */
+  speedWeight: 70,
+  /** validityRatio(유효 시행 수 / 전체 시행 수, 0-1) × this. */
+  validityWeight: 30,
 }
 
 /**
- * Reaction Personal Best ranking (GAME_SPEC §31): lower median wins; ties
- * broken by fewer false starts, then by better (lower) consistency.
+ * medianReactionMs가 이 값 이하면 만점, 이 값 이상이면 speedScore 0점.
+ * 200ms는 생리학적 한계(~150ms)가 아니라 "집중하면 실제로 도달 가능한
+ * 상위권" 수준으로 잡은 절대 기준값이다 — 이 프로젝트는 서버/집계 데이터가
+ * 없어 다른 유저 대비 상대 백분위를 계산할 방법이 아직 없으므로(참고:
+ * BaseGameResult.final은 실제 퍼센타일이 생기기 전까지 항상 undefined),
+ * 지금은 절대 기준으로 대신한다. 실제 플레이 데이터가 쌓이면 재조정.
  */
-export function isBetterReactionResult(
-  candidate: { rawSummary: ReactionRawSummary },
-  current: { rawSummary: ReactionRawSummary } | null,
-): boolean {
-  if (!current) return true
-  if (candidate.rawSummary.medianReactionMs !== current.rawSummary.medianReactionMs) {
-    return candidate.rawSummary.medianReactionMs < current.rawSummary.medianReactionMs
-  }
-  if (candidate.rawSummary.falseStarts !== current.rawSummary.falseStarts) {
-    return candidate.rawSummary.falseStarts < current.rawSummary.falseStarts
-  }
-  return candidate.rawSummary.consistency < current.rawSummary.consistency
+export const REACTION_SPEED_BEST_MS = 200
+export const REACTION_SPEED_WORST_MS = 500
+
+/** `inputType` (see lib/game/device.ts#detectDevice) normalizes the measured ms for touch's inherent input latency before scoring — never applied to the raw displayed record. */
+export function calculateReactionScore(summary: ReactionRawSummary, inputType: InputType): number {
+  const { validityWeight, speedWeight } = REACTION_SCORE_WEIGHTS
+  const totalTrials = summary.validTrials + summary.falseStarts
+  const validityRatio = totalTrials > 0 ? summary.validTrials / totalTrials : 0
+  const speedScore =
+    summary.validTrials > 0
+      ? scoreFromReactionTime(
+          normalizeForInput(summary.medianReactionMs, inputType),
+          REACTION_SPEED_BEST_MS,
+          REACTION_SPEED_WORST_MS,
+        ) / 100
+      : 0
+
+  return clampScore(validityRatio * validityWeight + speedScore * speedWeight)
 }
 
 /** Formats the raw summary into the display RawRecord — never invents a "pts" unit (GAME_SPEC §3-5). */
 export function formatReactionRawRecord(summary: ReactionRawSummary): RawRecord {
+  if (summary.validTrials === 0) {
+    return { primary: '기록 없음', secondary: `False Start ${summary.falseStarts}회` }
+  }
   const secondaryParts = [`Best ${summary.bestReactionMs} ms`]
   if (summary.falseStarts > 0) secondaryParts.push(`False Start ${summary.falseStarts}회`)
   return {

@@ -1,0 +1,301 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import {
+  LIVE_TICK_INTERVAL_MS,
+  ROOM_ATTENTION_THRESHOLD,
+  ATTENTION_THRESHOLD,
+  REACTION_FEEDBACK_MS,
+  OVERPET_COUNT_THRESHOLD,
+  OVERPET_WINDOW_MS,
+  OVERPET_REACTION_HOLD_MS,
+} from '@/lib/config/pet-care.config'
+import {
+  buildDirectEffect,
+  getCooldownStatus,
+  performClean,
+  performFeed,
+  performPet,
+  performPlay,
+  performShower,
+  performTalk,
+  type ActionResult,
+  type CooldownStatus,
+} from '@/lib/pet-care/actions'
+import { applyPetDecay, applyRoomDecay } from '@/lib/pet-care/decay'
+import { computeMood, computeSecondaryTags } from '@/lib/pet-care/mood'
+import { expRequiredForLevel, getNewlyUnlockedRewards, type RewardUnlock } from '@/lib/pet-care/leveling'
+import { createDefaultPetCareState, loadPetCareState, savePetCareState } from '@/lib/pet-care/pet-care-storage'
+import { createDefaultRoomCareState, loadRoomCareState, saveRoomCareState } from '@/lib/pet-care/room-care-storage'
+import type { CareActionId, CareStatId, Mood, PetAnimation, PetCareState, RoomCareState, SecondaryTag } from '@/lib/pet-care/types'
+import { useSound } from '@/hooks/use-sound'
+
+const ACTION_IDS: CareActionId[] = ['feed', 'shower', 'clean', 'play', 'pet', 'talk']
+
+export interface FloatingDelta {
+  id: string
+  statId: CareStatId
+  delta: number
+}
+
+export interface LevelUpEvent {
+  key: number
+  level: number
+  unlocks: RewardUnlock[]
+}
+
+function idleAnimationForMood(mood: Mood): PetAnimation {
+  if (mood === 'sleepy') return 'sleep'
+  if (mood === 'sad' || mood === 'lonely') return 'sad'
+  return 'idle'
+}
+
+let deltaIdSeq = 0
+function nextDeltaId(): string {
+  deltaIdSeq += 1
+  return `delta_${Date.now()}_${deltaIdSeq}`
+}
+
+/**
+ * Orchestrates PetCareState + RoomCareState for the Room screen: loads +
+ * applies offline decay on mount (mirrors the existing
+ * `useState(() => loadSavedRoomState())` idiom already used for room
+ * layout — RoomScreen only ever mounts client-side, so this never causes a
+ * hydration mismatch), ticks decay live while the screen stays open, and
+ * exposes a single `performAction` dispatcher plus derived
+ * mood/animation/speech/floating-delta view state.
+ */
+export function usePetCare() {
+  const { play } = useSound()
+  const [petState, setPetState] = useState<PetCareState>(() => applyPetDecay(loadPetCareState(), new Date()))
+  const [roomState, setRoomState] = useState<RoomCareState>(() => applyRoomDecay(loadRoomCareState(), new Date()))
+  const [animationOverride, setAnimationOverride] = useState<PetAnimation | null>(null)
+  const [speech, setSpeech] = useState<string | null>(null)
+  const [floatingDeltas, setFloatingDeltas] = useState<FloatingDelta[]>([])
+  const [levelUpEvent, setLevelUpEvent] = useState<LevelUpEvent | null>(null)
+  const [lastUserActionAt, setLastUserActionAt] = useState<number | null>(null)
+  const [, forceCooldownTick] = useState(0)
+  /** True for OVERPET_REACTION_HOLD_MS right after a petting streak crosses OVERPET_COUNT_THRESHOLD — see the 'pet' case in performAction below. Session-only, not persisted. */
+  const [isOverPetted, setIsOverPetted] = useState(false)
+  const petClickTimestampsRef = useRef<number[]>([])
+
+  const petStateRef = useRef(petState)
+  petStateRef.current = petState
+  const roomStateRef = useRef(roomState)
+  roomStateRef.current = roomState
+  const timeoutsRef = useRef<number[]>([])
+
+  const mood = computeMood(petState.stats)
+  const secondaryTags = computeSecondaryTags(roomState.cleanliness)
+
+  // Persist the mount-time decay pass right away so a quick reload doesn't
+  // keep recomputing from an even-older baseline.
+  useEffect(() => {
+    savePetCareState(petStateRef.current)
+    saveRoomCareState(roomStateRef.current)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount only
+  }, [])
+
+  // Live decay tick — real elapsed time each interval, so background-tab
+  // throttling never desyncs the total (a late-firing tick just sees a
+  // larger elapsedMs, not a wrong one).
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      const now = new Date()
+      setPetState((prev) => {
+        const next = applyPetDecay(prev, now)
+        savePetCareState(next)
+        return next
+      })
+      setRoomState((prev) => {
+        const next = applyRoomDecay(prev, now)
+        saveRoomCareState(next)
+        return next
+      })
+    }, LIVE_TICK_INTERVAL_MS)
+    return () => window.clearInterval(id)
+  }, [])
+
+  // Cooldown countdown display — only ticks (every second) while at least
+  // one action is actually on cooldown, so idle screens never re-render for
+  // nothing.
+  useEffect(() => {
+    const anyOnCooldown = ACTION_IDS.some((id) => getCooldownStatus(petState.cooldowns, id, new Date()).onCooldown)
+    if (!anyOnCooldown) return
+    const id = window.setInterval(() => forceCooldownTick((n) => n + 1), 1000)
+    return () => window.clearInterval(id)
+  }, [petState.cooldowns])
+
+  useEffect(
+    () => () => {
+      timeoutsRef.current.forEach((id) => window.clearTimeout(id))
+      timeoutsRef.current = []
+    },
+    [],
+  )
+
+  function schedule(fn: () => void, ms: number) {
+    const id = window.setTimeout(fn, ms)
+    timeoutsRef.current.push(id)
+  }
+
+  function showFloatingDeltas(deltas: Partial<Record<CareStatId, number>>) {
+    const entries = Object.entries(deltas) as [CareStatId, number][]
+    const withIds = entries.filter(([, v]) => v !== 0).map(([statId, delta]) => ({ id: nextDeltaId(), statId, delta }))
+    if (withIds.length === 0) return
+    setFloatingDeltas((prev) => [...prev, ...withIds])
+    schedule(() => {
+      setFloatingDeltas((prev) => prev.filter((d) => !withIds.some((w) => w.id === d.id)))
+    }, 1500)
+  }
+
+  function playAnimation(animation: PetAnimation, holdMs = REACTION_FEEDBACK_MS) {
+    setAnimationOverride(animation)
+    schedule(() => setAnimationOverride(null), holdMs)
+  }
+
+  function showSpeech(text: string, holdMs = 2400) {
+    play('pet-chirp-happy')
+    setSpeech(text)
+    schedule(() => setSpeech((cur) => (cur === text ? null : cur)), holdMs)
+  }
+
+  function finalizeAction(result: ActionResult, room?: RoomCareState) {
+    const beforeLevel = petStateRef.current.intimacyLevel
+    let finalPetState = result.petState
+
+    if (result.levelUp) {
+      const unlocks = getNewlyUnlockedRewards(beforeLevel, result.levelUp.level, finalPetState.unlockedRewardLevels)
+      finalPetState = {
+        ...finalPetState,
+        unlockedRewardLevels: [...finalPetState.unlockedRewardLevels, ...unlocks.map((u) => u.level)],
+      }
+      play('pet-level-up')
+      setLevelUpEvent({ key: Date.now(), level: result.levelUp.level, unlocks })
+      schedule(() => setLevelUpEvent(null), 4000)
+    }
+
+    setPetState(finalPetState)
+    savePetCareState(finalPetState)
+    if (room) {
+      setRoomState(room)
+      saveRoomCareState(room)
+    }
+
+    showFloatingDeltas(result.deltas)
+    playAnimation(result.levelUp ? 'jump' : result.animation)
+    if (result.message) showSpeech(result.message)
+    else if (result.dialogue) showSpeech(result.dialogue, 3200)
+  }
+
+  function performAction(actionId: CareActionId) {
+    const now = new Date()
+    const pet = petStateRef.current
+    const room = roomStateRef.current
+    setLastUserActionAt(now.getTime())
+
+    switch (actionId) {
+      case 'feed':
+        finalizeAction(performFeed(pet, now))
+        return
+      case 'shower':
+        finalizeAction(performShower(pet, now))
+        return
+      case 'clean': {
+        const result = performClean(pet, room, now)
+        finalizeAction(result, result.roomState)
+        return
+      }
+      case 'play':
+        finalizeAction(performPlay(pet, now))
+        return
+      case 'pet': {
+        const nowMs = now.getTime()
+        const recentClicks = [...petClickTimestampsRef.current, nowMs].filter(
+          (t) => nowMs - t < OVERPET_WINDOW_MS,
+        )
+        petClickTimestampsRef.current = recentClicks
+        if (recentClicks.length >= OVERPET_COUNT_THRESHOLD) {
+          petClickTimestampsRef.current = [] // fires once per streak, not on every pet after
+          setIsOverPetted(true)
+          schedule(() => setIsOverPetted(false), OVERPET_REACTION_HOLD_MS)
+        }
+        finalizeAction(performPet(pet, now))
+        return
+      }
+      case 'talk':
+        finalizeAction(performTalk(pet, mood, now))
+        return
+    }
+  }
+
+  /**
+   * The entry point autonomous bonuses (sleep/playAlone) and minigame
+   * reactions use to touch PetCareState. Shares `finalizeAction`'s
+   * clamp/exp/level-up/save/floating-delta handling, but deliberately does
+   * NOT touch `animationOverride`/`speech` — the caller (usePetAutonomy /
+   * usePetMemory) already owns and displays its own animation/speech for
+   * that moment, and composing both here would fight the Room screen's own
+   * priority chain (levelUp > gameReaction > userAction > speaking >
+   * autonomous). A resulting level-up still shows its Toast/jump exactly
+   * like a button-driven one, since that's handled by `finalizeAction`
+   * itself and is always the single highest-priority visual regardless of
+   * source.
+   */
+  function applyEffect(deltas: Partial<Record<CareStatId, number>>, expGain: number) {
+    const result = buildDirectEffect(petStateRef.current, deltas, expGain, new Date())
+    const beforeLevel = petStateRef.current.intimacyLevel
+    let finalPetState = result.petState
+
+    if (result.levelUp) {
+      const unlocks = getNewlyUnlockedRewards(beforeLevel, result.levelUp.level, finalPetState.unlockedRewardLevels)
+      finalPetState = {
+        ...finalPetState,
+        unlockedRewardLevels: [...finalPetState.unlockedRewardLevels, ...unlocks.map((u) => u.level)],
+      }
+      play('pet-level-up')
+      setLevelUpEvent({ key: Date.now(), level: result.levelUp.level, unlocks })
+      schedule(() => setLevelUpEvent(null), 4000)
+      playAnimation('jump')
+    }
+
+    setPetState(finalPetState)
+    savePetCareState(finalPetState)
+    showFloatingDeltas(result.deltas)
+  }
+
+  const cooldowns: Record<CareActionId, CooldownStatus> = Object.fromEntries(
+    ACTION_IDS.map((id) => [id, getCooldownStatus(petState.cooldowns, id, new Date())]),
+  ) as Record<CareActionId, CooldownStatus>
+
+  const attentionFlags: Record<CareActionId, boolean> = {
+    feed: petState.stats.satiety < ATTENTION_THRESHOLD.satiety && !cooldowns.feed.onCooldown,
+    shower: petState.stats.cleanliness < ATTENTION_THRESHOLD.cleanliness && !cooldowns.shower.onCooldown,
+    clean: roomState.cleanliness < ROOM_ATTENTION_THRESHOLD && !cooldowns.clean.onCooldown,
+    play: petState.stats.happiness < ATTENTION_THRESHOLD.happiness && !cooldowns.play.onCooldown,
+    pet: petState.stats.affection < ATTENTION_THRESHOLD.affection && !cooldowns.pet.onCooldown,
+    talk: (mood === 'lonely' || mood === 'sad') && !cooldowns.talk.onCooldown,
+  }
+
+  return {
+    petState,
+    roomState,
+    mood,
+    secondaryTags: secondaryTags as SecondaryTag[],
+    animation: animationOverride ?? idleAnimationForMood(mood),
+    /** True only while a real action/level-up override is playing — lets room-screen tell "genuinely reacting right now" apart from "just the idle/mood fallback" when composing with autonomy/gameReaction. */
+    reactionActive: animationOverride !== null,
+    speech,
+    floatingDeltas,
+    levelUpEvent,
+    isOverPetted,
+    lastUserActionAt,
+    expToNext: expRequiredForLevel(petState.intimacyLevel),
+    cooldowns,
+    attentionFlags,
+    performAction,
+    applyEffect,
+    /** Tap-to-dismiss support — lets room-screen close the bubble immediately instead of waiting out its auto-hide timer. */
+    dismissSpeech: () => setSpeech(null),
+  }
+}

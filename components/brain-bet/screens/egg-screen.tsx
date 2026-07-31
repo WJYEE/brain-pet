@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { AssetImage } from '@/components/brain-bet/asset-image'
 import { EggImage } from '@/components/brain-bet/egg-image'
 import { Logo } from '@/components/brain-bet/logo'
+import { useSound } from '@/hooks/use-sound'
 import type { PetProfile } from '@/lib/pets/pet-profile'
 import { cn } from '@/lib/utils'
 
@@ -56,17 +57,22 @@ export function EggScreen({ petProfile, onHatched }: EggScreenProps) {
   // (Focus/Spatial/Reasoning) in this codebase.
   const onHatchedRef = useRef(onHatched)
   onHatchedRef.current = onHatched
+  const { play } = useSound()
 
   useEffect(() => {
     const timers = [
       window.setTimeout(() => setStage('shaking'), 700),
       window.setTimeout(() => setStage('crack'), 1600),
       window.setTimeout(() => setStage('light'), 2300),
-      window.setTimeout(() => setStage('opening'), 3000),
+      window.setTimeout(() => {
+        setStage('opening')
+        play('pet-reveal')
+      }, 3000),
       window.setTimeout(() => setStage('revealed'), 3700),
       window.setTimeout(() => onHatchedRef.current(), 3700 + HATCH_REVEAL_HOLD_MS),
     ]
     return () => timers.forEach(window.clearTimeout)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount only, mirrors onHatchedRef's stale-closure-avoidance above
   }, [])
 
   const isRevealed = stage === 'revealed'

@@ -1,18 +1,16 @@
 /** Reasoning ("Pattern Reasoning") tuning constants — GAME_SPEC §74-84. */
-export const REASONING_GAME_VERSION = 'reasoning_v1'
+/** v2: gameScore reworked to difficultyWeightedAccuracy 75% + time 15% + timeout-solve-rate 10%, clamped 0-100 (was an unbounded ~800+-scale formula). */
+export const REASONING_GAME_VERSION = 'reasoning_v2'
 
 export const REASONING_LEVELS = [1, 2, 3, 4] as const
 
 /**
- * Real question count per Level — deliberately uneven rather than the
- * original uniform 2/2/2/2 (8 total), for the First Play length reduction.
- * Level 3 (not Level 4) gets the extra 2nd question: Level 4's Compound
- * Rule templates are the ones most likely to make a new player feel "왜 이게
- * 정답이지?" even after the earlier ambiguity-fix pass, so weighting toward
- * Level 3 (2-attribute, still easily justifiable) keeps the shortened
- * session from front-loading dropout risk onto its last question.
+ * Real question count per Level. Compressed three times now (First Play
+ * fatigue reduction): originally a uniform 2/2/2/2 (8 total), then 1/1/2/1,
+ * then 1/1/1/1 (4 total), and now 1/0/1/1 (3 total) — Level 2 dropped
+ * entirely as the step closest in difficulty to its neighbors.
  */
-export const REASONING_QUESTIONS_PER_LEVEL: Record<number, number> = { 1: 1, 2: 1, 3: 2, 4: 1 }
+export const REASONING_QUESTIONS_PER_LEVEL: Record<number, number> = { 1: 1, 2: 0, 3: 1, 4: 1 }
 export const REASONING_REAL_QUESTIONS = REASONING_LEVELS.reduce(
   (sum, level) => sum + REASONING_QUESTIONS_PER_LEVEL[level],
   0,
@@ -56,21 +54,27 @@ export const REASONING_FEEDBACK_MS = 1400
 export const REASONING_TUTORIAL_TRANSITION_MS = 1100
 
 /**
- * Reasoning Game Score — internal only, draft formula (GAME_SPEC §128 rule 14).
- * Never shown to the user, never used for Percentile/Ranking yet.
+ * Reasoning Game Score — normalizedScore = difficultyWeightedAccuracy 75% +
+ * 반응속도 15% + 제한시간 내 해결률 10%, clampScore 0-100. 우선순위: 난이도
+ * 가중 정확도 > 반응속도 > 제한시간 내 해결률.
  *
- * Priority is Accuracy > Difficulty > Speed: difficultyWeightedAccuracy is
- * the dominant term (getting harder Levels right is worth more). No separate
- * Compound Rule bonus is added — Level 3/4's higher difficulty weight already
- * reflects that tier's accuracy more heavily, so a second bonus term would
- * double-count the same signal. responseTime/timeouts are small,
- * conservative deductions so a "guess fast" strategy is never favorable.
+ * 숫자 규칙(lib/scoring/number-pattern.ts)의 hardCorrect/hardTotal 같은
+ * 고난도 보너스를 여기 그대로 가져오지 않는다 — difficultyWeightedAccuracy가
+ * 이미 REASONING_DIFFICULTY_WEIGHTS로 Level별 난이도를 반영하고 있어서,
+ * "고난도 정답 보너스"를 또 추가하면 같은 신호(어려운 문제를 맞혔다)가
+ * 두 번 반영된다. 숫자 규칙은 반대로 난이도 가중 정확도 자체가 없는
+ * 게임이라 hardCorrect/hardTotal이 유일한 난이도 반영 수단이므로 그
+ * 게임에서는 유지한다.
  */
 export const REASONING_SCORE_WEIGHTS = {
   /** difficultyWeightedAccuracy (0-1) × this — the dominant term. */
-  difficultyWeightedAccuracyScale: 800,
-  /** averageResponseTimeMs × this, subtracted — deliberately conservative. */
-  speedPenalty: 0.003,
-  /** Flat points subtracted per timed-out question. */
-  timeoutPenalty: 20,
+  accuracyWeight: 75,
+  /** timeScore(0-1, scoreFromReactionTime 결과) × this. */
+  timeWeight: 15,
+  /** timeoutScore(0-1, 시간초과 안 한 비율) × this. */
+  timeoutWeight: 10,
 }
+
+/** averageResponseTimeMs가 이 값 이하면 만점, 이 값 이상이면 timeScore 0점 — REASONING_TIME_LIMIT_MS(레벨별 10000~18000ms)의 가중평균(~14000ms)을 기준으로 잡은 구간. */
+export const REASONING_TIME_SCORE_BEST_MS = 4000
+export const REASONING_TIME_SCORE_WORST_MS = 13000

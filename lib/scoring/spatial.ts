@@ -1,7 +1,19 @@
 import type { RawRecord } from '@/lib/brain-bet'
-import { SPATIAL_DIFFICULTY_WEIGHTS, SPATIAL_SCORE_WEIGHTS } from '@/lib/config/spatial.config'
-import type { SpatialRawSummary, SpatialTrial } from '@/lib/game/types'
+import {
+  SPATIAL_DIFFICULTY_WEIGHTS,
+  SPATIAL_SCORE_WEIGHTS,
+  SPATIAL_TIME_SCORE_BEST_MS,
+  SPATIAL_TIME_SCORE_WORST_MS,
+} from '@/lib/config/spatial.config'
+import type { InputType, SpatialRawSummary, SpatialTrial } from '@/lib/game/types'
+import { clampScore, normalizeForInput, scoreFromReactionTime } from '@/lib/scoring/shared'
 
+/**
+ * "회전 도형 찾기" — 공간감각 스탯의 두 게임 중 공간 인지 능력(주어진 도형이
+ * 회전했을 때 같은 모양이 되는 조각을 즉시 알아보는 능력)을 측정하는 쪽.
+ * 짝인 "퍼즐 끼우기"(lib/scoring/fit-puzzle.ts)는 공간 구성 능력(조각들을
+ * 올바른 위치·방향으로 조합해 전체를 완성하는 능력)을 측정한다.
+ */
 /** Summarizes a completed 8-question Spatial session into the aggregate fields GAME_SPEC §70-72 lists. */
 export function summarizeSpatialTrials(trials: SpatialTrial[]): SpatialRawSummary {
   const totalQuestions = trials.length
@@ -45,47 +57,28 @@ export function summarizeSpatialTrials(trials: SpatialTrial[]): SpatialRawSummar
 }
 
 /**
- * Spatial Game Score — internal only. See lib/config/spatial.config.ts for
- * the weight rationale: difficultyWeightedAccuracy dominates (Accuracy >
- * Difficulty), mirrorAccuracy is a small bonus (not a penalty — a missed
- * Mirror question already lowers difficultyWeightedAccuracy), and
- * responseTime/timeouts are small, conservative deductions (> Speed last).
+ * Spatial Game Score — 정확도 60% + 거울상 정확도 20% + 반응속도 15% +
+ * Timeout 5%, clampScore 0-100. mirrorAccuracy가 0인 경우(mirrorQuestions=0,
+ * 세션이 비정상 종료돼 Level 3-4에 도달 못한 극단적 케이스)는 판단력의
+ * switch/conflictAccuracy와 같은 이유로 현재는 0으로 처리 — 실제 플레이로
+ * 테스트하며 조정.
  */
-export function calculateSpatialScore(summary: SpatialRawSummary): number {
-  const { difficultyWeightedAccuracyScale, mirrorAccuracyBonus, speedPenalty, timeoutPenalty } = SPATIAL_SCORE_WEIGHTS
+export function calculateSpatialScore(summary: SpatialRawSummary, inputType: InputType): number {
+  const { accuracyWeight, mirrorWeight, timeWeight, timeoutWeight } = SPATIAL_SCORE_WEIGHTS
+  const timeScore =
+    scoreFromReactionTime(
+      normalizeForInput(summary.averageResponseTimeMs, inputType),
+      SPATIAL_TIME_SCORE_BEST_MS,
+      SPATIAL_TIME_SCORE_WORST_MS,
+    ) / 100
+  const timeoutScore = summary.totalQuestions > 0 ? 1 - summary.timeoutCount / summary.totalQuestions : 1
 
-  return Math.round(
-    summary.difficultyWeightedAccuracy * difficultyWeightedAccuracyScale +
-      summary.mirrorAccuracy * mirrorAccuracyBonus -
-      summary.averageResponseTimeMs * speedPenalty -
-      summary.timeoutCount * timeoutPenalty,
+  return clampScore(
+    summary.difficultyWeightedAccuracy * accuracyWeight +
+      summary.mirrorAccuracy * mirrorWeight +
+      timeScore * timeWeight +
+      timeoutScore * timeoutWeight,
   )
-}
-
-/**
- * Spatial Personal Best ranking: higher Difficulty-weighted Accuracy wins;
- * ties broken by higher Mirror Accuracy, then higher Overall Accuracy, then
- * faster Average Response Time. Mirror Accuracy is skipped as a tie-break
- * whenever either session has zero Mirror Questions (a degenerate/partial
- * session) — comparing a real 0/0 rate would distort the ranking, and a
- * normal completed Real session always has Level 3-4 Mirror questions.
- */
-export function isBetterSpatialResult(
-  candidate: { rawSummary: SpatialRawSummary },
-  current: { rawSummary: SpatialRawSummary } | null,
-): boolean {
-  if (!current) return true
-  if (candidate.rawSummary.difficultyWeightedAccuracy !== current.rawSummary.difficultyWeightedAccuracy) {
-    return candidate.rawSummary.difficultyWeightedAccuracy > current.rawSummary.difficultyWeightedAccuracy
-  }
-  const bothHaveMirrorQuestions = candidate.rawSummary.mirrorQuestions > 0 && current.rawSummary.mirrorQuestions > 0
-  if (bothHaveMirrorQuestions && candidate.rawSummary.mirrorAccuracy !== current.rawSummary.mirrorAccuracy) {
-    return candidate.rawSummary.mirrorAccuracy > current.rawSummary.mirrorAccuracy
-  }
-  if (candidate.rawSummary.overallAccuracy !== current.rawSummary.overallAccuracy) {
-    return candidate.rawSummary.overallAccuracy > current.rawSummary.overallAccuracy
-  }
-  return candidate.rawSummary.averageResponseTimeMs < current.rawSummary.averageResponseTimeMs
 }
 
 /** Formats the raw summary into the display RawRecord — "X/Y correct" matches the format already used in 기획.md/MVP_SCOPE.md/DEVELOPMENT_PLAN.md. */

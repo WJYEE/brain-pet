@@ -42,6 +42,7 @@ import type {
 } from '@/lib/game/types'
 import { calculateJudgmentScore, summarizeJudgmentTrials } from '@/lib/scoring/judgment'
 import { cn } from '@/lib/utils'
+import { useSound } from '@/hooks/use-sound'
 
 type AppStage = 'intro' | 'tutorial' | 'playing' | 'finished'
 
@@ -211,15 +212,18 @@ function withViewTransition(update: () => void) {
  * Attack rework. A continuous horizontal queue of Blocks is always visible;
  * the player clears the current (leftmost, highlighted) Block by choosing
  * Left/Down/Right, the queue shifts immediately (no blocking per-trial
- * feedback screen), and the rule changes every segment's Block count (see
- * getSegmentConfig — shorter for the early eased segments, JUDGMENT_SEGMENT_LENGTH
- * once full difficulty is reached). Each rule segment shuffles a fresh Left/Down/Right
- * mapping (held fixed for that whole segment) so the direction can't be
- * memorized by button position — only actually read off the Rule Banner.
- * The whole session runs against one global JUDGMENT_GAME_DURATION_MS timer.
+ * feedback screen). The rule switches exactly once, partway through the
+ * session (see getSegmentConfig); every segment boundary — before and after
+ * that one switch — still reshuffles a fresh Left/Down/Right mapping (held
+ * fixed for that whole segment) so the direction can't be memorized by
+ * button position — only actually read off the Rule Banner. Segment length
+ * is shorter for the early eased segments, JUDGMENT_SEGMENT_LENGTH once full
+ * difficulty is reached. The whole session runs against one global
+ * JUDGMENT_GAME_DURATION_MS timer.
  */
 export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
   const stat = STATS.judgment
+  const { play } = useSound()
 
   const [appStage, setAppStage] = useState<AppStage>('intro')
   const [queue, setQueue] = useState<QueueBlock[]>([])
@@ -288,6 +292,7 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
   }
 
   const beginTutorial = () => {
+    play('game-start')
     clearScheduled()
     setAppStage('tutorial')
     setQueue(buildTutorialBlocks())
@@ -327,6 +332,7 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
 
     const correctAnswer = computeJudgmentAnswerForMapping(current.ruleMapping, current.stimulus)
     const isCorrect = correctAnswer !== null && answer === correctAnswer
+    play(isCorrect ? 'answer-correct' : 'answer-wrong-soft')
     const responseTimeMs = Math.round(performance.now() - blockShownAtRef.current)
 
     setExitingBlock({
@@ -411,12 +417,23 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
 
     const upcoming = filled[0]
     if (upcoming && upcoming.segmentIndex !== current.segmentIndex) {
+      // The rule itself only ever changes once (segment 0 → 1) — later
+      // segment boundaries (2 → 3, 3 → 4, ...) reshuffle the mapping but keep
+      // the same rule and choiceCount, so no overlay interrupts play for
+      // those; the live Rule Banner already shows the fresh mapping.
+      const ruleChanged = upcoming.ruleId !== current.ruleId
       const choiceCountChanged = upcoming.choiceCount !== current.choiceCount
-      setIsRuleChanging(true)
-      setUpcomingMapping(upcoming.ruleMapping)
-      setRuleChangeMessage(choiceCountChanged ? '규칙이 바뀌었어요! 선택지가 하나 더 늘어났어요!' : '규칙이 바뀌었어요!')
-      const overlayMs = choiceCountChanged ? JUDGMENT_THIRD_OPTION_INTRO_MS : JUDGMENT_RULE_SWITCH_OVERLAY_MS
-      schedule(() => setIsRuleChanging(false), overlayMs)
+      if (ruleChanged || choiceCountChanged) {
+        setIsRuleChanging(true)
+        setUpcomingMapping(upcoming.ruleMapping)
+        setRuleChangeMessage(
+          ruleChanged
+            ? '규칙이 바뀌었어요!'
+            : '선택지가 하나 더 늘어났어요!',
+        )
+        const overlayMs = choiceCountChanged ? JUDGMENT_THIRD_OPTION_INTRO_MS : JUDGMENT_RULE_SWITCH_OVERLAY_MS
+        schedule(() => setIsRuleChanging(false), overlayMs)
+      }
     }
   }
 
@@ -510,6 +527,7 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
       {appStage === 'intro' ? (
         <button
           type="button"
+          data-sfx-skip
           onClick={beginTutorial}
           className="mt-5 flex flex-1 flex-col items-center justify-center gap-5 rounded-3xl bg-card px-6 py-12 text-center toy-border toy-shadow-lg transition-colors duration-150"
         >

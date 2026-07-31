@@ -1,6 +1,12 @@
 import type { RawRecord } from '@/lib/brain-bet'
-import { JUDGMENT_GAME_DURATION_MS, JUDGMENT_SCORE_WEIGHTS } from '@/lib/config/judgment.config'
+import {
+  JUDGMENT_GAME_DURATION_MS,
+  JUDGMENT_SCORE_WEIGHTS,
+  JUDGMENT_THROUGHPUT_MAX_BLOCKS,
+  JUDGMENT_THROUGHPUT_MIN_BLOCKS,
+} from '@/lib/config/judgment.config'
 import type { JudgmentRawSummary, JudgmentTrial } from '@/lib/game/types'
+import { clampScore, normalizeUpward } from '@/lib/scoring/shared'
 
 function accuracyOf(set: JudgmentTrial[]): number {
   return set.length === 0 ? 0 : set.filter((t) => t.isCorrect).length / set.length
@@ -68,47 +74,26 @@ export function summarizeJudgmentTrials(trials: JudgmentTrial[], elapsedMs: numb
 }
 
 /**
- * Judgment Time Attack Score — internal only. See lib/config/judgment.config.ts
- * for the full weight rationale: correctBlocks is scaled by overallAccuracy
- * (the dominant, accuracy-gated throughput term, with no separate speed term
- * since throughput already implies speed), wrongBlocks is a flat penalty, and
- * switch/conflict accuracy are small bonuses layered on top.
+ * Judgment Time Attack Score — see lib/config/judgment.config.ts for the full
+ * weight rationale. overallAccuracy dominates (60%), switchAccuracy and
+ * conflictAccuracy (Judgment's two signature sub-skills) each get 15%, and
+ * throughput (correctBlocks normalized against a realistic session range)
+ * gets the smallest share (10%) since it's ranked last in the stated
+ * priority. Note: switchAccuracy/conflictAccuracy read 0 when their trial set
+ * is empty (e.g. an extremely slow session that never reaches a rule switch)
+ * — worth watching during testing since that's a real edge case, not just a
+ * safe default.
  */
 export function calculateJudgmentScore(summary: JudgmentRawSummary): number {
-  const { correctBlockValue, wrongBlockPenalty, switchAccuracyBonus, conflictAccuracyBonus } = JUDGMENT_SCORE_WEIGHTS
+  const { accuracyWeight, switchWeight, conflictWeight, throughputWeight } = JUDGMENT_SCORE_WEIGHTS
+  const throughputScore = normalizeUpward(summary.correctBlocks, JUDGMENT_THROUGHPUT_MIN_BLOCKS, JUDGMENT_THROUGHPUT_MAX_BLOCKS)
 
-  return Math.round(
-    summary.correctBlocks * summary.overallAccuracy * correctBlockValue -
-      summary.wrongBlocks * wrongBlockPenalty +
-      summary.switchAccuracy * switchAccuracyBonus +
-      summary.conflictAccuracy * conflictAccuracyBonus,
+  return clampScore(
+    summary.overallAccuracy * accuracyWeight +
+      summary.switchAccuracy * switchWeight +
+      summary.conflictAccuracy * conflictWeight +
+      throughputScore * throughputWeight,
   )
-}
-
-/**
- * Judgment Personal Best ranking — priority is Accuracy > Rule Switch
- * Adaptation > Speed: higher Overall Accuracy wins; ties broken by higher
- * Switch Accuracy, then higher Conflict Accuracy, then more Correct Blocks
- * (higher accuracy-gated throughput), then faster Average Response Time.
- */
-export function isBetterJudgmentResult(
-  candidate: { rawSummary: JudgmentRawSummary },
-  current: { rawSummary: JudgmentRawSummary } | null,
-): boolean {
-  if (!current) return true
-  if (candidate.rawSummary.overallAccuracy !== current.rawSummary.overallAccuracy) {
-    return candidate.rawSummary.overallAccuracy > current.rawSummary.overallAccuracy
-  }
-  if (candidate.rawSummary.switchAccuracy !== current.rawSummary.switchAccuracy) {
-    return candidate.rawSummary.switchAccuracy > current.rawSummary.switchAccuracy
-  }
-  if (candidate.rawSummary.conflictAccuracy !== current.rawSummary.conflictAccuracy) {
-    return candidate.rawSummary.conflictAccuracy > current.rawSummary.conflictAccuracy
-  }
-  if (candidate.rawSummary.correctBlocks !== current.rawSummary.correctBlocks) {
-    return candidate.rawSummary.correctBlocks > current.rawSummary.correctBlocks
-  }
-  return candidate.rawSummary.averageResponseTimeMs < current.rawSummary.averageResponseTimeMs
 }
 
 /** Formats the raw summary into the display RawRecord — never invents a "pts" unit (GAME_SPEC §3-5), never overstates as a scientific claim. */

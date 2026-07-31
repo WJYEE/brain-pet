@@ -3,6 +3,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
 import { Baloo_2, Nunito } from 'next/font/google'
 import { AppToastProvider } from '@/components/brain-bet/toast-provider'
+import { AudioProvider } from '@/components/brain-bet/audio-provider'
 import './globals.css'
 
 const baloo = Baloo_2({
@@ -87,7 +88,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`bg-background ${baloo.variable} ${nunito.variable}`}>
       <body className="antialiased">
-        <AppToastProvider>{children}</AppToastProvider>
+        <AppToastProvider>
+          <AudioProvider>{children}</AudioProvider>
+        </AppToastProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
         {process.env.NODE_ENV === 'production' && <SpeedInsights />}
       </body>

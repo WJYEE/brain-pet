@@ -1,6 +1,19 @@
 import type { StatId } from '@/lib/brain-bet'
 
-const STORAGE_KEY = 'statling.petProfile.v1'
+/**
+ * v2: `finals`(initialFinals/latestFinals) stopped being a random mock
+ * (Math.round(48+Math.random()*47)) and now holds real per-stat gameScore
+ * (see game-flow.tsx). The stored shape is identical — still
+ * Record<StatId, number> — so there's nothing to structurally migrate, but
+ * a v1 record's numbers are semantically meaningless under the new system
+ * (random, not derived from any actual play). Bumping the key is a clean,
+ * non-destructive reset: old v1 data is simply abandoned in localStorage
+ * (never read, never deleted) and every browser starts fresh on v2. Chosen
+ * over a real migration because there is no way to recover what a v1
+ * profile's *real* stats would have been — the source data (actual
+ * gameplay) was never captured in the first place.
+ */
+const STORAGE_KEY = 'statling.petProfile.v2'
 
 /** Initial reveal + up to 2 rerolls = 3 pets seen total, all from the same top-5 similarity pool. */
 export const MAX_REROLLS = 2

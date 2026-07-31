@@ -1,6 +1,7 @@
 import type { RawRecord } from '@/lib/brain-bet'
 import { MEMORY_DIFFICULTY_ACCURACY_WEIGHTS, MEMORY_WRONG_TIME_PENALTY_MS } from '@/lib/config/memory.config'
-import type { MemoryRawSummary, MemoryRoundTrial } from '@/lib/game/types'
+import type { InputType, MemoryRawSummary, MemoryRoundTrial } from '@/lib/game/types'
+import { clampScore, normalizeForInput, scoreFromReactionTime } from '@/lib/scoring/shared'
 
 export function computeRoundAccuracy(round: MemoryRoundTrial): number {
   return round.targetCount === 0 ? 0 : round.correctSelections / round.targetCount
@@ -41,58 +42,35 @@ export function summarizeMemoryRounds(rounds: MemoryRoundTrial[]): MemoryRawSumm
 }
 
 /**
- * Memory Game Score — internal only, draft formula (GAME_SPEC §128 rule 14:
- * "정확한 Score Formula는 실제 테스트 및 데이터 확보 후 보정 가능하도록 구성").
- * Never shown to the user, never used for Percentile/Ranking yet. Priority is
- * Accuracy > Difficulty > Speed: weightedAccuracy (which already leans toward
- * harder rounds) dominates, perfect rounds get a small difficulty-scaled
- * bonus, and speed is only a minor deduction. Weights are constants so
- * they're easy to retune once real usage data exists.
+ * Memory Game Score — normalizedScore = weightedAccuracy 85% + 응답속도
+ * 15%(clampScore 0-100), 이야기 기억·순발력과 같은 "핵심 능력 지배적" 원칙.
+ * perfectRounds 보너스는 weightedAccuracy와 신호가 겹쳐(완벽한 라운드는 이미
+ * accuracy 1.0으로 반영됨) 점수에서 제외하고 raw record 표시용으로만 남긴다.
+ * bestMs/worstMs(2500/9000)는 실제 클릭 메커니즘 기준: 라운드당 targetCount만큼
+ * (4→9개) 클릭해야 라운드가 끝나므로, 클릭당 400~1500ms를 근거로 잡은 값 —
+ * 라운드 수(4)가 줄어도 한 라운드의 targetCount 범위(4~9개)는 그대로라 이
+ * 구간 자체는 영향받지 않음 — 실측 데이터가 쌓이면 재조정.
  */
 export const MEMORY_SCORE_WEIGHTS = {
   /** weightedAccuracy (0-1) × this — the dominant term. */
-  accuracyScale: 1000,
-  /** Added per perfect round, so acing harder rounds counts a bit more. */
-  perfectRoundBonus: 15,
-  /**
-   * averageResponseTimeMs × this, subtracted — a small supplementary factor.
-   * Lowered from 0.05 after the difficulty increase (up to 9 targets/round
-   * means naturally longer response times): at 0.05 a slow-but-perfect
-   * session could score below a faster session with a genuine miss, which
-   * breaks the intended Accuracy > Difficulty > Speed priority. At 0.002 the
-   * speed term stays clearly minor even for slow sessions (~10s average).
-   */
-  speedPenalty: 0.002,
+  accuracyWeight: 85,
+  /** speedScore(0-1, scoreFromReactionTime 결과) × this. */
+  speedWeight: 15,
 }
 
-export function calculateMemoryScore(summary: MemoryRawSummary): number {
-  const { accuracyScale, perfectRoundBonus, speedPenalty } = MEMORY_SCORE_WEIGHTS
-  return Math.round(
-    summary.weightedAccuracy * accuracyScale +
-      summary.perfectRounds * perfectRoundBonus -
-      summary.averageAdjustedResponseTimeMs * speedPenalty,
-  )
-}
+export const MEMORY_SPEED_BEST_MS = 2500
+export const MEMORY_SPEED_WORST_MS = 9000
 
-/**
- * Memory Personal Best ranking: higher Weighted Accuracy wins; ties broken by
- * more Perfect Rounds, then by faster Adjusted Average Response Time (which
- * already includes the wrong-click time penalty). `roundsCompleted` is
- * intentionally NOT part of this comparison — every normal completion
- * finishes all 6 rounds, so it carries no differentiating signal.
- */
-export function isBetterMemoryResult(
-  candidate: { rawSummary: MemoryRawSummary },
-  current: { rawSummary: MemoryRawSummary } | null,
-): boolean {
-  if (!current) return true
-  if (candidate.rawSummary.weightedAccuracy !== current.rawSummary.weightedAccuracy) {
-    return candidate.rawSummary.weightedAccuracy > current.rawSummary.weightedAccuracy
-  }
-  if (candidate.rawSummary.perfectRounds !== current.rawSummary.perfectRounds) {
-    return candidate.rawSummary.perfectRounds > current.rawSummary.perfectRounds
-  }
-  return candidate.rawSummary.averageAdjustedResponseTimeMs < current.rawSummary.averageAdjustedResponseTimeMs
+/** `inputType` (see lib/game/device.ts#detectDevice) normalizes the measured ms for touch's inherent input latency before scoring — never applied to the raw displayed record. */
+export function calculateMemoryScore(summary: MemoryRawSummary, inputType: InputType): number {
+  const { accuracyWeight, speedWeight } = MEMORY_SCORE_WEIGHTS
+  const speedScore =
+    scoreFromReactionTime(
+      normalizeForInput(summary.averageAdjustedResponseTimeMs, inputType),
+      MEMORY_SPEED_BEST_MS,
+      MEMORY_SPEED_WORST_MS,
+    ) / 100
+  return clampScore(summary.weightedAccuracy * accuracyWeight + speedScore * speedWeight)
 }
 
 /** Formats the raw summary into the display RawRecord — never invents a "pts" unit (GAME_SPEC §3-5). */

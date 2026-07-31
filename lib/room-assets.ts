@@ -44,12 +44,19 @@ export const ROOM_ASSETS: Record<string, RoomAsset> = {
     naturalWidth: 724,
     naturalHeight: 724,
   },
+  // naturalWidth normalized to match wood-background's 724 (source file is
+  // 727x724, a 0.4% difference) — both are rendered into an identical square
+  // Room Stage via object-fit: cover regardless, so this only removes a
+  // spurious discrepancy in the catalog metadata itself. Note: the two
+  // background *illustrations* still have a genuinely different wall/floor
+  // split (green's wall band + hanging vines run taller than wood's) — that
+  // is real art content, not something this metadata field controls.
   'green-background': {
     id: 'green-background',
     name: '그린 배경',
     category: 'background',
     src: `${ROOM_BASE}/backgrounds/green_back-Photoroom.png`,
-    naturalWidth: 727,
+    naturalWidth: 724,
     naturalHeight: 724,
   },
 

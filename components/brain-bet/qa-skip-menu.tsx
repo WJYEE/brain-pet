@@ -1,5 +1,6 @@
 'use client'
 
+import { TESTER_CHARACTER_FOLDERS } from '@/lib/character-state-assets'
 import { MOCK_STAT_PRESETS, type MockStatPreset } from '@/lib/game/mock-finals'
 
 const PRESET_LABEL: Record<MockStatPreset, string> = {
@@ -17,6 +18,13 @@ interface QaSkipMenuProps {
   onSkip: (preset: MockStatPreset) => void
   /** Dev-only "대표 펫 초기화" — wipes the stored representative-pet record (confirmed or not) so the next Skip/playthrough starts completely fresh. */
   onReset: () => void
+  /**
+   * Dev/QA only — which TESTER_CHARACTER_FOLDERS entry (if any) is pinned as
+   * the Room character right now, so every 24-state asset can be checked
+   * against real interactions. See pet-mood-view.tsx.
+   */
+  testerFolderId: string | null
+  onToggleTesterFolder: (folderId: string) => void
 }
 
 /**
@@ -28,7 +36,7 @@ interface QaSkipMenuProps {
  * click with no confirmation dialog, since visibility is already gated to
  * dev/QA builds only.
  */
-export function QaSkipMenu({ onSkip, onReset }: QaSkipMenuProps) {
+export function QaSkipMenu({ onSkip, onReset, testerFolderId, onToggleTesterFolder }: QaSkipMenuProps) {
   return (
     <details className="fixed right-3 top-3 z-50 select-none">
       <summary
@@ -57,6 +65,34 @@ export function QaSkipMenu({ onSkip, onReset }: QaSkipMenuProps) {
         >
           대표 펫 초기화
         </button>
+
+        {TESTER_CHARACTER_FOLDERS.length > 0 && (
+          <>
+            <div className="my-0.5 h-px bg-border" />
+            <p className="px-2 pt-0.5 text-[9px] font-bold uppercase tracking-wide text-muted-foreground">
+              테스터 · 우리 방에서만 동작
+            </p>
+            {TESTER_CHARACTER_FOLDERS.map((folder) => {
+              const active = testerFolderId === folder.folderId
+              return (
+                <button
+                  key={folder.folderId}
+                  type="button"
+                  onClick={() => onToggleTesterFolder(folder.folderId)}
+                  title="우리 방 캐릭터를 이 폴더의 24개 에셋으로 고정합니다. 클릭하면 다시 해제됩니다."
+                  className={
+                    active
+                      ? 'rounded-lg bg-primary px-2 py-1 text-left text-[11px] font-bold text-primary-foreground'
+                      : 'rounded-lg px-2 py-1 text-left text-[11px] font-semibold text-foreground hover:bg-secondary'
+                  }
+                >
+                  {active ? '✓ ' : ''}
+                  {folder.displayName}
+                </button>
+              )
+            })}
+          </>
+        )}
       </div>
     </details>
   )

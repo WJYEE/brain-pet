@@ -14,8 +14,10 @@ import {
   REACTION_TRIAL_FEEDBACK_MS,
 } from '@/lib/config/reaction.config'
 import { calculateReactionScore, summarizeReactionTrials } from '@/lib/scoring/reaction'
+import { detectDevice } from '@/lib/game/device'
 import type { ReactionRawSummary, ReactionTrial } from '@/lib/game/types'
 import { cn } from '@/lib/utils'
+import { useSound } from '@/hooks/use-sound'
 
 type Stage = 'intro' | 'waiting' | 'target' | 'feedback'
 type Round = 'practice' | 'real'
@@ -89,6 +91,7 @@ export function recordFeedbackSubline(feedback: RecordFeedback): string {
  */
 export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
   const stat = STATS.reaction
+  const { play } = useSound()
 
   const [stage, setStage] = useState<Stage>('intro')
   const [round, setRound] = useState<Round>('practice')
@@ -127,6 +130,7 @@ export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
   }, [])
 
   const startGame = () => {
+    play('game-start')
     setRound('practice')
     setTrials([])
     setSessionFastestReactionMs(null)
@@ -202,7 +206,7 @@ export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
       const validCount = updatedTrials.filter((t) => !t.isFalseStart).length
       if (validCount >= REACTION_REAL_TRIALS) {
         const rawSummary = summarizeReactionTrials(updatedTrials)
-        const gameScore = calculateReactionScore(rawSummary)
+        const gameScore = calculateReactionScore(rawSummary, detectDevice().inputType)
         setStage('feedback')
         setMessage('측정이 끝났어요!')
         onComplete({ trials: updatedTrials, rawSummary, gameScore })
@@ -269,6 +273,7 @@ export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
       {/* interactive game area */}
       <button
         type="button"
+        data-sfx-skip
         onClick={stage === 'intro' ? startGame : handleTap}
         className={cn(
           'mt-5 flex flex-1 flex-col items-center justify-center gap-5 rounded-3xl px-6 py-12 text-center toy-border toy-shadow-lg transition-colors duration-150',

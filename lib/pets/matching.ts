@@ -1,7 +1,7 @@
 import { STAT_DISPLAY_ORDER, type StatId } from '@/lib/brain-bet'
 import type { PetProfile, StatVector } from '@/lib/pets/pet-profile'
 
-/** Final Stat values are on a 0–100 scale (see StatResult in brain-bet.ts) — normalize to 0–1 so they're directly comparable to a PetProfile.vector. */
+/** Final Stat values are on a 0–100 scale (real per-stat gameScore, see game-flow.tsx) — normalize to 0–1 so they're directly comparable to a PetProfile.vector. */
 const STAT_SCALE_MAX = 100
 
 function clamp01(value: number): number {

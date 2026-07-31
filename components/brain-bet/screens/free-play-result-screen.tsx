@@ -1,8 +1,10 @@
 'use client'
 
+import { useEffect } from 'react'
 import { ArrowRight, Trophy } from 'lucide-react'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { ToyButton } from '@/components/brain-bet/toy-button'
+import { useSound } from '@/hooks/use-sound'
 import { STATS, type RawRecord, type StatId } from '@/lib/brain-bet'
 
 interface FreePlayResultScreenProps {
@@ -28,6 +30,12 @@ export function FreePlayResultScreen({
   onReturnToRoom,
 }: FreePlayResultScreenProps) {
   const stat = STATS[statId]
+  const { play } = useSound()
+
+  useEffect(() => {
+    play('game-complete')
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire exactly once per mount
+  }, [])
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-10 text-center">

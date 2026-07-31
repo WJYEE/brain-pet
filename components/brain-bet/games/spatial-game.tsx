@@ -12,6 +12,7 @@ import {
   SPATIAL_TIME_LIMIT_MS,
   SPATIAL_TUTORIAL_TRANSITION_MS,
 } from '@/lib/config/spatial.config'
+import { detectDevice } from '@/lib/game/device'
 import {
   buildTutorialQuestion1,
   buildTutorialQuestion2,
@@ -21,9 +22,10 @@ import {
 import type { SpatialRawSummary, SpatialTrial } from '@/lib/game/types'
 import { calculateSpatialScore, summarizeSpatialTrials } from '@/lib/scoring/spatial'
 import { cn } from '@/lib/utils'
+import { useSound } from '@/hooks/use-sound'
 
 type Stage = 'intro' | 'playing' | 'feedback'
-type Round = 'tutorial-1' | 'tutorial-2' | 'real'
+type Round = 'tutorial-1' | 'real'
 
 interface SpatialGameProps {
   index: number
@@ -53,8 +55,9 @@ type QuestionOutcome = { kind: 'option'; optionIndex: number } | { kind: 'timeou
  * shape → + Mirror → + a very similar structural distractor). Each question
  * has its own time limit (shorter at higher Levels) rather than one global
  * timer — the skill being measured is accurate rotation, not throughput.
- * Tutorial (2, discarded — one plain rotation, one with a Mirror option)
- * then SPATIAL_REAL_QUESTIONS fixed-difficulty questions.
+ * Tutorial (1, discarded, plain rotation only — the Mirror trap is explained
+ * via the transition message instead of a second practice question) then
+ * SPATIAL_REAL_QUESTIONS fixed-difficulty questions.
  *
  * Option click / Timeout both resolve through the single `resolveQuestion`
  * below, which reads the question's context from refs (not from React state
@@ -67,6 +70,7 @@ type QuestionOutcome = { kind: 'option'; optionIndex: number } | { kind: 'timeou
  */
 export function SpatialGame({ index, mode, onComplete }: SpatialGameProps) {
   const stat = STATS.spatial
+  const { play } = useSound()
 
   const [stage, setStage] = useState<Stage>('intro')
   const [round, setRound] = useState<Round>('tutorial-1')
@@ -115,11 +119,7 @@ export function SpatialGame({ index, mode, onComplete }: SpatialGameProps) {
     hasResolvedRef.current = false
 
     const question =
-      nextRound === 'tutorial-1'
-        ? buildTutorialQuestion1()
-        : nextRound === 'tutorial-2'
-          ? buildTutorialQuestion2()
-          : realQuestionsRef.current[nextRealIndex]
+      nextRound === 'tutorial-1' ? buildTutorialQuestion1() : realQuestionsRef.current[nextRealIndex]
 
     const limit = nextRound === 'real' ? SPATIAL_TIME_LIMIT_MS[question.difficultyLevel] : null
     const startedAt = performance.now()
@@ -160,6 +160,7 @@ export function SpatialGame({ index, mode, onComplete }: SpatialGameProps) {
       ? (timeLimitMsRef.current ?? 0)
       : Math.round(performance.now() - questionStartedAtRef.current)
     const isCorrect = !timedOut && selectedOptionIndex === question.correctOptionIndex
+    play(isCorrect ? 'answer-correct' : 'answer-wrong-soft')
 
     setStage('feedback')
     setLastOutcome({ selectedOptionIndex, isCorrect, timedOut })
@@ -169,15 +170,7 @@ export function SpatialGame({ index, mode, onComplete }: SpatialGameProps) {
 
     if (currentRound === 'tutorial-1') {
       schedule(() => {
-        setMessage('이번엔 뒤집힌 조각이 섞인 경우를 볼게요.')
-        schedule(() => beginQuestion('tutorial-2', 0), SPATIAL_TUTORIAL_TRANSITION_MS)
-      }, SPATIAL_FEEDBACK_MS)
-      return
-    }
-
-    if (currentRound === 'tutorial-2') {
-      schedule(() => {
-        setMessage('튜토리얼 완료! 이제 실전을 시작할게요.')
+        setMessage('좌우가 뒤집힌 조각은 돌려도 같은 모양이 되지 않아요. 이제 실전을 시작할게요.')
         schedule(() => beginQuestion('real', 0), SPATIAL_TUTORIAL_TRANSITION_MS)
       }, SPATIAL_FEEDBACK_MS)
       return
@@ -210,7 +203,7 @@ export function SpatialGame({ index, mode, onComplete }: SpatialGameProps) {
 
     if (updated.length >= SPATIAL_REAL_QUESTIONS) {
       const rawSummary = summarizeSpatialTrials(updated)
-      const gameScore = calculateSpatialScore(rawSummary)
+      const gameScore = calculateSpatialScore(rawSummary, detectDevice().inputType)
       schedule(() => onComplete({ trials: updated, rawSummary, gameScore }), SPATIAL_FEEDBACK_MS)
       return
     }
@@ -221,6 +214,7 @@ export function SpatialGame({ index, mode, onComplete }: SpatialGameProps) {
   }
 
   const startGame = () => {
+    play('game-start')
     clearScheduled()
     realQuestionsRef.current = generateSpatialSession()
     trialsRef.current = []
@@ -243,12 +237,7 @@ export function SpatialGame({ index, mode, onComplete }: SpatialGameProps) {
 
   const gaugePercent = timeLimitMs == null ? 100 : Math.max(0, Math.min(100, (remainingMs / timeLimitMs) * 100))
   const gaugeCritical = timeLimitMs != null && gaugePercent < 25
-  const tutorialHint =
-    round === 'tutorial-1'
-      ? '방향이 달라도 돌려보면 같은 모양일 수 있어요.'
-      : round === 'tutorial-2'
-        ? '좌우가 뒤집힌 조각은 돌려도 같은 모양이 되지 않아요.'
-        : ''
+  const tutorialHint = round === 'tutorial-1' ? '방향이 달라도 돌려보면 같은 모양일 수 있어요.' : ''
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-5 py-6">
@@ -271,7 +260,7 @@ export function SpatialGame({ index, mode, onComplete }: SpatialGameProps) {
         </div>
         {round !== 'real' ? (
           <span className="rounded-xl bg-secondary px-3 py-2 text-center font-display text-sm font-extrabold text-secondary-foreground toy-border">
-            튜토리얼 <span className="text-primary">{round === 'tutorial-1' ? 1 : 2}</span> / 2
+            튜토리얼 <span className="text-primary">1</span> / 1
           </span>
         ) : (
           <span className="rounded-xl bg-secondary px-3 py-2 text-center font-display text-sm font-extrabold text-secondary-foreground toy-border">
@@ -284,6 +273,7 @@ export function SpatialGame({ index, mode, onComplete }: SpatialGameProps) {
       {stage === 'intro' ? (
         <button
           type="button"
+          data-sfx-skip
           onClick={startGame}
           className="mt-5 flex flex-1 flex-col items-center justify-center gap-5 rounded-3xl bg-card px-6 py-12 text-center toy-border toy-shadow-lg transition-colors duration-150"
         >

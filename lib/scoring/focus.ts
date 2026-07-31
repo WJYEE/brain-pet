@@ -1,6 +1,7 @@
 import type { RawRecord } from '@/lib/brain-bet'
 import { FOCUS_DIFFICULTY_ACCURACY_WEIGHTS } from '@/lib/config/focus.config'
 import type { FocusRawSummary, FocusRoundTrial } from '@/lib/game/types'
+import { clampScore } from '@/lib/scoring/shared'
 
 /** Summarizes the 8 real rounds into the aggregate fields GAME_SPEC §51-52 lists. */
 export function summarizeFocusRounds(rounds: FocusRoundTrial[]): FocusRawSummary {
@@ -38,59 +39,30 @@ export function summarizeFocusRounds(rounds: FocusRoundTrial[]): FocusRawSummary
 }
 
 /**
- * Focus Game Score — internal only, draft formula (GAME_SPEC §128 rule 14:
- * "정확한 Score Formula는 실제 테스트 및 데이터 확보 후 보정 가능하도록 구성").
- * Never shown to the user, never used for Percentile/Ranking yet.
- *
- * weightedAccuracy already reflects every wrong round (false click or miss)
- * as "not correct," so falseClickPenalty/missPenalty are kept small — they
- * exist only to break ties between two equally-inaccurate sessions (a
- * distractor-resistance failure should rank slightly below a simple miss),
- * not to double-penalize the same mistake on top of the accuracy term.
- * Speed stays a tiny supplementary factor (lesson learned from Memory's
- * speedPenalty tuning: keep it conservatively low from the start).
+ * Focus Game Score — normalizedScore = weightedAccuracy 85% + 15점 감점 예산
+ * (놓침 5점/회, 오답 2점/회 — 2.5:1 비율로 놓침을 더 무겁게), clampScore
+ * 0-100. weightedAccuracy는 이미 모든 오답 라운드(놓침이든 오답이든)를
+ * "틀림"으로 반영하지만 *어떤 종류로* 틀렸는지는 구분하지 못하므로, 이
+ * 감점 예산은 정확도와 중복 반영이 아니라 실수의 성격(부주의 vs 성급함)을
+ * 추가로 구분해 반영하는 것이다. 속도 항목은 없다 — 라운드마다 강제
+ * 제한시간(FOCUS_ROUND_TIME_LIMIT_MS)이 이미 있어 시간 압박이 라운드
+ * 타이머 자체에 내장돼 있으므로 별도 반응속도 점수는 중복.
  */
 export const FOCUS_SCORE_WEIGHTS = {
   /** weightedAccuracy (0-1) × this — the dominant term. */
-  accuracyScale: 1000,
-  /** Per false click — a distractor-resistance failure, penalized more than a miss. */
-  falseClickPenalty: 15,
-  /** Per missed target — a vigilance lapse, penalized less than a false click. */
-  missPenalty: 8,
-  /** averageResponseTimeMs × this, subtracted — a small supplementary factor. */
-  speedPenalty: 0.01,
+  accuracyWeight: 85,
+  /** 15점 감점 예산의 최대치 — 실수가 없으면 전액 획득. */
+  cleanPlayBudget: 15,
+  /** 놓친 타겟(부주의) 1회당 감점. */
+  missPenalty: 5,
+  /** 오답 클릭(성급함) 1회당 감점. */
+  falseClickPenalty: 2,
 }
 
 export function calculateFocusScore(summary: FocusRawSummary): number {
-  const { accuracyScale, falseClickPenalty, missPenalty, speedPenalty } = FOCUS_SCORE_WEIGHTS
-  return Math.round(
-    summary.weightedAccuracy * accuracyScale -
-      summary.falseClicks * falseClickPenalty -
-      summary.missedTargets * missPenalty -
-      summary.averageResponseTimeMs * speedPenalty,
-  )
-}
-
-/**
- * Focus Personal Best ranking: higher Weighted Accuracy wins; ties broken by
- * fewer False Clicks (distractor resistance is Focus's defining trait), then
- * fewer Missed Targets, then faster Average Response Time.
- */
-export function isBetterFocusResult(
-  candidate: { rawSummary: FocusRawSummary },
-  current: { rawSummary: FocusRawSummary } | null,
-): boolean {
-  if (!current) return true
-  if (candidate.rawSummary.weightedAccuracy !== current.rawSummary.weightedAccuracy) {
-    return candidate.rawSummary.weightedAccuracy > current.rawSummary.weightedAccuracy
-  }
-  if (candidate.rawSummary.falseClicks !== current.rawSummary.falseClicks) {
-    return candidate.rawSummary.falseClicks < current.rawSummary.falseClicks
-  }
-  if (candidate.rawSummary.missedTargets !== current.rawSummary.missedTargets) {
-    return candidate.rawSummary.missedTargets < current.rawSummary.missedTargets
-  }
-  return candidate.rawSummary.averageResponseTimeMs < current.rawSummary.averageResponseTimeMs
+  const { accuracyWeight, cleanPlayBudget, missPenalty, falseClickPenalty } = FOCUS_SCORE_WEIGHTS
+  const penaltyPart = summary.missedTargets * missPenalty + summary.falseClicks * falseClickPenalty
+  return clampScore(summary.weightedAccuracy * accuracyWeight + cleanPlayBudget - penaltyPart)
 }
 
 /** Formats the raw summary into the display RawRecord — never invents a "pts" unit (GAME_SPEC §3-5). */

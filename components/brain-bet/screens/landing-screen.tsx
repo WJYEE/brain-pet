@@ -4,12 +4,15 @@ import { ArrowRight, Clock, Egg, Sparkles } from 'lucide-react'
 import { Logo } from '@/components/brain-bet/logo'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { PLAY_ORDER, STATS, TOTAL_GAMES } from '@/lib/brain-bet'
+import { useSound } from '@/hooks/use-sound'
 
 interface LandingScreenProps {
   onStart: () => void
 }
 
 export function LandingScreen({ onStart }: LandingScreenProps) {
+  const { play } = useSound()
+
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col items-center px-5 py-10 sm:py-16">
       <Logo size="md" />
@@ -59,7 +62,11 @@ export function LandingScreen({ onStart }: LandingScreenProps) {
       <div className="mt-9 flex flex-col items-center gap-4">
         <button
           type="button"
-          onClick={onStart}
+          data-sfx-skip
+          onClick={() => {
+            play('ui-confirm')
+            onStart()
+          }}
           className="group inline-flex items-center gap-2 rounded-2xl bg-primary px-8 py-4 font-display text-xl font-extrabold text-primary-foreground toy-border toy-shadow-lg transition-transform duration-150 hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none"
         >
           게임 시작하기
@@ -70,7 +77,7 @@ export function LandingScreen({ onStart }: LandingScreenProps) {
           />
         </button>
         <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
-          <Clock size={15} strokeWidth={2.4} />약 4~5분
+          <Clock size={15} strokeWidth={2.4} />약 2~3분
         </span>
       </div>
 

@@ -166,6 +166,13 @@
   .font-display {
     font-family: var(--font-display), ui-rounded, 'Nunito', sans-serif;
   }
+  /* Subtle pixel-dot texture for RPG-panel screens (e.g. the reveal/dex
+     screen) — reuses --line (already the toy-border color) so it stays in
+     sync with light/dark without a new token. */
+  .dot-grid-bg {
+    background-image: radial-gradient(var(--line) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
   /* soft sticker border + gentle offset shadow for a cozy toy/game feel */
   .toy-border {
     border: 1.5px solid var(--line);
@@ -254,6 +261,76 @@
   .animate-egg-glow-pulse {
     animation: statling-egg-glow-pulse 1.8s ease-in-out infinite;
   }
+
+  /* Pet Care action motions (Room screen) — one class per PetAnimation id.
+     idle reuses .animate-float above; 'sad'/'lonely' mood reuses
+     .animate-pet-sad below rather than a dedicated per-mood set. */
+  .animate-pet-eat {
+    animation: statling-pet-eat 0.9s ease-in-out both;
+  }
+  .animate-pet-wash {
+    animation: statling-pet-wash 0.9s ease-in-out both;
+    transform-origin: center center;
+  }
+  .animate-pet-clean-react {
+    animation: statling-pet-clean-react 0.8s ease-out both;
+  }
+  .animate-pet-play {
+    animation: statling-pet-play 0.8s ease-in-out both;
+    transform-origin: bottom center;
+  }
+  .animate-pet-pet {
+    animation: statling-pet-pet 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .animate-pet-talk {
+    animation: statling-pet-talk 1.1s ease-in-out infinite;
+  }
+  .animate-pet-sleep {
+    animation: statling-pet-sleep 2.5s ease-in-out infinite;
+  }
+  .animate-pet-sad {
+    animation: statling-pet-sad 3.2s ease-in-out infinite;
+    transform-origin: bottom center;
+  }
+  .animate-pet-jump {
+    animation: statling-pet-jump 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .animate-pet-zzz {
+    animation: statling-pet-zzz-float 2.2s ease-in-out infinite;
+  }
+  /* "+20"/"-10" floating stat-delta text (Room HUD cards + action buttons). */
+  .animate-stat-float {
+    animation: statling-stat-float 1.5s ease-out both;
+  }
+
+  /* Autonomous-behavior motions (hooks/use-pet-autonomy.ts) — lookLeft/lookRight
+     and walkLeft/walkRight share one class each (the actual left/right
+     distinction is the zone translateX below, not the animation itself). */
+  .animate-pet-look {
+    animation: statling-pet-look 1.4s ease-in-out both;
+  }
+  .animate-pet-hop {
+    animation: statling-pet-hop 0.9s ease-in-out both;
+    transform-origin: bottom center;
+  }
+  .animate-pet-walk {
+    animation: statling-pet-walk 1.8s ease-in-out infinite;
+  }
+  .animate-pet-gesture {
+    animation: statling-pet-gesture 1.2s ease-in-out infinite;
+  }
+  .animate-pet-celebrate {
+    animation: statling-pet-celebrate 0.8s ease-in-out infinite;
+    transform-origin: bottom center;
+  }
+
+  /* Zone (left/center/right) horizontal position transition — its own class
+     (not an inline `transition` style) specifically so the reduced-motion
+     override below can turn it off; an inline style can't be targeted by a
+     CSS media query. */
+  .pet-zone-transition {
+    transition: transform 700ms ease-in-out;
+  }
 }
 
 /* Reduced-motion users still get the full pop/scale-free content — the
@@ -261,6 +338,40 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-record-pop {
     animation: none;
+  }
+
+  /* Pet Care motions carry no information of their own (the stat/message
+     text alongside them already does) — safe to fully disable rather than
+     just shortening. */
+  .animate-pet-eat,
+  .animate-pet-wash,
+  .animate-pet-clean-react,
+  .animate-pet-play,
+  .animate-pet-pet,
+  .animate-pet-talk,
+  .animate-pet-sleep,
+  .animate-pet-sad,
+  .animate-pet-jump,
+  .animate-pet-zzz,
+  .animate-float,
+  .animate-wobble {
+    animation: none;
+  }
+  /* Delta text keeps its content, just skips the drift/fade motion (opacity handled by its own mount lifetime). */
+  .animate-stat-float {
+    animation: none;
+  }
+
+  .animate-pet-look,
+  .animate-pet-hop,
+  .animate-pet-walk,
+  .animate-pet-gesture,
+  .animate-pet-celebrate {
+    animation: none;
+  }
+  /* The zone (left/center/right) move still happens, just as an instant snap instead of a slide — spec: "이동 최소화". */
+  .pet-zone-transition {
+    transition: none;
   }
 }
 
@@ -583,5 +694,244 @@
   }
   50% {
     opacity: 0.6;
+  }
+}
+
+/* 밥(feed) — two short nods, as if taking a couple of bites. */
+@keyframes statling-pet-eat {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  20% {
+    transform: translateY(3px) scale(1.04, 0.96);
+  }
+  40% {
+    transform: translateY(0) scale(1, 1);
+  }
+  60% {
+    transform: translateY(3px) scale(1.04, 0.96);
+  }
+  80% {
+    transform: translateY(0) scale(1, 1);
+  }
+}
+
+/* 씻기(shower) — a quick scrub wobble, ending with a shake-off. */
+@keyframes statling-pet-wash {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1, 1);
+  }
+  15% {
+    transform: rotate(-5deg) scale(0.98, 1.02);
+  }
+  30% {
+    transform: rotate(5deg) scale(0.98, 1.02);
+  }
+  45% {
+    transform: rotate(-5deg) scale(0.98, 1.02);
+  }
+  60% {
+    transform: rotate(4deg) scale(0.98, 1.02);
+  }
+  75% {
+    transform: rotate(-2deg);
+  }
+}
+
+/* 청소(clean) reaction — a bright little pop, like dust clearing off the pet's spot. */
+@keyframes statling-pet-clean-react {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.08) rotate(-2deg);
+  }
+  65% {
+    transform: scale(0.96) rotate(2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* 놀기(play) — an energetic bounce + wag. */
+@keyframes statling-pet-play {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-14px) rotate(-8deg);
+  }
+  50% {
+    transform: translateY(0) rotate(8deg);
+  }
+  75% {
+    transform: translateY(-6px) rotate(-4deg);
+  }
+}
+
+/* 쓰담(pet) — a soft press-and-release, like settling into a pat. */
+@keyframes statling-pet-pet {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  40% {
+    transform: scale(1.02, 0.94);
+  }
+  70% {
+    transform: scale(0.98, 1.03);
+  }
+}
+
+/* 대화(talk) — a light head-bob, looped only while the speech bubble is up. */
+@keyframes statling-pet-talk {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* sleepy mood idle — slow "breathing" scale. */
+@keyframes statling-pet-sleep {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+/* sad/lonely mood idle — a small, heavy, slow droop (deliberately lower amplitude/energy than .animate-wobble). */
+@keyframes statling-pet-sad {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  50% {
+    transform: rotate(-2deg) translateY(2px);
+  }
+}
+
+/* Level-up — a proud hop with a squash-and-stretch launch/landing. */
+@keyframes statling-pet-jump {
+  0% {
+    transform: translateY(0) scale(1, 1);
+  }
+  25% {
+    transform: translateY(-4px) scale(1.08, 0.92);
+  }
+  55% {
+    transform: translateY(-18px) scale(0.96, 1.05);
+  }
+  80% {
+    transform: translateY(0) scale(1.06, 0.94);
+  }
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+}
+
+/* Zzz glyph drifting up alongside the sleepy idle motion. */
+@keyframes statling-pet-zzz-float {
+  0% {
+    transform: translateY(0) scale(0.9);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-14px) scale(1.1);
+    opacity: 0;
+  }
+}
+
+/* "+20"/"-10" stat delta — pops in, drifts up, fades out. */
+@keyframes statling-stat-float {
+  0% {
+    transform: translateY(4px) scale(0.9);
+    opacity: 0;
+  }
+  15% {
+    transform: translateY(0) scale(1.05);
+    opacity: 1;
+  }
+  70% {
+    transform: translateY(-10px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20px) scale(1);
+    opacity: 0;
+  }
+}
+
+/* lookLeft/lookRight — a small curious head-tilt, held then released. */
+@keyframes statling-pet-look {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  30%,
+  70% {
+    transform: rotate(-6deg);
+  }
+}
+
+/* smallHop — a single light bounce, lower amplitude than the level-up jump. */
+@keyframes statling-pet-hop {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  40% {
+    transform: translateY(-9px) scale(1.03, 0.97);
+  }
+  70% {
+    transform: translateY(0) scale(0.98, 1.02);
+  }
+}
+
+/* walkLeft/walkRight — a light in-place bounce while the zone translateX carries the actual movement. */
+@keyframes statling-pet-walk {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* askFood/askPlay/askAttention — a small forward lean, as if reaching toward the player. */
+@keyframes statling-pet-gesture {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(2px) rotate(3deg);
+  }
+}
+
+/* celebrate — a bouncier, more energetic version of smallHop, looped while it holds. */
+@keyframes statling-pet-celebrate {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  35% {
+    transform: translateY(-10px) scale(1.05, 0.95);
+  }
+  65% {
+    transform: translateY(0) scale(0.97, 1.03);
   }
 }

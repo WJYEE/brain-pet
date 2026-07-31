@@ -1,17 +1,29 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowRight, Sparkles } from 'lucide-react'
-import { AssetImage } from '@/components/brain-bet/asset-image'
-import { CharacterImage } from '@/components/brain-bet/character-image'
-import { RoomStage } from '@/components/brain-bet/room-stage'
+import { Toast } from '@base-ui/react/toast'
+import { CareActionButton } from '@/components/brain-bet/care-action-button'
+import { PetCareHud } from '@/components/brain-bet/pet-care-hud'
+import { PetMoodView } from '@/components/brain-bet/pet-mood-view'
+import { RoomCanvas } from '@/components/brain-bet/room-canvas'
+import { RoomCleanOverlay } from '@/components/brain-bet/room-clean-overlay'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { ToyButton } from '@/components/brain-bet/toy-button'
+import { usePetCare } from '@/hooks/use-pet-care'
+import { usePetMemory } from '@/hooks/use-pet-memory'
+import { usePetInitiatedDialogue } from '@/hooks/use-pet-initiated-dialogue'
+import { usePetAutonomy } from '@/hooks/use-pet-autonomy'
+import { useSound } from '@/hooks/use-sound'
 import { STATS, type StatId } from '@/lib/brain-bet'
+import type { CharacterStateFolder } from '@/lib/character-state-assets'
 import type { PetProfile } from '@/lib/pets/pet-profile'
-import { CARE_ACTIONS, INITIAL_ROOM_STATUS, ROOM_STATUS_META, type CareActionId } from '@/lib/room'
-import { WARM_WOOD_PRESET } from '@/lib/room-presets'
-import { cn } from '@/lib/utils'
+import { CARE_ACTIONS } from '@/lib/room'
+import { ROOM_ASSETS } from '@/lib/room-assets'
+import { loadSavedRoomState } from '@/lib/room/room-storage'
+import { MOOD_LABEL, SECONDARY_TAG_LABEL } from '@/lib/pet-care/mood'
+import { computeInteractionMode } from '@/lib/pet-care/interaction-mode'
+import type { PetAnimation } from '@/lib/pet-care/types'
 
 interface RoomScreenProps {
   statlingName: string
@@ -27,38 +39,111 @@ interface RoomScreenProps {
    */
   petProfile: PetProfile | null
   onGrow: () => void
+  /** Dev/QA only — see qa-skip-menu.tsx and pet-mood-view.tsx. */
+  testerFolder?: CharacterStateFolder | null
 }
 
 /**
- * Statling Room (Home). Care buttons only trigger a short visual reaction —
- * PHASE 1 does not compute or persist satiety/cleanliness/affection changes.
+ * Statling Room (Home) — pet care stats, mood/motion, the 6 care actions,
+ * and the "living companion" layer on top: autonomous idle behavior,
+ * pet-initiated greetings/requests, visit memory, and minigame reactions.
+ *
+ * The 4 hooks below are called in a deliberate priority order — care ->
+ * memory -> initiatedDialogue -> autonomy — so each only ever needs the
+ * *already-computed* output of a higher-priority hook to decide whether it
+ * may start something new (`suppressed`). This avoids any circular "mode
+ * feeds back into the hooks that produced it" dependency; `mode` itself
+ * (computed last, from everyone's output) is a pure display-only value.
  */
-export function RoomScreen({ statlingName, topStat, petProfile, onGrow }: RoomScreenProps) {
-  const [mood, setMood] = useState<'happy' | 'excited' | 'sleepy'>('happy')
-  const [feedbackId, setFeedbackId] = useState<CareActionId | null>(null)
-  const [comingSoonId, setComingSoonId] = useState<CareActionId | null>(null)
+export function RoomScreen({ statlingName, topStat, petProfile, onGrow, testerFolder }: RoomScreenProps) {
+  const care = usePetCare()
+  const toastManager = Toast.useToastManager()
+  const { play } = useSound()
 
-  const react = (id: CareActionId) => {
-    setMood('excited')
-    setFeedbackId(id)
-    window.setTimeout(() => setMood('happy'), 900)
-    window.setTimeout(() => setFeedbackId((cur) => (cur === id ? null : cur)), 1100)
-  }
+  const memory = usePetMemory(care.applyEffect)
 
-  const handleCare = (action: (typeof CARE_ACTIONS)[number]) => {
-    if (action.status === 'comingSoon') {
-      setComingSoonId(action.id)
-      window.setTimeout(
-        () => setComingSoonId((cur) => (cur === action.id ? null : cur)),
-        1400,
-      )
-      return
-    }
-    react(action.id)
+  const suppressForDialogue = !!care.levelUpEvent || care.reactionActive || memory.gameReaction.active
+  const initiatedDialogue = usePetInitiatedDialogue({
+    memory: memory.memory,
+    visitContext: memory.visitContext,
+    hasPendingGameReaction: memory.hasPendingGameReaction,
+    intimacyLevel: care.petState.intimacyLevel,
+    stats: care.petState.stats,
+    secondaryTags: care.secondaryTags,
+    suppressed: suppressForDialogue,
+    onDialogueShown: memory.onInitiatedDialogueShown,
+    onMemoryCommentShown: memory.onMemoryCommentShown,
+  })
+
+  // Sleepy also suppresses autonomy — without this, a lookLeft/hop/walk/ask*
+  // tick could briefly interrupt the sleep pose with its own gesture (and,
+  // via the tester's mood-fallback art, show 'tired' instead of 'sleep' mid-
+  // nap). A real care action still works normally regardless (it's driven by
+  // `care.reactionActive`, a separate higher-priority branch in `animation`
+  // below) — only *autonomous* fidgeting is paused while sleepy.
+  const suppressForAutonomy = suppressForDialogue || initiatedDialogue.active || care.mood === 'sleepy'
+  const autonomy = usePetAutonomy({
+    stats: care.petState.stats,
+    lastUserActionAt: care.lastUserActionAt,
+    suppressed: suppressForAutonomy,
+    onRequestDialogue: initiatedDialogue.trigger,
+    onBonus: memory.onAutonomyBonus,
+  })
+
+  // Loaded once per mount — GameFlow remounts this screen (via stepKey) on
+  // every phase switch, so returning from 테마 after a save always reflects
+  // the latest persisted room without needing a separate refresh signal.
+  const [roomState] = useState(() => loadSavedRoomState())
+  const backgroundAsset = ROOM_ASSETS[roomState.backgroundId] ?? ROOM_ASSETS['wood-background']
+
+  useEffect(() => {
+    if (!care.levelUpEvent) return
+    toastManager.add({ title: `Lv.${care.levelUpEvent.level} 달성!`, type: 'success' })
+    care.levelUpEvent.unlocks.forEach((reward) => {
+      toastManager.add({ title: reward.title, description: reward.description, type: 'success' })
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire only when a new levelUpEvent object appears
+  }, [care.levelUpEvent])
+
+  const mode = computeInteractionMode({
+    hasLevelUp: !!care.levelUpEvent,
+    hasGameReaction: memory.gameReaction.active,
+    hasUserAction: care.reactionActive,
+    hasSpeaking: initiatedDialogue.active,
+    hasAutonomousMotion: autonomy.active,
+  })
+
+  const speech = memory.gameReaction.speech ?? care.speech ?? initiatedDialogue.speech ?? null
+  const dismissSpeech = memory.gameReaction.active
+    ? memory.dismissGameReaction
+    : care.speech
+      ? care.dismissSpeech
+      : initiatedDialogue.speech
+        ? initiatedDialogue.dismiss
+        : undefined
+
+  const animation: PetAnimation =
+    memory.gameReaction.active && memory.gameReaction.animation
+      ? memory.gameReaction.animation
+      : care.reactionActive
+        ? care.animation
+        : autonomy.active && autonomy.animation
+          ? autonomy.animation
+          : care.animation
+
+  const secondaryLabel = care.secondaryTags[0] ? SECONDARY_TAG_LABEL[care.secondaryTags[0]] : null
+
+  function handleCareAction(actionId: (typeof CARE_ACTIONS)[number]['id']) {
+    care.performAction(actionId)
+    memory.recordCareAction(actionId)
+    if (actionId === 'feed') play('pet-feed')
+    else if (actionId === 'shower') play('pet-wash')
+    else if (actionId === 'play') play('pet-play')
+    else if (actionId === 'pet') play('pet-care-pop')
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col px-5 pb-28 pt-8">
+    <div className="mx-auto flex w-full max-w-3xl flex-col px-5 pb-28 pt-8" data-interaction-mode={mode}>
       <header className="flex items-center justify-between gap-3">
         <h1 className="flex items-baseline gap-1.5 font-display text-xl font-extrabold text-foreground">
           <span className="text-sm font-bold text-muted-foreground">우리 방 ·</span>
@@ -67,81 +152,57 @@ export function RoomScreen({ statlingName, topStat, petProfile, onGrow }: RoomSc
         <StatBadge stat={STATS[topStat]} size="sm" />
       </header>
 
-      {/* room stage — the focal point of this screen */}
-      <RoomStage preset={WARM_WOOD_PRESET} className="mt-4 toy-border toy-shadow-lg">
-        <div className="relative">
-          {petProfile ? (
-            <AssetImage
-              src={petProfile.imageSrc}
-              alt={petProfile.name}
-              size={180}
-              className={mood === 'happy' ? 'animate-float' : 'animate-wobble'}
-            />
-          ) : (
-            <CharacterImage
-              type={topStat}
-              size={180}
-              className={mood === 'happy' ? 'animate-float' : 'animate-wobble'}
-            />
-          )}
-          {feedbackId && (
-            <span
-              className="animate-pop-in absolute -right-2 -top-2 text-3xl"
-              aria-hidden="true"
-            >
-              💗
-            </span>
-          )}
-        </div>
-      </RoomStage>
-
-      {/* status HUD — compact rows (icon + label + number + bar), static display only, no decay/growth logic yet */}
-      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
-        {ROOM_STATUS_META.map((meta) => {
-          const value = INITIAL_ROOM_STATUS[meta.id]
-          const Icon = meta.icon
-          return (
-            <div key={meta.id} className="flex items-center gap-2 rounded-xl bg-card px-3 py-2 toy-border">
-              <Icon size={20} />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-[11px] font-bold text-muted-foreground">{meta.label}</span>
-                  <span className="font-display text-sm font-extrabold tabular-nums text-foreground">{value}</span>
-                </div>
-                <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-                  <div className="h-full rounded-full bg-primary" style={{ width: `${value}%` }} />
-                </div>
-              </div>
-            </div>
-          )
-        })}
+      <div className="mt-1 flex items-center gap-2">
+        <span className="font-display text-sm font-bold text-foreground">현재 기분: {MOOD_LABEL[care.mood]}</span>
+        {secondaryLabel && <span className="text-xs font-semibold text-muted-foreground">· {secondaryLabel}</span>}
       </div>
+
+      {/* room canvas — the focal point of this screen. Read-only: no drag/resize handles, no selection outlines, just the saved room state. */}
+      <div className="relative mt-4 overflow-hidden rounded-3xl toy-border toy-shadow-lg">
+        <RoomCanvas
+          backgroundAsset={backgroundAsset}
+          items={roomState.items}
+          editable={false}
+          statlingSlot={
+            <PetMoodView
+              petProfile={petProfile}
+              topStat={topStat}
+              mood={care.mood}
+              animation={animation}
+              speech={speech}
+              playVariantId={care.petState.lastPlayVariantId}
+              positionOffsetPx={autonomy.offsetPx}
+              tiltDeg={autonomy.walkTiltDeg}
+              cleanliness={care.petState.stats.cleanliness}
+              isOverPetted={care.isOverPetted}
+              onDismissSpeech={dismissSpeech}
+              testerFolder={testerFolder}
+            />
+          }
+        />
+        <RoomCleanOverlay roomCleanliness={care.roomState.cleanliness} showSparkle={care.animation === 'shake'} />
+      </div>
+
+      <PetCareHud
+        stats={care.petState.stats}
+        intimacyLevel={care.petState.intimacyLevel}
+        intimacyExp={care.petState.intimacyExp}
+        expToNext={care.expToNext}
+        floatingDeltas={care.floatingDeltas}
+      />
 
       {/* care actions — compact icon buttons, 3x2 on mobile / one row on desktop */}
       <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
-        {CARE_ACTIONS.map((action) => {
-          const Icon = action.icon
-          return (
-            <button
-              key={action.id}
-              type="button"
-              onClick={() => handleCare(action)}
-              className="relative flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-card px-1 py-2.5 toy-border transition-transform active:translate-y-0.5"
-            >
-              <Icon size={22} />
-              <span className="text-[11px] font-bold text-foreground">{action.shortLabel}</span>
-              {comingSoonId === action.id && (
-                <span
-                  className={cn(
-                    'animate-pop-in absolute -top-2 rounded-full bg-secondary px-2 py-0.5 text-[9px] font-bold text-secondary-foreground toy-border',
-                  )}
-                >
-                  준비 중
-                </span>
-              )}
-            </button>
-          )
-        })}
+        {CARE_ACTIONS.map((action) => (
+          <CareActionButton
+            key={action.id}
+            action={action}
+            cooldown={care.cooldowns[action.id]}
+            showAttentionDot={care.attentionFlags[action.id]}
+            disabled={memory.gameReaction.active}
+            onClick={() => handleCareAction(action.id)}
+          />
+        ))}
       </div>
 
       {/* grow CTA — the one action on this screen meant to stand out more than the compact HUD above */}

@@ -1,0 +1,66 @@
+'use client'
+
+import { useEffect } from 'react'
+import { audioManager } from '@/lib/audio/audio-manager'
+import { loadSfxEnabled } from '@/lib/audio/audio-settings-storage'
+import type { SoundName } from '@/lib/audio/types'
+
+const UNLOCK_EVENTS: Array<keyof DocumentEventMap> = ['pointerdown', 'keydown']
+
+/**
+ * Mounted once in app/layout.tsx (same spot as AppToastProvider). Three jobs:
+ *
+ * 1. Preload every SFX and apply the persisted SFX ON/OFF preference, so the
+ *    first real play() call has no load delay and respects a prior mute.
+ * 2. Unlock <audio> playback on the first real user gesture — required by
+ *    mobile Safari/Chrome autoplay policy (spec §10).
+ * 3. A single delegated click listener that plays 'ui-click-soft' for any
+ *    plain button the app doesn't otherwise give a specific sound to. This
+ *    is what makes "일반 버튼 → ui-click-soft" (spec §6) work for the app's
+ *    ~40 one-off `<button>` elements without editing every one of them:
+ *      - add `data-sfx="some-other-sound"` to a button to override which
+ *        sound it plays
+ *      - add `data-sfx-skip` to a button that already calls play(...)
+ *        itself (e.g. a care action button), so it doesn't double-fire
+ *
+ * Renders no DOM of its own — purely a side-effect wrapper around children,
+ * matching AppToastProvider's "just wrap children" shape.
+ */
+export function AudioProvider({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    audioManager.setMuted(!loadSfxEnabled())
+    audioManager.preloadAll()
+
+    function unlock() {
+      audioManager.unlock()
+      for (const eventName of UNLOCK_EVENTS) {
+        document.removeEventListener(eventName, unlock)
+      }
+    }
+    for (const eventName of UNLOCK_EVENTS) {
+      document.addEventListener(eventName, unlock, { once: true, passive: true })
+    }
+
+    function handleDelegatedClick(event: MouseEvent) {
+      const target = event.target
+      if (!(target instanceof Element)) return
+      const trigger = target.closest<HTMLElement>('button, [role="button"]')
+      if (!trigger) return
+      if (trigger.hasAttribute('data-sfx-skip')) return
+      if ((trigger as HTMLButtonElement).disabled) return
+
+      const explicitSound = trigger.getAttribute('data-sfx') as SoundName | null
+      audioManager.play(explicitSound ?? 'ui-click-soft')
+    }
+    document.addEventListener('click', handleDelegatedClick)
+
+    return () => {
+      for (const eventName of UNLOCK_EVENTS) {
+        document.removeEventListener(eventName, unlock)
+      }
+      document.removeEventListener('click', handleDelegatedClick)
+    }
+  }, [])
+
+  return <>{children}</>
+}

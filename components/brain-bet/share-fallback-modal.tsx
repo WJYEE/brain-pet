@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Dialog } from '@base-ui/react/dialog'
 import { Check, Copy, X } from 'lucide-react'
 import { ToyButton } from '@/components/brain-bet/toy-button'
+import { useSound } from '@/hooks/use-sound'
 
 interface ShareFallbackModalProps {
   open: boolean
@@ -24,6 +25,12 @@ interface ShareFallbackModalProps {
 export function ShareFallbackModal({ open, onOpenChange, title, text, url }: ShareFallbackModalProps) {
   const [copied, setCopied] = useState(false)
   const fullText = `${text}\n\n${url}`
+  const { play } = useSound()
+
+  useEffect(() => {
+    if (open) play('modal-open')
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire only on the open:false->true transition
+  }, [open])
 
   const handleCopyAttempt = async () => {
     try {
@@ -46,6 +53,8 @@ export function ShareFallbackModal({ open, onOpenChange, title, text, url }: Sha
             </Dialog.Title>
             <Dialog.Close
               aria-label="닫기"
+              data-sfx-skip
+              onClick={() => play('ui-back')}
               className="shrink-0 rounded-full p-1 text-muted-foreground hover:text-foreground"
             >
               <X size={18} strokeWidth={2.4} />
