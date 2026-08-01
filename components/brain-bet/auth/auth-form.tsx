@@ -1,0 +1,141 @@
+'use client'
+
+import { useState, type FormEvent } from 'react'
+import { Lock, Mail } from 'lucide-react'
+import { Toast } from '@base-ui/react/toast'
+import { ToyButton } from '@/components/brain-bet/toy-button'
+import { useAuth } from '@/lib/auth/auth-provider'
+import { cn } from '@/lib/utils'
+
+interface AuthFormProps {
+  /** Called after a successful sign-in, or a sign-up that didn't need email confirmation. */
+  onAuthenticated?: () => void
+  defaultMode?: 'signup' | 'signin'
+  className?: string
+}
+
+/**
+ * Google + email/password sign-in/sign-up UI, shared by SaveScreen (post-hatch
+ * save prompt) and MyPageScreen (guest account card). See GAME_SPEC.MD §16.2 —
+ * both auth methods are required so users who don't want Google OAuth still
+ * have a path in.
+ */
+export function AuthForm({ onAuthenticated, defaultMode = 'signup', className }: AuthFormProps) {
+  const { signInWithGoogle, signInWithPassword, signUpWithPassword } = useAuth()
+  const toastManager = Toast.useToastManager()
+
+  const [mode, setMode] = useState<'signup' | 'signin'>(defaultMode)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [submitting, setSubmitting] = useState<'google' | 'password' | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  function switchMode(next: 'signup' | 'signin') {
+    setMode(next)
+    setError(null)
+  }
+
+  async function handleGoogle() {
+    setSubmitting('google')
+    setError(null)
+    const result = await signInWithGoogle()
+    if (result.error) {
+      setError(result.error)
+      setSubmitting(null)
+    }
+    // On success the browser navigates away to Google — nothing else to do here.
+  }
+
+  async function handlePasswordSubmit(event: FormEvent) {
+    event.preventDefault()
+    if (!email || !password || submitting) return
+
+    setSubmitting('password')
+    setError(null)
+    const result = mode === 'signup' ? await signUpWithPassword(email, password) : await signInWithPassword(email, password)
+    setSubmitting(null)
+
+    if (result.error) {
+      setError(result.error)
+      return
+    }
+    if (result.needsEmailConfirmation) {
+      toastManager.add({ title: '가입 확인 메일을 보냈어요. 메일함을 확인해주세요.', type: 'success' })
+      return
+    }
+    toastManager.add({ title: mode === 'signup' ? '가입되었어요!' : '로그인했어요!', type: 'success' })
+    onAuthenticated?.()
+  }
+
+  return (
+    <div className={cn('w-full', className)}>
+      <div className="mb-4 flex justify-center gap-1 rounded-2xl bg-muted p-1">
+        <button
+          type="button"
+          onClick={() => switchMode('signup')}
+          className={tabClass(mode === 'signup')}
+        >
+          회원가입
+        </button>
+        <button
+          type="button"
+          onClick={() => switchMode('signin')}
+          className={tabClass(mode === 'signin')}
+        >
+          로그인
+        </button>
+      </div>
+
+      <ToyButton className="w-full" onClick={handleGoogle} disabled={submitting !== null}>
+        {submitting === 'google' ? '이동하는 중...' : 'Google로 계속하기'}
+      </ToyButton>
+
+      <div className="flex items-center gap-3 py-3 text-xs font-semibold text-muted-foreground">
+        <span className="h-px flex-1 bg-border" />
+        또는
+        <span className="h-px flex-1 bg-border" />
+      </div>
+
+      <form onSubmit={handlePasswordSubmit} className="space-y-3">
+        <label className="flex items-center gap-2 rounded-2xl bg-card px-4 py-3 toy-border">
+          <Mail size={18} strokeWidth={2.2} className="shrink-0 text-muted-foreground" />
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="이메일"
+            autoComplete="email"
+            className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          />
+        </label>
+        <label className="flex items-center gap-2 rounded-2xl bg-card px-4 py-3 toy-border">
+          <Lock size={18} strokeWidth={2.2} className="shrink-0 text-muted-foreground" />
+          <input
+            type="password"
+            required
+            minLength={6}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="비밀번호 (6자 이상)"
+            autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+            className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          />
+        </label>
+
+        {error && <p className="text-xs font-semibold text-destructive">{error}</p>}
+
+        <ToyButton type="submit" variant="secondary" className="w-full" disabled={submitting !== null}>
+          {submitting === 'password' ? '처리 중...' : mode === 'signup' ? '이메일로 가입하기' : '이메일로 로그인하기'}
+        </ToyButton>
+      </form>
+    </div>
+  )
+}
+
+function tabClass(active: boolean) {
+  return cn(
+    'flex-1 rounded-xl px-3 py-2 text-sm font-bold transition-colors',
+    active ? 'bg-card text-foreground toy-shadow-sm' : 'text-muted-foreground',
+  )
+}

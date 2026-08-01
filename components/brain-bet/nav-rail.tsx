@@ -1,9 +1,15 @@
 'use client'
 
-import { BarChart3, Home, Palette, Trophy, User, type LucideIcon } from 'lucide-react'
+import { BarChart3, Home, Shirt, Trophy, User, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-export type NavTab = 'room' | 'mystats' | 'ranking' | 'mypage' | 'theme'
+/**
+ * 'theme' (방 꾸미기) is no longer a top-level tab — the tab bar is capped
+ * at 5, so it moved to a nested view inside 'statling' (see
+ * components/brain-bet/screens/statling-screen.tsx), alongside the deco
+ * equip UI and the 도감 (dex). 'statling' replaced it here.
+ */
+export type NavTab = 'room' | 'mystats' | 'ranking' | 'statling' | 'mypage'
 
 interface NavItem {
   id: NavTab
@@ -15,8 +21,8 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'room', label: '홈', icon: Home },
   { id: 'mystats', label: '내 스탯', icon: BarChart3 },
   { id: 'ranking', label: '랭킹', icon: Trophy },
+  { id: 'statling', label: 'Statling', icon: Shirt },
   { id: 'mypage', label: '마이페이지', icon: User },
-  { id: 'theme', label: '테마', icon: Palette },
 ]
 
 interface NavRailProps {

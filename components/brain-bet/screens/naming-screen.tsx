@@ -6,7 +6,12 @@ import { AssetImage } from '@/components/brain-bet/asset-image'
 import { Logo } from '@/components/brain-bet/logo'
 import { ToyButton } from '@/components/brain-bet/toy-button'
 import type { PetProfile } from '@/lib/pets/pet-profile'
-import { STATLING_NAME_MAX_LENGTH, STATLING_NAME_MIN_LENGTH, isValidStatlingName } from '@/lib/naming'
+import {
+  STATLING_NAME_MAX_LENGTH,
+  STATLING_NAME_MIN_LENGTH,
+  getStatlingNameBlockedReason,
+  isValidStatlingName,
+} from '@/lib/naming'
 
 interface NamingScreenProps {
   /** The already-confirmed representative pet — same PetProfile as Reveal (see lib/pets/pet-flow.ts#resolveCurrentPetProfile), never the old getTopStat-based CharacterImage. */
@@ -17,6 +22,7 @@ interface NamingScreenProps {
 export function NamingScreen({ petProfile, onConfirm }: NamingScreenProps) {
   const [name, setName] = useState('')
   const valid = isValidStatlingName(name)
+  const blockedReason = getStatlingNameBlockedReason(name)
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-10 text-center">
@@ -41,9 +47,9 @@ export function NamingScreen({ petProfile, onConfirm }: NamingScreenProps) {
           maxLength={STATLING_NAME_MAX_LENGTH}
           className="w-full rounded-2xl bg-card px-4 py-3.5 text-center font-display text-lg font-extrabold text-foreground toy-border outline-none placeholder:font-sans placeholder:font-normal placeholder:text-muted-foreground"
         />
-        <p className="mt-2 text-xs font-semibold text-muted-foreground">
-          {STATLING_NAME_MIN_LENGTH}~{STATLING_NAME_MAX_LENGTH}자로 지어주세요. (
-          {name.trim().length}/{STATLING_NAME_MAX_LENGTH})
+        <p className={`mt-2 text-xs font-semibold ${blockedReason ? 'text-destructive' : 'text-muted-foreground'}`}>
+          {blockedReason ??
+            `${STATLING_NAME_MIN_LENGTH}~${STATLING_NAME_MAX_LENGTH}자로 지어주세요. (${name.trim().length}/${STATLING_NAME_MAX_LENGTH})`}
         </p>
       </div>
 

@@ -4,7 +4,7 @@ import type { CareStatId, Mood, SecondaryTag } from '@/lib/pet-care/types'
 const HUNGRY_THRESHOLD = 30
 const DIRTY_THRESHOLD = 30
 const LONELY_THRESHOLD = 30
-const SLEEPY_THRESHOLD = 25
+const SLEEPY_THRESHOLD = 20
 const SAD_THRESHOLD = 30
 const JOYFUL_THRESHOLD = 85
 const HAPPY_THRESHOLD = 65

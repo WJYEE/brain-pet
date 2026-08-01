@@ -1,0 +1,228 @@
+'use client'
+
+import { useState } from 'react'
+import { Toast } from '@base-ui/react/toast'
+import { CheckCircle2, MessageCircleHeart } from 'lucide-react'
+import { addFeedbackRecord } from '@/lib/feedback/feedback-storage'
+import {
+  emptyFeedbackDraft,
+  FAVORITE_PART_OPTIONS,
+  IMPROVEMENT_AREA_OPTIONS,
+  RETURN_INTENT_OPTIONS,
+  SATISFACTION_OPTIONS,
+  type FavoritePartValue,
+  type FeedbackDraft,
+  type ImprovementAreaValue,
+  type ReturnIntentValue,
+  type SatisfactionValue,
+} from '@/lib/feedback/feedback-types'
+import { cn } from '@/lib/utils'
+
+interface RadioGroupProps<T extends string> {
+  name: string
+  options: { value: T; label: string }[]
+  value: T | null
+  onChange: (value: T) => void
+}
+
+/** Google Form-style single-select — a rounded circle indicator per option, explicit conditional styling (no peer/sibling CSS tricks) since selection state is already known from `value`. */
+function RadioGroup<T extends string>({ name, options, value, onChange }: RadioGroupProps<T>) {
+  return (
+    <div role="radiogroup" aria-label={name} className="flex flex-col gap-2">
+      {options.map((opt) => {
+        const selected = value === opt.value
+        return (
+          <label
+            key={opt.value}
+            className={cn(
+              'flex min-h-[44px] cursor-pointer items-center gap-2.5 rounded-xl bg-card px-3 py-2.5 toy-border transition-colors',
+              selected && 'bg-accent/40',
+            )}
+          >
+            <input
+              type="radio"
+              name={name}
+              value={opt.value}
+              checked={selected}
+              onChange={() => onChange(opt.value)}
+              className="sr-only"
+            />
+            <span
+              aria-hidden="true"
+              className={cn(
+                'grid h-5 w-5 shrink-0 place-items-center rounded-full border-2',
+                selected ? 'border-primary' : 'border-[color:var(--ink)]',
+              )}
+            >
+              {selected && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
+            </span>
+            <span className="text-sm font-semibold text-foreground">{opt.label}</span>
+          </label>
+        )
+      })}
+    </div>
+  )
+}
+
+const FIELD_LABEL_CLASS = 'text-sm font-bold text-foreground'
+
+/**
+ * "Statling, 어떠셨나요?" — a single-page satisfaction survey (repository
+ * structure: see lib/feedback/feedback-storage.ts, localStorage today, a
+ * one-line swap to Supabase later). Q1/Q2/Q3/Q4 are required single-select
+ * radios; Q5 is an optional free-text comment. Submitting is guarded by
+ * `isSubmitting` (blocks a double-click from writing two records) and the
+ * form is replaced by a thank-you card right after a successful submit
+ * (blocks an accidental immediate resubmit) — "다시 작성하기" explicitly
+ * reopens a blank form for anyone who wants to leave feedback again later.
+ */
+export function FeedbackSection() {
+  const toastManager = Toast.useToastManager()
+  const [draft, setDraft] = useState<FeedbackDraft>(() => emptyFeedbackDraft())
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [justSubmitted, setJustSubmitted] = useState(false)
+  const [showValidation, setShowValidation] = useState(false)
+
+  const missingRequired =
+    !draft.satisfaction || !draft.favoritePart || !draft.improvementArea || !draft.returnIntent
+
+  function updateField<K extends keyof FeedbackDraft>(key: K, value: FeedbackDraft[K]) {
+    setDraft((prev) => ({ ...prev, [key]: value }))
+  }
+
+  async function handleSubmit() {
+    if (isSubmitting) return
+    if (missingRequired) {
+      setShowValidation(true)
+      toastManager.add({ title: '필수 항목을 모두 선택해주세요.', type: 'error' })
+      return
+    }
+    setIsSubmitting(true)
+    try {
+      addFeedbackRecord({
+        satisfaction: draft.satisfaction as SatisfactionValue,
+        favoritePart: draft.favoritePart as FavoritePartValue,
+        improvementArea: draft.improvementArea as ImprovementAreaValue,
+        returnIntent: draft.returnIntent as ReturnIntentValue,
+        comment: draft.comment,
+      })
+      setJustSubmitted(true)
+      toastManager.add({ title: '소중한 의견 감사해요!', type: 'success' })
+    } catch {
+      toastManager.add({ title: '제출하지 못했어요. 다시 시도해주세요.', type: 'error' })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (justSubmitted) {
+    return (
+      <div className="mt-6 flex flex-col items-center gap-2 rounded-2xl bg-card px-4 py-8 text-center toy-border">
+        <CheckCircle2 size={28} strokeWidth={2.4} className="text-primary" />
+        <p className="font-display text-sm font-extrabold text-foreground">피드백을 보내주셔서 감사해요!</p>
+        <button
+          type="button"
+          onClick={() => {
+            setDraft(emptyFeedbackDraft())
+            setJustSubmitted(false)
+            setShowValidation(false)
+          }}
+          className="mt-2 text-xs font-bold text-primary underline underline-offset-2"
+        >
+          다시 작성하기
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-6 rounded-2xl bg-card px-4 py-5 toy-border">
+      <div className="flex items-center gap-2">
+        <MessageCircleHeart size={18} strokeWidth={2.4} className="text-primary" />
+        <h2 className="font-display text-base font-extrabold text-foreground">Statling, 어떠셨나요?</h2>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">더 나은 Statling을 만드는 데 큰 도움이 돼요.</p>
+
+      <div className="mt-4 flex flex-col gap-5">
+        <div>
+          <p className={FIELD_LABEL_CLASS}>1. 전체적으로 얼마나 만족했나요?</p>
+          <div className="mt-2">
+            <RadioGroup
+              name="satisfaction"
+              options={SATISFACTION_OPTIONS}
+              value={draft.satisfaction}
+              onChange={(v) => updateField('satisfaction', v)}
+            />
+          </div>
+        </div>
+
+        <div>
+          <p className={FIELD_LABEL_CLASS}>2. 가장 만족한 부분은 무엇인가요?</p>
+          <div className="mt-2">
+            <RadioGroup
+              name="favoritePart"
+              options={FAVORITE_PART_OPTIONS}
+              value={draft.favoritePart}
+              onChange={(v) => updateField('favoritePart', v)}
+            />
+          </div>
+        </div>
+
+        <div>
+          <p className={FIELD_LABEL_CLASS}>3. 가장 아쉬웠던 부분은 무엇인가요?</p>
+          <div className="mt-2">
+            <RadioGroup
+              name="improvementArea"
+              options={IMPROVEMENT_AREA_OPTIONS}
+              value={draft.improvementArea}
+              onChange={(v) => updateField('improvementArea', v)}
+            />
+          </div>
+        </div>
+
+        <div>
+          <p className={FIELD_LABEL_CLASS}>4. 앞으로도 다시 사용하고 싶나요?</p>
+          <div className="mt-2">
+            <RadioGroup
+              name="returnIntent"
+              options={RETURN_INTENT_OPTIONS}
+              value={draft.returnIntent}
+              onChange={(v) => updateField('returnIntent', v)}
+            />
+          </div>
+        </div>
+
+        <div>
+          <p className={FIELD_LABEL_CLASS}>
+            5. 추가로 하고 싶은 말 <span className="font-normal text-muted-foreground">(선택)</span>
+          </p>
+          <textarea
+            value={draft.comment}
+            onChange={(e) => updateField('comment', e.target.value)}
+            placeholder="자유롭게 의견을 남겨주세요."
+            rows={3}
+            maxLength={500}
+            className="mt-2 w-full resize-none rounded-xl bg-secondary px-3 py-2.5 text-sm text-foreground toy-border placeholder:text-muted-foreground focus:outline-none"
+          />
+          <p className="mt-1 text-[11px] text-muted-foreground">이름, 연락처 등 개인정보는 적지 않아주세요.</p>
+        </div>
+
+        {showValidation && missingRequired && (
+          <p className="text-xs font-bold text-destructive">1~4번 항목을 모두 선택해주세요.</p>
+        )}
+
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className={cn(
+            'rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground toy-border toy-shadow transition-opacity',
+            isSubmitting && 'opacity-60',
+          )}
+        >
+          {isSubmitting ? '제출 중...' : '의견 보내기'}
+        </button>
+      </div>
+    </div>
+  )
+}

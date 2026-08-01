@@ -1,4 +1,6 @@
 import {
+  AUTO_SLEEP_ENERGY_PER_TICK,
+  AUTO_SLEEP_TICK_MS,
   DECAY_FLOOR,
   DECAY_PER_HOUR,
   MAX_OFFLINE_DECAY_MS,
@@ -44,6 +46,24 @@ export function applyElapsedDecay(
 }
 
 /**
+ * Energy recovery for time spent away — same per-tick rate as the live
+ * "asleep" recovery in hooks/use-pet-care.ts (AUTO_SLEEP_ENERGY_PER_TICK
+ * every AUTO_SLEEP_TICK_MS), applied unconditionally for however much
+ * elapsed time is passed in (not gated on mood — offline we don't track
+ * mood transitions, and the point is that energy should never be the thing
+ * blocking a returning player). Even a short time away is enough to fill
+ * the tank back up given how small DECAY_PER_HOUR.energy is by comparison.
+ */
+function applyOfflineEnergyRecovery(
+  stats: Record<CareStatId, number>,
+  elapsedMs: number,
+): Record<CareStatId, number> {
+  const ticks = Math.floor(elapsedMs / AUTO_SLEEP_TICK_MS)
+  if (ticks <= 0) return stats
+  return { ...stats, energy: clampStat(stats.energy + ticks * AUTO_SLEEP_ENERGY_PER_TICK) }
+}
+
+/**
  * Applies decay for the time between `state.lastUpdatedAt` and `now`,
  * capped at MAX_OFFLINE_DECAY_MS so a multi-day absence never reads as
  * "abandoned pet". `now` is always passed in (never read internally) so
@@ -53,9 +73,10 @@ export function applyPetDecay(state: PetCareState, now: Date): PetCareState {
   const last = new Date(state.lastUpdatedAt).getTime()
   const elapsedMs = Math.min(Math.max(0, now.getTime() - last), MAX_OFFLINE_DECAY_MS)
   if (elapsedMs <= 0) return state
+  const decayedStats = applyElapsedDecay(state.stats, elapsedMs, DECAY_PER_HOUR, DECAY_FLOOR)
   return {
     ...state,
-    stats: applyElapsedDecay(state.stats, elapsedMs, DECAY_PER_HOUR, DECAY_FLOOR),
+    stats: applyOfflineEnergyRecovery(decayedStats, elapsedMs),
     lastUpdatedAt: now.toISOString(),
   }
 }

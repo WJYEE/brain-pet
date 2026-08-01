@@ -61,3 +61,13 @@ export function getClassicGameKey(stat: StatId): string {
 export function allGamePools(): GamePoolEntry[] {
   return PLAY_ORDER.flatMap((stat) => GAME_POOL[stat])
 }
+
+/** Display name for a registered game key (e.g. 'memory-story-recall' -> '이야기 기억') — used by StatusScreen's per-game stat breakdown. Falls back to the raw key so an unregistered/stale id never crashes the UI. */
+export function getGameDisplayName(gameKey: string): string {
+  return allGamePools().find((entry) => entry.key === gameKey)?.name ?? gameKey
+}
+
+/** How many games are registered under one stat's pool (currently 2 for every stat) — the denominator for StatusScreen's "n/전체개 게임 반영" badge. */
+export function getGamePoolSize(stat: StatId): number {
+  return GAME_POOL[stat].length
+}

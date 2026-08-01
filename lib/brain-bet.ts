@@ -153,17 +153,49 @@ export const STATLING_TYPES: Record<StatId, StatlingType> = {
   reasoning: { id: 'reasoning', typeName: '탐정 타입', personality: '숨은 규칙을 찾아내는 똑똑한 성격' },
 }
 
-/** Returns the stat id with the highest Final Stat (the winning type). */
-export function getTopStat(finals: Record<StatId, number>): StatId {
-  return STAT_DISPLAY_ORDER.reduce((best, id) =>
-    (finals[id] ?? 0) > (finals[best] ?? 0) ? id : best,
-  )
+/** Fisher-Yates shuffle — fresh random order every call, used only to break stat-value ties (see rankStatsByFinals). */
+function shuffledStatIds(): StatId[] {
+  const order = [...STAT_DISPLAY_ORDER]
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[order[i], order[j]] = [order[j], order[i]]
+  }
+  return order
 }
 
-/** Returns the stat id with the second-highest Final Stat (the supporting type used by the pet-matching explanation). */
+/**
+ * Ranks all 6 stats by Final Stat value, highest first. Equal values are
+ * ordered randomly (re-rolled on every call) rather than by a fixed priority
+ * — e.g. two stats tied for 1st have an even chance of landing in either
+ * spot, and if all 6 are exactly equal the 1st/2nd assignment is fully
+ * random. Relies on Array.sort being stable (guaranteed since ES2019): the
+ * pre-shuffle only decides tie order, real value differences always win.
+ */
+export function rankStatsByFinals(finals: Record<StatId, number>): StatId[] {
+  return shuffledStatIds().sort((a, b) => (finals[b] ?? 0) - (finals[a] ?? 0))
+}
+
+/**
+ * The two highest Final Stats, highest first — the single source of truth
+ * for "which character does this stat result hatch" (see
+ * lib/pets/pet-flow.ts#beginPetAssignment). Computed together in one call so
+ * the pair is always consistent (calling getTopStat/getSecondStat
+ * separately would re-roll the tie-break independently for each, risking a
+ * mismatched or even duplicate pair under a tie) — callers that need a
+ * stable top/second across re-renders must compute this once and persist
+ * the result, never call it fresh on every render.
+ */
+export function pickTopTwoStats(finals: Record<StatId, number>): [StatId, StatId] {
+  const ranked = rankStatsByFinals(finals)
+  return [ranked[0], ranked[1]]
+}
+
+/** Returns the stat id with the highest Final Stat (the winning type). Ties broken randomly — see rankStatsByFinals. Prefer pickTopTwoStats when both top and second are needed together. */
+export function getTopStat(finals: Record<StatId, number>): StatId {
+  return pickTopTwoStats(finals)[0]
+}
+
+/** Returns the stat id with the second-highest Final Stat (the supporting type used by the pet-matching explanation). Ties broken randomly — see rankStatsByFinals. Prefer pickTopTwoStats when both top and second are needed together. */
 export function getSecondStat(finals: Record<StatId, number>): StatId {
-  const top = getTopStat(finals)
-  return STAT_DISPLAY_ORDER.filter((id) => id !== top).reduce((best, id) =>
-    (finals[id] ?? 0) > (finals[best] ?? 0) ? id : best,
-  )
+  return pickTopTwoStats(finals)[1]
 }

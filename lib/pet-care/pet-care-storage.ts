@@ -68,3 +68,9 @@ export function savePetCareState(state: PetCareState): void {
   if (typeof window === 'undefined') return
   window.localStorage.setItem(petCareStorageKey(getOrCreateDeviceId()), JSON.stringify(state))
 }
+
+/** Wipes this device's care state (hunger/mood/intimacy) — see resetAllPetData in game-flow.tsx. */
+export function clearPetCareState(): void {
+  if (typeof window === 'undefined') return
+  window.localStorage.removeItem(petCareStorageKey(getOrCreateDeviceId()))
+}

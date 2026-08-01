@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowRight, Clock, Egg, Sparkles } from 'lucide-react'
+import { ArrowRight, Clock, Egg, RotateCcw, Sparkles } from 'lucide-react'
 import { Logo } from '@/components/brain-bet/logo'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { PLAY_ORDER, STATS, TOTAL_GAMES } from '@/lib/brain-bet'
@@ -8,10 +8,15 @@ import { useSound } from '@/hooks/use-sound'
 
 interface LandingScreenProps {
   onStart: () => void
+  /** How many of the 6 Intro games are already completed on a resumable checkpoint — 0 means nothing to resume, so the screen renders exactly as before. See lib/game/intro-progress-storage.ts. */
+  resumeCount?: number
+  onResume?: () => void
+  onRestart?: () => void
 }
 
-export function LandingScreen({ onStart }: LandingScreenProps) {
+export function LandingScreen({ onStart, resumeCount = 0, onResume, onRestart }: LandingScreenProps) {
   const { play } = useSound()
+  const canResume = resumeCount > 0
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col items-center px-5 py-10 sm:py-16">
@@ -60,25 +65,66 @@ export function LandingScreen({ onStart }: LandingScreenProps) {
 
       {/* CTA */}
       <div className="mt-9 flex flex-col items-center gap-4">
-        <button
-          type="button"
-          data-sfx-skip
-          onClick={() => {
-            play('ui-confirm')
-            onStart()
-          }}
-          className="group inline-flex items-center gap-2 rounded-2xl bg-primary px-8 py-4 font-display text-xl font-extrabold text-primary-foreground toy-border toy-shadow-lg transition-transform duration-150 hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none"
-        >
-          게임 시작하기
-          <ArrowRight
-            size={22}
-            strokeWidth={2.8}
-            className="transition-transform duration-150 group-hover:translate-x-1"
-          />
-        </button>
-        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
-          <Clock size={15} strokeWidth={2.4} />약 2~3분
-        </span>
+        {canResume ? (
+          <>
+            <div className="flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground toy-border toy-shadow-sm">
+              진단 {resumeCount}/{TOTAL_GAMES}개 완료 · 이어서 할 수 있어요
+            </div>
+            <button
+              type="button"
+              data-sfx-skip
+              onClick={() => {
+                play('ui-confirm')
+                onResume?.()
+              }}
+              className="group inline-flex items-center gap-2 rounded-2xl bg-primary px-8 py-4 font-display text-xl font-extrabold text-primary-foreground toy-border toy-shadow-lg transition-transform duration-150 hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none"
+            >
+              이어서 하기
+              <ArrowRight
+                size={22}
+                strokeWidth={2.8}
+                className="transition-transform duration-150 group-hover:translate-x-1"
+              />
+            </button>
+            <button
+              type="button"
+              data-sfx-skip
+              onClick={() => {
+                play('ui-back')
+                onRestart?.()
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-card px-4 py-2 text-sm font-bold text-muted-foreground toy-border"
+            >
+              <RotateCcw size={14} strokeWidth={2.4} />
+              처음부터 다시 하기
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              data-sfx-skip
+              onClick={() => {
+                play('ui-confirm')
+                onStart()
+              }}
+              className="group inline-flex items-center gap-2 rounded-2xl bg-primary px-8 py-4 font-display text-xl font-extrabold text-primary-foreground toy-border toy-shadow-lg transition-transform duration-150 hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none"
+            >
+              게임 시작하기
+              <ArrowRight
+                size={22}
+                strokeWidth={2.8}
+                className="transition-transform duration-150 group-hover:translate-x-1"
+              />
+            </button>
+            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
+              <Clock size={15} strokeWidth={2.4} />약 2~3분
+            </span>
+          </>
+        )}
+        <p className="text-center text-[11px] font-semibold text-muted-foreground">
+          잠깐 나갔다 돌아와도 완료한 진단부터 이어서 할 수 있어요.
+        </p>
       </div>
 
       {/* Statling curiosity hook — hint at a birth, never reveal the character */}

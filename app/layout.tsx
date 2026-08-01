@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next'
 import { Baloo_2, Nunito } from 'next/font/google'
 import { AppToastProvider } from '@/components/brain-bet/toast-provider'
 import { AudioProvider } from '@/components/brain-bet/audio-provider'
+import { AuthProvider } from '@/lib/auth/auth-provider'
 import './globals.css'
 
 const baloo = Baloo_2({
@@ -89,7 +90,9 @@ export default function RootLayout({
     <html lang="en" className={`bg-background ${baloo.variable} ${nunito.variable}`}>
       <body className="antialiased">
         <AppToastProvider>
-          <AudioProvider>{children}</AudioProvider>
+          <AuthProvider>
+            <AudioProvider>{children}</AudioProvider>
+          </AuthProvider>
         </AppToastProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
         {process.env.NODE_ENV === 'production' && <SpeedInsights />}

@@ -10,7 +10,8 @@
  * `slot` here. See docs/asset-migration-map.md.
  */
 
-export type DecoSlot = 'head' | 'face' | 'eyes' | 'neck' | 'body' | 'back' | 'hand' | 'effect' | 'unknown'
+/** 'eyes' was folded into 'face' — glasses/goggles/eyepatches etc. anchor there instead of getting their own slot. */
+export type DecoSlot = 'head' | 'face' | 'neck' | 'body' | 'back' | 'hand' | 'effect' | 'unknown'
 
 export interface CharacterDecoAssetDefinition {
   id: string

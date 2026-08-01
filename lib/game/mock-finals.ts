@@ -1,42 +1,23 @@
-import { STAT_DISPLAY_ORDER, type StatId } from '@/lib/brain-bet'
+import { PLAY_ORDER, STAT_DISPLAY_ORDER, type StatId } from '@/lib/brain-bet'
+import { CHARACTER_CATALOG, getPetProfileById, type PetProfile } from '@/lib/pets/pet-profile'
 
 /**
  * Dev/QA only — lets a developer generate a full 6-stat result without
- * playing all 6 mini-games, to test the pet-matching flow quickly. Never
- * used by the real gameplay path (see game-flow.tsx's onXComplete handlers,
- * which are untouched). Reuses the exact same `Record<StatId, number>` shape
- * real finals use — there is no separate test-only type.
+ * playing all 6 mini-games, to test the hatch flow quickly. Never used by
+ * the real gameplay path (see game-flow.tsx's onXComplete handlers, which
+ * are untouched). Reuses the exact same `Record<StatId, number>` shape real
+ * finals use — there is no separate test-only type.
+ *
+ * 'random' produces a genuinely random 6-stat spread (any of the 30
+ * characters could result). Every other preset is one of the 30 character
+ * ids (see lib/pets/pet-profile.ts#CHARACTER_CATALOG) — picking one
+ * generates finals engineered so that exact character's
+ * (primaryStat, secondaryStat) wins top/second, guaranteeing that clicking
+ * "01_치즈털실냥이" in the QA menu actually hatches 치즈털실냥이.
  */
-export type MockStatPreset =
-  | 'random'
-  | 'balanced'
-  | 'focus'
-  | 'reaction'
-  | 'memory'
-  | 'judgment'
-  | 'spatial'
-  | 'reasoning'
+export type MockStatPreset = 'random' | (typeof CHARACTER_CATALOG)[number]['id']
 
-export const MOCK_STAT_PRESETS: MockStatPreset[] = [
-  'random',
-  'balanced',
-  'focus',
-  'reaction',
-  'memory',
-  'judgment',
-  'spatial',
-  'reasoning',
-]
-
-/** Every stat-specific preset's dominant + supporting stat (GAME_SPEC QA skip §C 2-7). */
-const FOCUSED_PRESET_STATS: Partial<Record<MockStatPreset, { primary: StatId; secondary: StatId }>> = {
-  focus: { primary: 'focus', secondary: 'reaction' },
-  reaction: { primary: 'reaction', secondary: 'judgment' },
-  memory: { primary: 'memory', secondary: 'focus' },
-  judgment: { primary: 'judgment', secondary: 'reasoning' },
-  spatial: { primary: 'spatial', secondary: 'reasoning' },
-  reasoning: { primary: 'reasoning', secondary: 'memory' },
-}
+export const MOCK_STAT_PRESETS: MockStatPreset[] = ['random', ...CHARACTER_CATALOG.map((pet) => pet.id)]
 
 /** Deterministic PRNG (mulberry32) so a given seed always reproduces the same finals. */
 function mulberry32(seed: number): () => number {
@@ -63,7 +44,7 @@ function randInRange(rng: () => number, min: number, max: number): number {
   return Math.round(min + rng() * (max - min))
 }
 
-/** All 6 stats independently random across a wide band — can land anywhere, including near-flat or lopsided. */
+/** All 6 stats independently random across a wide band — can land anywhere, including near-flat or lopsided (which character results is intentionally unpredictable). */
 function buildRandomPreset(rng: () => number): Record<StatId, number> {
   const result = {} as Record<StatId, number>
   for (const id of STAT_DISPLAY_ORDER) {
@@ -72,55 +53,46 @@ function buildRandomPreset(rng: () => number): Record<StatId, number> {
   return result
 }
 
-/** "랜덤 균형형" — all 6 stats in 55-85, nudged apart if they land too close together so there's still a visible top/bottom. */
-function buildBalancedPreset(rng: () => number): Record<StatId, number> {
+/**
+ * A character-targeted preset: primaryStat clearly highest, secondaryStat
+ * clearly second, the remaining 4 stats spread across distinct lower bands
+ * (never touching secondaryStat's range) so no accidental tie can bump a
+ * filler stat above the intended pair.
+ */
+function buildTargetedPreset(rng: () => number, pet: PetProfile): Record<StatId, number> {
   const result = {} as Record<StatId, number>
-  for (const id of STAT_DISPLAY_ORDER) {
-    result[id] = randInRange(rng, 55, 85)
-  }
+  result[pet.primaryStat] = randInRange(rng, 88, 95)
+  result[pet.secondaryStat] = randInRange(rng, 70, 82)
 
-  const MIN_SPREAD = 10
-  let maxId = STAT_DISPLAY_ORDER[0]
-  let minId = STAT_DISPLAY_ORDER[0]
-  for (const id of STAT_DISPLAY_ORDER) {
-    if (result[id] > result[maxId]) maxId = id
-    if (result[id] < result[minId]) minId = id
-  }
-  if (maxId !== minId && result[maxId] - result[minId] < MIN_SPREAD) {
-    result[maxId] = Math.min(85, result[maxId] + MIN_SPREAD)
-    result[minId] = Math.max(55, result[minId] - MIN_SPREAD)
-  }
-  return result
-}
-
-/** A stat-specific preset: primary stat high, secondary stat moderately high, the rest mid-range. */
-function buildFocusedPreset(rng: () => number, primary: StatId, secondary: StatId): Record<StatId, number> {
-  const result = {} as Record<StatId, number>
-  for (const id of STAT_DISPLAY_ORDER) {
-    if (id === primary) result[id] = randInRange(rng, 80, 95)
-    else if (id === secondary) result[id] = randInRange(rng, 65, 80)
-    else result[id] = randInRange(rng, 40, 65)
+  const fillerBands: Array<[number, number]> = [
+    [55, 62],
+    [45, 52],
+    [35, 42],
+    [25, 32],
+  ]
+  let i = 0
+  for (const id of PLAY_ORDER) {
+    if (id === pet.primaryStat || id === pet.secondaryStat) continue
+    const [min, max] = fillerBands[i]
+    result[id] = randInRange(rng, min, max)
+    i += 1
   }
   return result
 }
 
 /**
  * Generates a full 6-stat result for the QA skip path — same
- * `Record<StatId, number>` shape and (48-95-ish) scale as a real playthrough,
- * so getTopStat/matching.ts/pet-flow.ts all treat it identically to a real
- * result. Pass `seed` to get a reproducible result for a given preset;
- * omit it for a genuinely fresh random result each call.
+ * `Record<StatId, number>` shape and scale as a real playthrough, so
+ * getTopStat/beginPetAssignment treat it identically to a real result. Pass
+ * `seed` to get a reproducible result for a given preset; omit it for a
+ * genuinely fresh random result each call.
  */
 export function generateMockFinals(preset: MockStatPreset = 'random', seed?: string): Record<StatId, number> {
   const resolvedSeed = seed ?? `mock_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
   const rng = mulberry32(hashStringToInt(resolvedSeed))
 
-  const finals =
-    preset === 'balanced'
-      ? buildBalancedPreset(rng)
-      : preset === 'random'
-        ? buildRandomPreset(rng)
-        : buildFocusedPreset(rng, FOCUSED_PRESET_STATS[preset]!.primary, FOCUSED_PRESET_STATS[preset]!.secondary)
+  const targetPet = preset === 'random' ? null : getPetProfileById(preset)
+  const finals = targetPet ? buildTargetedPreset(rng, targetPet) : buildRandomPreset(rng)
 
   if (process.env.NODE_ENV !== 'production') {
     const line = STAT_DISPLAY_ORDER.map((id) => `${id} ${finals[id]}`).join(', ')

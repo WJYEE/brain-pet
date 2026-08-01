@@ -52,19 +52,23 @@ export interface RewardUnlock {
 }
 
 /**
- * Extensible unlock table. Most of these are intentionally thin hooks for
- * this scope: Lv2's tone shift is actually driven by DialogueLine's own
- * `minIntimacyLevel` filter (see dialogue.ts), Lv3 swaps in an idle motion
- * variant, and Lv5/7/10 currently only surface a Toast — the accessory
- * slot / room item / special expression payloads themselves are future
- * scope, `type` just marks where that would plug in.
+ * Extensible unlock table. Lv2's tone shift is actually driven by
+ * DialogueLine's own `minIntimacyLevel` filter (see dialogue.ts) and Lv3
+ * swaps in a real idle motion variant, so those two toasts announce content
+ * that truly exists. The accessory slot / room item / special expression
+ * payloads for Lv5/7/10 are still future scope — `type` marks where that
+ * content will plug in once built — so their copy must NOT claim something
+ * was unlocked; it only celebrates the milestone and is upfront that the
+ * feature itself is still coming. Do not swap these three back to "해금!"
+ * wording until the actual payload ships, or the milestone becomes another
+ * empty promise (see leveling.ts's usage in pet-care-storage.ts).
  */
 export const REWARD_UNLOCKS: RewardUnlock[] = [
   { level: 2, type: 'dialogueTone', id: 'lv2-casual-tone', title: '더 친근한 말투 해금!', description: '이제 조금 더 편하게 이야기해줄 거예요.' },
   { level: 3, type: 'idleMotion', id: 'lv3-idle-variant', title: '새로운 몸짓 해금!', description: '가만히 있을 때도 표정이 더 다양해졌어요.' },
-  { level: 5, type: 'accessorySlot', id: 'lv5-accessory-slot', title: '액세서리 슬롯 해금!', description: '곧 꾸며줄 수 있게 될 거예요.' },
-  { level: 7, type: 'roomItem', id: 'lv7-room-item', title: '방 꾸미기 아이템 해금!', description: '방에 놓을 특별한 아이템이 생겼어요.' },
-  { level: 10, type: 'expression', id: 'lv10-expression', title: '특별한 표정 해금!', description: '아주 특별한 순간에만 보여줄 표정이에요.' },
+  { level: 5, type: 'accessorySlot', id: 'lv5-accessory-slot', title: '친밀도 Lv.5 달성!', description: '액세서리로 꾸미는 기능은 아직 준비 중이에요. 조금만 기다려주세요.' },
+  { level: 7, type: 'roomItem', id: 'lv7-room-item', title: '친밀도 Lv.7 달성!', description: '방 꾸미기 전용 아이템은 아직 준비 중이에요. 조금만 기다려주세요.' },
+  { level: 10, type: 'expression', id: 'lv10-expression', title: '친밀도 Lv.10 달성!', description: '특별한 표정은 아직 준비 중이에요. 조금만 기다려주세요.' },
 ]
 
 /** Rewards newly crossed between fromLevel(exclusive) and toLevel(inclusive), minus ones already granted. */

@@ -105,14 +105,55 @@ export function buildCharacterStateFolder(folderId: string, displayName: string)
 }
 
 /**
- * Every character folder with a complete 24-file set, ready for the QA
- * tester toggle (see qa-skip-menu.tsx). Add an entry here — nothing else —
- * once a new folder's 24 PNGs are finished; the tester menu lists whatever
- * is registered here.
+ * folderId/displayName pairs for the full 30-character roster (see
+ * public/assets/statling/characters/00_match/00_match.md) — every folder
+ * has a complete 24-file set. Single source of truth for
+ * TESTER_CHARACTER_FOLDERS below; kept as plain data (not re-derived from
+ * lib/pets/pet-profile.ts) so this module never needs to import the
+ * stat/catalog system just to know which folders exist.
  */
-export const TESTER_CHARACTER_FOLDERS: CharacterStateFolder[] = [
-  buildCharacterStateFolder('01_치즈털실냥이', '치즈털실냥이'),
+const CHARACTER_ROSTER: Array<[folderId: string, displayName: string]> = [
+  ['01_치즈털실냥이', '치즈털실냥이'],
+  ['02_로봇', '로봇'],
+  ['03_양', '양'],
+  ['04_상처도치', '상처도치'],
+  ['05_노란병아리', '노란병아리'],
+  ['06_초록스카프수달', '초록스카프수달'],
+  ['07_별사막여우', '별사막여우'],
+  ['08_고래', '고래'],
+  ['09_귀신', '귀신'],
+  ['10_벌', '벌'],
+  ['11_하트덕', '하트덕'],
+  ['12_홍학', '홍학'],
+  ['13_나뭇잎여우', '나뭇잎여우'],
+  ['14_코알라', '코알라'],
+  ['15_개미햝기', '개미햝기'],
+  ['16_균형다람쥐', '균형다람쥐'],
+  ['17_보라곰', '보라곰'],
+  ['18_지식토끼', '지식토끼'],
+  ['19_까망외계인', '까망외계인'],
+  ['20_찐강쥐', '찐강쥐'],
+  ['21_거북이', '거북이'],
+  ['22_아홀로틀', '아홀로틀'],
+  ['23_잎라쿤', '잎라쿤'],
+  ['24_꽃사막여우', '꽃사막여우'],
+  ['25_치즈생쥐', '치즈생쥐'],
+  ['26_푸른늑대', '푸른늑대'],
+  ['27_겨울펭귄', '겨울펭귄'],
+  ['28_카피바라', '카피바라'],
+  ['29_무지개유니콘', '무지개유니콘'],
+  ['30_꽃다발공룡', '꽃다발공룡'],
 ]
+
+/**
+ * Every character folder with a complete 24-file set, ready for the QA
+ * tester toggle (see qa-skip-menu.tsx). Add an entry to CHARACTER_ROSTER
+ * above — nothing else — once a new folder's 24 PNGs are finished; the
+ * tester menu lists whatever is registered here.
+ */
+export const TESTER_CHARACTER_FOLDERS: CharacterStateFolder[] = CHARACTER_ROSTER.map(([folderId, displayName]) =>
+  buildCharacterStateFolder(folderId, displayName),
+)
 
 /**
  * Maps the app's real Mood/PetAnimation state (lib/pet-care/types.ts) onto

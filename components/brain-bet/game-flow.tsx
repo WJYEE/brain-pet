@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Trophy } from 'lucide-react'
 import { ConfirmDialog } from '@/components/brain-bet/confirm-dialog'
 import { LandingScreen } from '@/components/brain-bet/screens/landing-screen'
@@ -27,21 +27,19 @@ import { RoomScreen } from '@/components/brain-bet/screens/room-screen'
 import { GrowScreen } from '@/components/brain-bet/screens/grow-screen'
 import { GrowGameScreen } from '@/components/brain-bet/screens/grow-game-screen'
 import { ComingSoonScreen } from '@/components/brain-bet/screens/coming-soon-screen'
-import { ThemeScreen } from '@/components/brain-bet/screens/theme-screen'
+import { StatlingScreen } from '@/components/brain-bet/screens/statling-screen'
 import { MyPageScreen } from '@/components/brain-bet/screens/my-page-screen'
+import { OnboardingModal } from '@/components/brain-bet/onboarding-modal'
+import { loadOnboardingSeen } from '@/lib/onboarding-storage'
 import { NavRail, type NavTab } from '@/components/brain-bet/nav-rail'
 import { QaSkipMenu } from '@/components/brain-bet/qa-skip-menu'
 import { PLAY_ORDER, TOTAL_GAMES, getSecondStat, getTopStat, type StatId } from '@/lib/brain-bet'
-import { RECOMMENDED_STAT_PLACEHOLDER } from '@/lib/room'
+import { getRecommendedStat } from '@/lib/room'
 import { recordGameCompletion } from '@/lib/pet-care/pet-memory'
-import { loadPetMemory, savePetMemory } from '@/lib/pet-care/pet-memory-storage'
-import {
-  beginPetAssignment,
-  confirmPet,
-  refreshGrowthData,
-  rerollPet,
-  resolveCurrentPetProfile,
-} from '@/lib/pets/pet-flow'
+import { loadPetMemory, savePetMemory, clearPetMemory } from '@/lib/pet-care/pet-memory-storage'
+import { clearPetCareState } from '@/lib/pet-care/pet-care-storage'
+import { beginPetAssignment, confirmPet, refreshGrowthData, resolveCurrentPetProfile } from '@/lib/pets/pet-flow'
+import { addMetPet, markAllPetsMet } from '@/lib/pets/dex-storage'
 import {
   clearStoredPetProfile,
   loadStoredPetProfile,
@@ -65,6 +63,15 @@ import { FIT_PUZZLE_GAME_VERSION } from '@/lib/config/fit-puzzle.config'
 import { NUMBER_PATTERN_GAME_VERSION } from '@/lib/config/number-pattern.config'
 import { detectDevice } from '@/lib/game/device'
 import { generateSessionId } from '@/lib/game/id'
+import { computeCurrentStats, loadPlayerSkillState, recordMiniGameCompletion, savePlayerSkillState } from '@/lib/game/player-skill-storage'
+import {
+  clearIntroProgress,
+  loadIntroProgress,
+  recordIntroGameCompletion,
+  saveIntroProgress,
+  startNewIntroProgress,
+  type IntroProgressState,
+} from '@/lib/game/intro-progress-storage'
 import { applyGameResult, emptyStatStatusMap } from '@/lib/game/stat-status'
 import { getClassicGameKey } from '@/lib/game/game-registry'
 import type {
@@ -135,12 +142,12 @@ type Phase =
   | 'mystats'
   | 'ranking'
   | 'mypage'
-  | 'theme'
+  | 'statling'
   | 'grow'
   | 'grow-game'
 
 /** Phases that show the post-hatch bottom navigation. */
-const NAV_PHASES: Phase[] = ['room', 'mystats', 'ranking', 'mypage', 'theme']
+const NAV_PHASES: Phase[] = ['room', 'mystats', 'ranking', 'statling', 'mypage']
 
 /**
  * Dev/QA "skip the 6 mini-games" control — visible in local dev by default,
@@ -176,30 +183,68 @@ export function GameFlow() {
   const [finals, setFinals] = useState<Record<StatId, number>>(emptyFinals())
   const [statlingName, setStatlingName] = useState('')
   /**
-   * The user's representative-pet record — candidate pool + reroll progress
-   * before confirmation, locked-in petId after. Persisted to localStorage
-   * (see lib/pets/pet-storage.ts); `seed`/`petId`/`candidatePetIds` never
-   * change once `confirmed` is true — replaying the tests only refreshes the
-   * stored growth data.
+   * The user's representative-pet record — `petId`/`topStat`/`secondStat`
+   * are decided the moment finals are known (see
+   * lib/pets/pet-flow.ts#beginPetAssignment) and never change once
+   * `confirmed` is true. Persisted to localStorage (see
+   * lib/pets/pet-storage.ts) — replaying the tests only refreshes the stored
+   * growth data.
    */
   const [petRecord, setPetRecord] = useState<StoredPetProfile | null>(null)
   /**
-   * Whether the 테마 tab currently has unsaved room edits — lifted here (not
-   * kept purely local to ThemeScreen) so the bottom NavRail, which lives
-   * outside ThemeScreen, can intercept a tab switch away from 테마 and warn
-   * before discarding those edits (see handleNavSelect below).
+   * Whether the Statling tab's nested 방 꾸미기 (ThemeScreen) view currently
+   * has unsaved room edits — lifted here (not kept purely local to
+   * StatlingScreen/ThemeScreen) so the bottom NavRail, which lives outside
+   * both, can intercept a tab switch away from Statling and warn before
+   * discarding those edits (see handleNavSelect below).
    */
   const [themeDirty, setThemeDirty] = useState(false)
   const [pendingNavTab, setPendingNavTab] = useState<NavTab | null>(null)
   /** Dev/QA only — pins the Room character to one TESTER_CHARACTER_FOLDERS entry's 24-state art. See qa-skip-menu.tsx / pet-mood-view.tsx. */
   const [testerFolderId, setTesterFolderId] = useState<string | null>(null)
+  /**
+   * Idempotency key for "the mini-game currently in progress" — read by
+   * recordSkillCompletion below as `completionId`. Deliberately NOT
+   * `generateSessionId()` called fresh inside each on*Complete handler (that
+   * value already exists per-result as `sessionId`, but a fresh id every
+   * call can't detect a duplicate call). This ref instead only changes when
+   * a *new* round actually starts (enterStatGame / confirmFreePlayGame), so
+   * if the same on*Complete handler somehow fires twice for the same round
+   * (Strict Mode double-invoke, a stray duplicate call, re-entering the
+   * result screen, ...), both calls carry the identical completionId and
+   * lib/game/player-skill-storage.ts#recordMiniGameCompletion no-ops the
+   * second one. A page refresh wipes this ref along with all other in-memory
+   * game-flow state (nothing survives a refresh mid-game today — see the
+   * mount effect above), so there is nothing left to duplicate against in
+   * that case either.
+   */
+  const currentAttemptIdRef = useRef<string>(generateSessionId())
+  /** A resumable Intro checkpoint found on mount (see lib/game/intro-progress-storage.ts) — non-null only while Landing can still offer "이어서 하기". Cleared the moment the player resumes, restarts, or the run finishes. */
+  const [introResume, setIntroResume] = useState<IntroProgressState | null>(null)
+  const [confirmingRestartIntro, setConfirmingRestartIntro] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  /** Guards the auto-show effect below so it only ever fires once per mount, even as `phase` keeps changing between nav tabs — reopening manually (MyPageScreen's "온보딩 다시 보기") goes through setShowOnboarding directly and doesn't touch this. */
+  const autoOnboardingShownRef = useRef(false)
 
-  const topStat = getTopStat(finals)
+  /**
+   * topStat/secondaryStat once a pet has been assigned come straight from
+   * petRecord (frozen the moment beginPetAssignment ran — see
+   * lib/brain-bet.ts#pickTopTwoStats) rather than being recomputed from
+   * `finals` on every render: recomputing live would re-roll the random
+   * tie-break on every render, which could silently swap which stat reads as
+   * "top" while the assigned pet itself stays the same. Falls back to a live
+   * computation only pre-assignment (no petRecord yet — topStat is never
+   * actually rendered in that state today, but this keeps the value defined
+   * rather than throwing).
+   */
+  const topStat = petRecord ? petRecord.topStat : getTopStat(finals)
+  const secondaryStat = petRecord ? petRecord.secondStat : getSecondStat(finals)
+  const recommendedStat = getRecommendedStat(finals)
   /**
    * Single source of truth for "which pet is currently shown" — every
    * post-hatch screen (Egg, Reveal, Naming, Room, ...) reads this same value
    * instead of recomputing anything from getTopStat/CharacterImage. Resolves
-   * to the current unconfirmed candidate or the locked-in confirmed pet (see
+   * to the assigned pet, confirmed or not (see
    * lib/pets/pet-flow.ts#resolveCurrentPetProfile); null only when no pet
    * has been assigned yet at all.
    */
@@ -223,16 +268,18 @@ export function GameFlow() {
           id: `tester-${activeTesterFolder.folderId}`,
           name: activeTesterFolder.displayName,
           imageSrc: activeTesterFolder.assets.idle,
+          primaryStat: 'reaction',
+          secondaryStat: 'memory',
           vector: Object.fromEntries(PLAY_ORDER.map((id) => [id, 0.5])) as Record<StatId, number>,
           tagline: '테스터용 캐릭터예요.',
         }
       : real
 
   // Resume an in-progress (not yet confirmed) reveal straight to the Reveal
-  // screen on mount — e.g. after a refresh mid-reroll. A CONFIRMED pet never
-  // auto-navigates anywhere; only this one bounce-back case is handled, since
-  // no other phase is persisted (GAME_SPEC: keep existing navigation as-is
-  // otherwise).
+  // screen on mount — e.g. after a refresh before ever confirming. A
+  // CONFIRMED pet never auto-navigates anywhere; only this one bounce-back
+  // case is handled, since no other phase is persisted (GAME_SPEC: keep
+  // existing navigation as-is otherwise).
   useEffect(() => {
     const stored = loadStoredPetProfile()
     if (stored && !stored.confirmed) {
@@ -242,18 +289,103 @@ export function GameFlow() {
     }
   }, [])
 
+  // Offers "이어서 하기" on Landing only when a resumable, not-yet-stale
+  // checkpoint exists (see lib/game/intro-progress-storage.ts#loadIntroProgress
+  // for the staleness/already-finished rules).
+  useEffect(() => {
+    setIntroResume(loadIntroProgress())
+  }, [])
+
+  // Auto-shows the onboarding card exactly once, the first time a first-visit
+  // (never dismissed with "다시 보지 않기") user reaches any of the main tabs —
+  // i.e. right after hatching, not on Landing/game screens.
+  useEffect(() => {
+    if (autoOnboardingShownRef.current) return
+    if (!NAV_PHASES.includes(phase)) return
+    autoOnboardingShownRef.current = true
+    if (!loadOnboardingSeen()) setShowOnboarding(true)
+  }, [phase])
+
   /** First Play only — always stages the stat's classic game (see getClassicGameKey). Free Play picks a specific game explicitly instead (see selectFreePlayGame/confirmFreePlayGame below). */
   const enterStatGame = (statId: StatId) => {
     setActiveStatId(statId)
     setActiveGameKey(getClassicGameKey(statId))
+    currentAttemptIdRef.current = generateSessionId() // new round starting — see the ref's own doc comment
   }
 
+  /**
+   * Single choke point every on*Complete handler calls for a *valid* attempt
+   * (invalid/anti-cheat-flagged attempts never reach here, matching the
+   * existing savePetMemory(recordGameCompletion(...)) gating pattern below).
+   * `activeGameKey` is read live from closure state — by the time a handler
+   * runs, it still names the game that was just played (the next
+   * enterStatGame/confirmFreePlayGame call, which would change it, only
+   * happens later from a user click on the Complete screen). See
+   * lib/game/player-skill-storage.ts for the idempotency/averaging rules
+   * this delegates to.
+   */
+  function recordSkillCompletion(statCategory: StatId, gameScore: number) {
+    const { state, applied } = recordMiniGameCompletion(loadPlayerSkillState(), {
+      completionId: currentAttemptIdRef.current,
+      gameId: activeGameKey,
+      statCategory,
+      normalizedScore: gameScore,
+      completedAt: new Date().toISOString(),
+    })
+    if (applied) savePlayerSkillState(state)
+  }
+
+  /**
+   * Checkpoints one Intro (First Play) game's completion so a refresh/tab
+   * close/back-then-forward mid-run can resume from the next stat instead of
+   * replaying the whole sequence — see lib/game/intro-progress-storage.ts.
+   * Call sites already guard with `flowMode === 'first'`, so a Free Play
+   * replay never touches this; a duplicate call for the same stat (Strict
+   * Mode double-invoke, ...) is already a no-op inside
+   * recordIntroGameCompletion, same idempotency shape as recordSkillCompletion
+   * above.
+   */
+  function recordIntroCheckpoint(statId: StatId, gameKey: string, gameScore: number) {
+    const progress = loadIntroProgress()
+    if (!progress) return // no active checkpoint (e.g. already resumed to completion) — nothing to update
+    saveIntroProgress(
+      recordIntroGameCompletion(progress, { statId, gameKey, gameScore, completedAt: new Date().toISOString() }),
+    )
+  }
+
+  /** Fresh Intro run — first-ever visit, "다시 하기" after a full completion, or "처음부터 다시 하기" from Landing. Always starts a brand-new checkpoint (see startNewIntroProgress). */
   const start = () => {
     setIndex(0)
     enterStatGame(PLAY_ORDER[0])
     setFlowMode('first')
     setFinals(emptyFinals())
+    startNewIntroProgress()
+    setIntroResume(null)
     setPhase('game')
+  }
+
+  /** "이어서 하기" — rebuilds `finals` from the checkpoint's completed stats (see IntroCompletedGame) and jumps straight to the next not-yet-played stat. The in-progress game itself is never restored — only fully completed games count, per spec. */
+  const resumeIntro = () => {
+    if (!introResume) return
+    const restoredFinals = emptyFinals()
+    for (const g of introResume.completedGames) restoredFinals[g.statId] = g.gameScore
+    const nextIndex = introResume.completedGames.length
+    setFinals(restoredFinals)
+    setFlowMode('first')
+    setIntroResume(null)
+    if (nextIndex >= TOTAL_GAMES) {
+      setPhase('status')
+      return
+    }
+    setIndex(nextIndex)
+    enterStatGame(PLAY_ORDER[nextIndex])
+    setPhase('game')
+  }
+
+  /** "처음부터 다시 하기" — only wipes the Intro checkpoint (see start()); never touches pet/room/care data. Gated behind confirmingRestartIntro so a stray tap can't silently discard progress. */
+  const restartIntro = () => {
+    clearIntroProgress()
+    start()
   }
 
   const goNextFirst = () => {
@@ -263,6 +395,7 @@ export function GameFlow() {
       enterStatGame(PLAY_ORDER[nextIndex])
       setPhase('game')
     } else {
+      clearIntroProgress() // the run is fully done — nothing left to resume, see goNextFirst's else branch
       setPhase('status')
     }
   }
@@ -305,6 +438,8 @@ export function GameFlow() {
     setStatStatus((map) => applyGameResult('reaction', map, result))
     setLastResult(result)
     if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    if (result.isValidAttempt) recordSkillCompletion('reaction', gameScore)
+    if (result.isValidAttempt && flowMode === 'first') recordIntroCheckpoint('reaction', activeGameKey, gameScore)
     setFinals((f) => ({ ...f, reaction: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
@@ -346,6 +481,8 @@ export function GameFlow() {
     setStatStatus((map) => applyGameResult('memory', map, result))
     setLastResult(result)
     if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    if (result.isValidAttempt) recordSkillCompletion('memory', gameScore)
+    if (result.isValidAttempt && flowMode === 'first') recordIntroCheckpoint('memory', activeGameKey, gameScore)
     setFinals((f) => ({ ...f, memory: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
@@ -387,6 +524,8 @@ export function GameFlow() {
     setStatStatus((map) => applyGameResult('focus', map, result))
     setLastResult(result)
     if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    if (result.isValidAttempt) recordSkillCompletion('focus', gameScore)
+    if (result.isValidAttempt && flowMode === 'first') recordIntroCheckpoint('focus', activeGameKey, gameScore)
     setFinals((f) => ({ ...f, focus: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
@@ -428,6 +567,8 @@ export function GameFlow() {
     setStatStatus((map) => applyGameResult('judgment', map, result))
     setLastResult(result)
     if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    if (result.isValidAttempt) recordSkillCompletion('judgment', gameScore)
+    if (result.isValidAttempt && flowMode === 'first') recordIntroCheckpoint('judgment', activeGameKey, gameScore)
     setFinals((f) => ({ ...f, judgment: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
@@ -469,6 +610,8 @@ export function GameFlow() {
     setStatStatus((map) => applyGameResult('spatial', map, result))
     setLastResult(result)
     if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    if (result.isValidAttempt) recordSkillCompletion('spatial', gameScore)
+    if (result.isValidAttempt && flowMode === 'first') recordIntroCheckpoint('spatial', activeGameKey, gameScore)
     setFinals((f) => ({ ...f, spatial: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
@@ -510,6 +653,8 @@ export function GameFlow() {
     setStatStatus((map) => applyGameResult('reasoning', map, result))
     setLastResult(result)
     if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    if (result.isValidAttempt) recordSkillCompletion('reasoning', gameScore)
+    if (result.isValidAttempt && flowMode === 'first') recordIntroCheckpoint('reasoning', activeGameKey, gameScore)
     setFinals((f) => ({ ...f, reasoning: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
@@ -560,6 +705,8 @@ export function GameFlow() {
     setStatStatus((map) => applyGameResult('memory', map, result))
     setLastResult(result)
     if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    if (result.isValidAttempt) recordSkillCompletion('memory', gameScore)
+    if (result.isValidAttempt && flowMode === 'first') recordIntroCheckpoint('memory', activeGameKey, gameScore)
     setFinals((f) => ({ ...f, memory: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
@@ -597,6 +744,8 @@ export function GameFlow() {
     setStatStatus((map) => applyGameResult('focus', map, result))
     setLastResult(result)
     if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    if (result.isValidAttempt) recordSkillCompletion('focus', gameScore)
+    if (result.isValidAttempt && flowMode === 'first') recordIntroCheckpoint('focus', activeGameKey, gameScore)
     setFinals((f) => ({ ...f, focus: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
@@ -634,6 +783,8 @@ export function GameFlow() {
     setStatStatus((map) => applyGameResult('reaction', map, result))
     setLastResult(result)
     if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    if (result.isValidAttempt) recordSkillCompletion('reaction', gameScore)
+    if (result.isValidAttempt && flowMode === 'first') recordIntroCheckpoint('reaction', activeGameKey, gameScore)
     setFinals((f) => ({ ...f, reaction: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
@@ -671,6 +822,8 @@ export function GameFlow() {
     setStatStatus((map) => applyGameResult('judgment', map, result))
     setLastResult(result)
     if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    if (result.isValidAttempt) recordSkillCompletion('judgment', gameScore)
+    if (result.isValidAttempt && flowMode === 'first') recordIntroCheckpoint('judgment', activeGameKey, gameScore)
     setFinals((f) => ({ ...f, judgment: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
@@ -708,6 +861,8 @@ export function GameFlow() {
     setStatStatus((map) => applyGameResult('spatial', map, result))
     setLastResult(result)
     if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    if (result.isValidAttempt) recordSkillCompletion('spatial', gameScore)
+    if (result.isValidAttempt && flowMode === 'first') recordIntroCheckpoint('spatial', activeGameKey, gameScore)
     setFinals((f) => ({ ...f, spatial: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
@@ -745,6 +900,8 @@ export function GameFlow() {
     setStatStatus((map) => applyGameResult('reasoning', map, result))
     setLastResult(result)
     if (result.isValidAttempt) savePetMemory(recordGameCompletion(loadPetMemory(), result, new Date()))
+    if (result.isValidAttempt) recordSkillCompletion('reasoning', gameScore)
+    if (result.isValidAttempt && flowMode === 'first') recordIntroCheckpoint('reasoning', activeGameKey, gameScore)
     setFinals((f) => ({ ...f, reasoning: isPersonalBest ? gameScore : (prevBest?.gameScore ?? 0) }))
     setPhase(flowMode === 'first' ? 'complete' : 'freeplay-complete')
   }
@@ -759,18 +916,20 @@ export function GameFlow() {
   /** Free Play step 2 — a specific game was chosen in GrowGameScreen, start it. */
   const confirmFreePlayGame = (gameKey: string) => {
     setActiveGameKey(gameKey)
+    currentAttemptIdRef.current = generateSessionId() // new round starting — see the ref's own doc comment
     setPhase('game')
   }
 
   const returnToRoom = () => setPhase('room')
 
   /**
-   * Guards NavRail tab switches: leaving 테마 while it has unsaved room
-   * edits opens a confirm dialog instead of switching immediately (see
-   * pendingNavTab render below). Any other switch goes through untouched.
+   * Guards NavRail tab switches: leaving the Statling tab while its nested
+   * 방 꾸미기 view has unsaved room edits opens a confirm dialog instead of
+   * switching immediately (see pendingNavTab render below). Any other
+   * switch goes through untouched.
    */
   const handleNavSelect = (tab: NavTab) => {
-    if (phase === 'theme' && themeDirty && tab !== 'theme') {
+    if (phase === 'statling' && themeDirty && tab !== 'statling') {
       setPendingNavTab(tab)
       return
     }
@@ -786,16 +945,16 @@ export function GameFlow() {
   /**
    * Runs once the full 6-stat test is complete (status -> egg transition).
    * Already confirmed (replaying after locking in a pet): only refreshes
-   * latestFinals, the pet itself never changes. Otherwise (first-ever run,
-   * or a redo before ever confirming): computes a fresh candidate pool —
-   * reusing the existing seed if one exists, so the same seed keeps
-   * producing the same deterministic order — and starts back at candidate 0,
-   * unconfirmed. Reveal itself decides the pet via reroll/confirm.
+   * latestFinals, the pet itself never changes. Otherwise (first-ever run, or
+   * a redo before ever confirming): picks the top two stats and looks up the
+   * one matching character (see lib/pets/pet-flow.ts#beginPetAssignment) —
+   * the pet is decided immediately, unconfirmed just means the user hasn't
+   * clicked through Reveal yet.
    *
    * Also the QA Skip path's completion function (see handleSkipGames below)
    * — `overrideFinals` lets Skip hand in a freshly-generated mock result
    * without waiting a render cycle for `finals` state to update first, but
-   * every other step (candidate matching, storage, confirmed-pet growth
+   * every other step (character lookup, storage, confirmed-pet growth
    * refresh) is the exact same code a real playthrough goes through.
    */
   const handleMeetStatling = (overrideFinals?: Record<StatId, number>) => {
@@ -803,9 +962,7 @@ export function GameFlow() {
     if (overrideFinals) setFinals(overrideFinals)
 
     const stored = loadStoredPetProfile()
-    const next = stored?.confirmed
-      ? refreshGrowthData(stored, effectiveFinals)
-      : beginPetAssignment(effectiveFinals, stored?.seed)
+    const next = stored?.confirmed ? refreshGrowthData(stored, effectiveFinals) : beginPetAssignment(effectiveFinals)
 
     saveStoredPetProfile(next)
     setPetRecord(next)
@@ -843,6 +1000,31 @@ export function GameFlow() {
     setPetRecord(null)
   }
 
+  /** Dev/QA only — "도감 30종 잠금해제": unlocks every one of the 30 characters in the local dex at once, so the full DexScreen grid can be previewed without hatching/sharing 30 times. See lib/pets/dex-storage.ts#markAllPetsMet. */
+  const handleUnlockDex = () => {
+    markAllPetsMet()
+  }
+
+  /**
+   * Real user-facing reset (MyPageScreen's "펫 초기화") — unlike the QA-only
+   * handleResetPetProfile above, this also wipes care state (hunger/mood/
+   * intimacy) and memory (visit/dialogue history) so a freshly-hatched pet
+   * doesn't inherit the previous pet's stats. Room decor is left untouched:
+   * it reads as "my room," not something owned by one specific pet.
+   */
+  const resetAllPetData = () => {
+    clearStoredPetProfile()
+    clearPetCareState()
+    clearPetMemory()
+    clearIntroProgress()
+    setIntroResume(null)
+    setPetRecord(null)
+    setFinals(emptyFinals())
+    setStatlingName('')
+    setStatStatus(emptyStatStatusMap())
+    setPhase('landing')
+  }
+
   /**
    * Toggling the same folder again turns the tester override back off. If
    * we're not already on the Room screen (e.g. clicked from Landing or
@@ -856,17 +1038,7 @@ export function GameFlow() {
     const turningOn = testerFolderId !== folderId
     setTesterFolderId(turningOn ? folderId : null)
     if (turningOn && phase !== 'room') {
-      handleSkipGames('balanced')
-    }
-  }
-
-  /** "다른 Statling 보기" — advances to the next unseen top-5 candidate. No-op once confirmed or out of rerolls. */
-  const handleRerollPet = () => {
-    if (!petRecord) return
-    const updated = rerollPet(petRecord)
-    if (updated !== petRecord) {
-      saveStoredPetProfile(updated)
-      setPetRecord(updated)
+      handleSkipGames('random')
     }
   }
 
@@ -876,6 +1048,7 @@ export function GameFlow() {
       const updated = confirmPet(petRecord)
       saveStoredPetProfile(updated)
       setPetRecord(updated)
+      addMetPet(updated.petId) // becoming your representative pet always registers it in the dex — see lib/pets/dex-storage.ts
     }
     setPhase('save')
   }
@@ -889,12 +1062,20 @@ export function GameFlow() {
   return (
     <main className="min-h-dvh bg-background">
       <div key={stepKey} className="animate-in fade-in slide-in-from-bottom-3 duration-300">
-        {phase === 'landing' && <LandingScreen onStart={start} />}
+        {phase === 'landing' && (
+          <LandingScreen
+            onStart={start}
+            resumeCount={introResume?.completedGames.length ?? 0}
+            onResume={resumeIntro}
+            onRestart={() => setConfirmingRestartIntro(true)}
+          />
+        )}
 
         {SHOW_QA_SKIP && (phase === 'room' || (phase === 'game' && flowMode === 'first')) && (
           <QaSkipMenu
             onSkip={handleSkipGames}
             onReset={handleResetPetProfile}
+            onUnlockDex={handleUnlockDex}
             testerFolderId={testerFolderId}
             onToggleTesterFolder={handleToggleTesterFolder}
           />
@@ -955,7 +1136,7 @@ export function GameFlow() {
             raw={lastResult.raw}
             personalBestRaw={currentBestRaw}
             isNewRecord={lastResult.isPersonalBest}
-            isRecommended={activeStatId === RECOMMENDED_STAT_PLACEHOLDER}
+            isRecommended={activeStatId === recommendedStat}
             onReturnToRoom={returnToRoom}
           />
         )}
@@ -980,12 +1161,9 @@ export function GameFlow() {
           <RevealScreen
             petProfile={applyTesterOverride(displayedPetProfile)}
             topStat={topStat}
-            secondaryStat={getSecondStat(finals)}
+            secondaryStat={secondaryStat}
             finals={finals}
             isConfirmed={petRecord.confirmed}
-            canReroll={!petRecord.confirmed && petRecord.rerollCount < petRecord.maxRerolls}
-            rerollsRemaining={petRecord.maxRerolls - petRecord.rerollCount}
-            onReroll={handleRerollPet}
             onConfirm={handleConfirmPet}
           />
         )}
@@ -1014,7 +1192,26 @@ export function GameFlow() {
           />
         )}
 
-        {phase === 'mystats' && <StatusScreen context="my-stats" values={finals} />}
+        {phase === 'mystats' &&
+          (() => {
+            // Computed inline (not memoized) — this only runs while the
+            // mystats tab is actually mounted, and reading+averaging a
+            // ~30-record object is cheap. Always re-reads localStorage on
+            // remount (stepKey includes `phase`), so revisiting the tab
+            // after playing more games shows the latest data without a
+            // full page reload.
+            const skill = loadPlayerSkillState()
+            const initialStats = petRecord?.initialFinals ?? finals
+            const currentStats = computeCurrentStats(skill.gameBestRecords, initialStats)
+            return (
+              <StatusScreen
+                context="my-stats"
+                values={currentStats}
+                initialStats={initialStats}
+                gameBestRecords={skill.gameBestRecords}
+              />
+            )
+          })()}
 
         {phase === 'ranking' && (
           <ComingSoonScreen
@@ -1024,16 +1221,29 @@ export function GameFlow() {
           />
         )}
 
-        {phase === 'mypage' && <MyPageScreen statlingName={statlingName} topStat={topStat} />}
+        {phase === 'mypage' && (
+          <MyPageScreen
+            statlingName={statlingName}
+            topStat={topStat}
+            petProfile={displayedPetProfile}
+            onResetPet={resetAllPetData}
+            onShowOnboarding={() => setShowOnboarding(true)}
+          />
+        )}
 
-        {phase === 'theme' && (
-          <ThemeScreen topStat={topStat} petProfile={displayedPetProfile} onDirtyChange={setThemeDirty} />
+        {phase === 'statling' && (
+          <StatlingScreen
+            statlingName={statlingName}
+            topStat={topStat}
+            petProfile={displayedPetProfile}
+            onDirtyChange={setThemeDirty}
+          />
         )}
 
         {phase === 'grow' && (
           <GrowScreen
             statStatus={statStatus}
-            recommendedStat={RECOMMENDED_STAT_PLACEHOLDER}
+            recommendedStat={recommendedStat}
             onSelect={selectFreePlayGame}
             onBack={returnToRoom}
           />
@@ -1050,6 +1260,8 @@ export function GameFlow() {
 
       {NAV_PHASES.includes(phase) && <NavRail active={phase as NavTab} onSelect={handleNavSelect} />}
 
+      <OnboardingModal open={showOnboarding} onClose={() => setShowOnboarding(false)} />
+
       <ConfirmDialog
         open={pendingNavTab !== null}
         onOpenChange={(open) => {
@@ -1060,6 +1272,16 @@ export function GameFlow() {
         confirmLabel="변경사항 버리기"
         cancelLabel="계속 편집"
         onConfirm={handleDiscardThemeEdits}
+      />
+
+      <ConfirmDialog
+        open={confirmingRestartIntro}
+        onOpenChange={setConfirmingRestartIntro}
+        title="처음부터 다시 시작할까요?"
+        description={'지금까지 완료한 진단 기록이 초기화돼요.\n펫 정보 등 다른 데이터는 유지돼요.'}
+        confirmLabel="처음부터 다시 하기"
+        cancelLabel="계속 이어하기"
+        onConfirm={restartIntro}
       />
     </main>
   )

@@ -29,9 +29,6 @@ interface RevealScreenProps {
   secondaryStat: StatId
   finals: Record<StatId, number>
   isConfirmed: boolean
-  canReroll: boolean
-  rerollsRemaining: number
-  onReroll: () => void
   onConfirm: () => void
 }
 
@@ -41,9 +38,6 @@ export function RevealScreen({
   secondaryStat,
   finals,
   isConfirmed,
-  canReroll,
-  rerollsRemaining,
-  onReroll,
   onConfirm,
 }: RevealScreenProps) {
   const stat = STATS[topStat]
@@ -144,17 +138,6 @@ export function RevealScreen({
       <StatlingCompatibility goodMatches={goodMatchCards} differentRhythms={differentRhythmCards} />
 
       <div className="mt-7 flex w-full flex-col gap-3">
-        {!isConfirmed &&
-          (canReroll ? (
-            <ToyButton variant="secondary" className="w-full" onClick={onReroll}>
-              다른 Statling 보기 · {rerollsRemaining}회 남음
-            </ToyButton>
-          ) : (
-            <p className="text-center text-xs font-semibold text-muted-foreground">
-              마지막으로 만난 Statling이에요
-            </p>
-          ))}
-
         <ToyButton className="w-full" onClick={onConfirm}>
           {isConfirmed ? '저장하고 시작하기' : '이 Statling과 함께하기'}
           <ArrowRight size={20} strokeWidth={2.8} />

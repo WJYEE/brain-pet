@@ -3,21 +3,17 @@
 import { TESTER_CHARACTER_FOLDERS } from '@/lib/character-state-assets'
 import { MOCK_STAT_PRESETS, type MockStatPreset } from '@/lib/game/mock-finals'
 
-const PRESET_LABEL: Record<MockStatPreset, string> = {
-  random: '랜덤',
-  balanced: '균형형',
-  focus: '집중형',
-  reaction: '순발형',
-  memory: '기억형',
-  judgment: '판단형',
-  spatial: '공간형',
-  reasoning: '추리형',
+/** 'random' -> '랜덤'; every other preset is a character id (e.g. '01_치즈털실냥이') already in the exact label form the QA menu should show. */
+function presetLabel(preset: MockStatPreset): string {
+  return preset === 'random' ? '랜덤' : preset
 }
 
 interface QaSkipMenuProps {
   onSkip: (preset: MockStatPreset) => void
   /** Dev-only "대표 펫 초기화" — wipes the stored representative-pet record (confirmed or not) so the next Skip/playthrough starts completely fresh. */
   onReset: () => void
+  /** Dev-only "도감 30종 잠금해제" — marks all 30 characters as met in the local dex (see lib/pets/dex-storage.ts), so DexScreen's full grid can be previewed without hatching/sharing 30 times. */
+  onUnlockDex: () => void
   /**
    * Dev/QA only — which TESTER_CHARACTER_FOLDERS entry (if any) is pinned as
    * the Room character right now, so every 24-state asset can be checked
@@ -30,13 +26,18 @@ interface QaSkipMenuProps {
 /**
  * Dev/QA only — lets a developer skip all 6 mini-games and jump straight to
  * Hatch/Reveal with an auto-generated stat result (see lib/game/mock-finals.ts).
- * Rendered only when NEXT_PUBLIC_ENABLE_TEST_SKIP is on (see game-flow.tsx) —
- * never shown in a normal production build. Native <details> for the
- * dropdown so no new UI/animation library is needed; runs immediately on
- * click with no confirmation dialog, since visibility is already gated to
- * dev/QA builds only.
+ * The 31 buttons below are '랜덤' plus one per character (e.g.
+ * '01_치즈털실냥이') — clicking a character button generates finals
+ * engineered so that exact character hatches, letting a dev jump straight to
+ * any of the 30 without hunting for the right stat combination. Rendered
+ * only when NEXT_PUBLIC_ENABLE_TEST_SKIP is on (see game-flow.tsx) — never
+ * shown in a normal production build. Native <details> for the dropdown so
+ * no new UI/animation library is needed; runs immediately on click with no
+ * confirmation dialog, since visibility is already gated to dev/QA builds
+ * only. The list scrolls (max-h) since 31 hatch buttons + 30 tester-folder
+ * buttons is too tall to fit on screen otherwise.
  */
-export function QaSkipMenu({ onSkip, onReset, testerFolderId, onToggleTesterFolder }: QaSkipMenuProps) {
+export function QaSkipMenu({ onSkip, onReset, onUnlockDex, testerFolderId, onToggleTesterFolder }: QaSkipMenuProps) {
   return (
     <details className="fixed right-3 top-3 z-50 select-none">
       <summary
@@ -45,7 +46,7 @@ export function QaSkipMenu({ onSkip, onReset, testerFolderId, onToggleTesterFold
       >
         Skip · QA
       </summary>
-      <div className="mt-1 flex w-28 flex-col gap-0.5 rounded-xl bg-card p-1.5 toy-border toy-shadow">
+      <div className="mt-1 flex max-h-[80vh] w-40 flex-col gap-0.5 overflow-y-auto rounded-xl bg-card p-1.5 toy-border toy-shadow">
         {MOCK_STAT_PRESETS.map((preset) => (
           <button
             key={preset}
@@ -53,7 +54,7 @@ export function QaSkipMenu({ onSkip, onReset, testerFolderId, onToggleTesterFold
             onClick={() => onSkip(preset)}
             className="rounded-lg px-2 py-1 text-left text-[11px] font-semibold text-foreground hover:bg-secondary"
           >
-            {PRESET_LABEL[preset]}
+            {presetLabel(preset)}
           </button>
         ))}
         <div className="my-0.5 h-px bg-border" />
@@ -64,6 +65,14 @@ export function QaSkipMenu({ onSkip, onReset, testerFolderId, onToggleTesterFold
           className="rounded-lg px-2 py-1 text-left text-[11px] font-semibold text-destructive hover:bg-secondary"
         >
           대표 펫 초기화
+        </button>
+        <button
+          type="button"
+          onClick={onUnlockDex}
+          title="localStorage 도감에 30종 전체를 '만나본 Statling'으로 기록합니다"
+          className="rounded-lg px-2 py-1 text-left text-[11px] font-semibold text-foreground hover:bg-secondary"
+        >
+          도감 30종 잠금해제
         </button>
 
         {TESTER_CHARACTER_FOLDERS.length > 0 && (

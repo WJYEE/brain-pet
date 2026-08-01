@@ -49,3 +49,9 @@ export function savePetMemory(memory: PetMemory): void {
   if (typeof window === 'undefined') return
   window.localStorage.setItem(petMemoryStorageKey(getOrCreateDeviceId()), JSON.stringify(memory))
 }
+
+/** Wipes this device's pet memory (visit history, dialogue history) — see resetAllPetData in game-flow.tsx. */
+export function clearPetMemory(): void {
+  if (typeof window === 'undefined') return
+  window.localStorage.removeItem(petMemoryStorageKey(getOrCreateDeviceId()))
+}

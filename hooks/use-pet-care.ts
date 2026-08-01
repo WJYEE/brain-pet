@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import {
+  AUTO_SLEEP_ENERGY_PER_TICK,
+  AUTO_SLEEP_TICK_MS,
   LIVE_TICK_INTERVAL_MS,
   ROOM_ATTENTION_THRESHOLD,
   ATTENTION_THRESHOLD,
@@ -22,7 +24,7 @@ import {
   type ActionResult,
   type CooldownStatus,
 } from '@/lib/pet-care/actions'
-import { applyPetDecay, applyRoomDecay } from '@/lib/pet-care/decay'
+import { applyPetDecay, applyRoomDecay, clampStat } from '@/lib/pet-care/decay'
 import { computeMood, computeSecondaryTags } from '@/lib/pet-care/mood'
 import { expRequiredForLevel, getNewlyUnlockedRewards, type RewardUnlock } from '@/lib/pet-care/leveling'
 import { createDefaultPetCareState, loadPetCareState, savePetCareState } from '@/lib/pet-care/pet-care-storage'
@@ -115,6 +117,28 @@ export function usePetCare() {
     }, LIVE_TICK_INTERVAL_MS)
     return () => window.clearInterval(id)
   }, [])
+
+  // Auto-sleep energy recovery — no manual "sleep" button; once mood reads
+  // as 'sleepy' (energy below mood.ts's SLEEPY_THRESHOLD) the pet is already
+  // shown asleep (see idleAnimationForMood below), and while that's true
+  // energy climbs by AUTO_SLEEP_ENERGY_PER_TICK every AUTO_SLEEP_TICK_MS
+  // until it climbs back out of the sleepy range on its own. Mirrors
+  // decay.ts's applyOfflineEnergyRecovery, which covers the same recovery
+  // for time spent away from the screen entirely.
+  useEffect(() => {
+    if (mood !== 'sleepy') return
+    const id = window.setInterval(() => {
+      setPetState((prev) => {
+        const next = {
+          ...prev,
+          stats: { ...prev.stats, energy: clampStat(prev.stats.energy + AUTO_SLEEP_ENERGY_PER_TICK) },
+        }
+        savePetCareState(next)
+        return next
+      })
+    }, AUTO_SLEEP_TICK_MS)
+    return () => window.clearInterval(id)
+  }, [mood])
 
   // Cooldown countdown display — only ticks (every second) while at least
   // one action is actually on cooldown, so idle screens never re-render for

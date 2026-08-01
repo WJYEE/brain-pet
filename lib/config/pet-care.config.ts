@@ -24,6 +24,16 @@ export const MAX_OFFLINE_DECAY_MS = 48 * 60 * 60 * 1000
 /** How often the live (screen-open) decay tick recomputes elapsed-time decay. */
 export const LIVE_TICK_INTERVAL_MS = 60_000
 
+/**
+ * Energy no longer has a manual "sleep" button — instead, once energy drops
+ * below mood.ts's SLEEPY_THRESHOLD the pet automatically reads as asleep and
+ * recovers energy on this tick (both live, screen-open ticks in
+ * hooks/use-pet-care.ts, and offline elapsed time in decay.ts use the same
+ * rate) — energy is meant to never meaningfully block play right now.
+ */
+export const AUTO_SLEEP_ENERGY_PER_TICK = 15
+export const AUTO_SLEEP_TICK_MS = 10_000
+
 export const ROOM_DECAY_PER_HOUR = 1.5
 export const ROOM_CLEANLINESS_FLOOR = 10
 /** Below this, the room reads as "messy" — drives both the `roomMessy` secondary mood tag and the 청소 button's attention dot. */
@@ -41,12 +51,20 @@ export const ATTENTION_THRESHOLD: Record<CareStatId, number> = {
   happiness: 35,
 }
 
-export const FEED_COOLDOWN_MS = 60_000
-export const SHOWER_COOLDOWN_MS = 90_000
-export const CLEAN_COOLDOWN_MS = 90_000
-export const PLAY_COOLDOWN_MS = 45_000
-export const PET_COOLDOWN_MS = 15_000
-export const TALK_COOLDOWN_MS = 3_000
+/**
+ * Care-action cooldowns — unified to a short 5-10s band (previously
+ * 3s-90s, wildly inconsistent) so no action ever blocks play for long.
+ * Each action's cooldown is tracked independently (see
+ * PetCareState['cooldowns'] / getCooldownStatus in lib/pet-care/actions.ts),
+ * and the countdown badge (CareActionButton) already reads whichever action
+ * is on cooldown without affecting the others.
+ */
+export const FEED_COOLDOWN_MS = 8_000
+export const SHOWER_COOLDOWN_MS = 8_000
+export const CLEAN_COOLDOWN_MS = 8_000
+export const PLAY_COOLDOWN_MS = 10_000
+export const PET_COOLDOWN_MS = 5_000
+export const TALK_COOLDOWN_MS = 5_000
 
 export const FEED_SATIETY_MAX_THRESHOLD = 95
 export const SHOWER_CLEANLINESS_MAX_THRESHOLD = 90

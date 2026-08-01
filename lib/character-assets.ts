@@ -6,9 +6,11 @@
  * (blink/happy/sad/sleep/eat/wash/play/pet/talk) — adding one is just adding a file at
  * `{directory}/{key}.png` and a matching entry in `animations` below, no shape changes.
  *
- * lib/pets/pet-profile.ts (PET_CATALOG) and components/brain-bet/character-image.tsx
- * both resolve their image paths through characterIdlePath(id) rather than hardcoding
- * '/assets/statling/characters/pet_NNN.png' strings directly.
+ * Superseded for the representative-pet feature by the 30-character roster
+ * in lib/pets/pet-profile.ts (CHARACTER_CATALOG), which resolves its image
+ * paths through buildCharacterStateFolder (lib/character-state-assets.ts)
+ * instead — this pet_NNN registry and characterIdlePath(id) are kept for
+ * whatever else on the site still references the older idle-only catalog.
  */
 
 export type CharacterAnimationKey =

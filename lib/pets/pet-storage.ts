@@ -1,100 +1,58 @@
 import type { StatId } from '@/lib/brain-bet'
 
 /**
- * v2: `finals`(initialFinals/latestFinals) stopped being a random mock
- * (Math.round(48+Math.random()*47)) and now holds real per-stat gameScore
- * (see game-flow.tsx). The stored shape is identical — still
- * Record<StatId, number> — so there's nothing to structurally migrate, but
- * a v1 record's numbers are semantically meaningless under the new system
- * (random, not derived from any actual play). Bumping the key is a clean,
- * non-destructive reset: old v1 data is simply abandoned in localStorage
- * (never read, never deleted) and every browser starts fresh on v2. Chosen
- * over a real migration because there is no way to recover what a v1
- * profile's *real* stats would have been — the source data (actual
- * gameplay) was never captured in the first place.
+ * v3: the representative pet is now decided immediately and deterministically
+ * from (primaryStat, secondaryStat) against the 30-character roster (see
+ * lib/pets/pet-flow.ts#beginPetAssignment) — there is no more candidate pool,
+ * reroll, or seed. v2's candidatePetIds/viewedPetIds/currentCandidateIndex/
+ * rerollCount/maxRerolls/seed fields are gone; topStat/secondStat are new
+ * (the exact pair that decided petId, frozen once confirmed, same as petId
+ * itself). Bumping the key is a clean, non-destructive reset — old v1/v2
+ * data is simply abandoned in localStorage (never read, never deleted) and
+ * every browser starts fresh on v3, consistent with the v1->v2 precedent.
  */
-const STORAGE_KEY = 'statling.petProfile.v2'
-
-/** Initial reveal + up to 2 rerolls = 3 pets seen total, all from the same top-5 similarity pool. */
-export const MAX_REROLLS = 2
+const STORAGE_KEY = 'statling.petProfile.v3'
 
 /**
- * The persisted record for a user's representative pet.
+ * The persisted record for a user's representative pet. `petId` is set the
+ * moment finals are known (beginPetAssignment) — no separate "not yet
+ * decided" state exists since selection is a direct lookup, not a
+ * multi-candidate pool. `confirmed` just marks whether the user has clicked
+ * through past Reveal; nothing about the pet itself changes when it flips.
  *
- * Before confirmation, the pet on screen is tracked via
- * `candidatePetIds[currentCandidateIndex]` (one fixed, seed-ordered
- * permutation of the top-N similarity matches — see
- * lib/pets/matching.ts#orderCandidatesBySeed). `petId` only exists once
- * `confirmed` is true, and neither `petId` nor `seed` nor `candidatePetIds`
- * change after that — replaying the 6 tests only refreshes
- * `latestFinals`/`updatedAt` (growth data), never the pet itself.
+ * `petId`/`topStat`/`secondStat` never change once `confirmed` is true —
+ * replaying the 6 tests only refreshes `latestFinals`/`updatedAt` (growth
+ * data), never the pet itself. Before confirmation, a redo of the 6 tests
+ * calls beginPetAssignment again and can change all three together (a fresh
+ * match against the new finals — no representative pet exists yet to
+ * protect).
  */
 export interface StoredPetProfile {
-  seed: string
-  /** Only set once `confirmed` is true — the locked-in representative pet. */
-  petId?: string
+  /** The locked-in (or, pre-confirmation, provisional) representative pet — see lib/pets/pet-profile.ts#findCharacterByStats. */
+  petId: string
   confirmed: boolean
+
+  /** The exact stat pair that decided petId (see lib/brain-bet.ts#pickTopTwoStats) — persisted so the Reveal explanation and Room's stat badge stay stable across re-renders/reloads instead of re-rolling a fresh random tie-break on every read. */
+  topStat: StatId
+  secondStat: StatId
 
   /** The very first test result that decided this pet — kept for reference/explanation, never overwritten. */
   initialFinals: Record<StatId, number>
   /** Most recent test result — updated on every replay, used for growth tracking. */
   latestFinals: Record<StatId, number>
 
-  /** Fixed, seed-ordered permutation of the top similarity candidates — set once at first assignment, never reshuffled. */
-  candidatePetIds: string[]
-  /** Candidate ids shown so far, in the order shown — always a prefix of candidatePetIds up to currentCandidateIndex. */
-  viewedPetIds: string[]
-  /** Index into candidatePetIds of the pet currently on screen (pre-confirmation). */
-  currentCandidateIndex: number
-
-  rerollCount: number
-  maxRerolls: number
-
   createdAt: string
   updatedAt: string
   confirmedAt?: string
 }
 
-/** Shape written by the previous version of this feature, before the reroll flow existed. */
-interface LegacyStoredPetProfile {
-  seed: string
-  petId: string
-  initialFinals: Record<StatId, number>
-  latestFinals: Record<StatId, number>
-  createdAt: string
-  updatedAt: string
-}
-
-function isLegacyShape(value: Record<string, unknown>): boolean {
-  return typeof value.petId === 'string' && value.confirmed === undefined
-}
-
-/** A legacy record always represented an already-decided, never-changing pet — migrate it in as already confirmed. */
-function migrateLegacy(legacy: LegacyStoredPetProfile): StoredPetProfile {
-  return {
-    seed: legacy.seed,
-    petId: legacy.petId,
-    confirmed: true,
-    initialFinals: legacy.initialFinals,
-    latestFinals: legacy.latestFinals,
-    candidatePetIds: [legacy.petId],
-    viewedPetIds: [legacy.petId],
-    currentCandidateIndex: 0,
-    rerollCount: 0,
-    maxRerolls: MAX_REROLLS,
-    createdAt: legacy.createdAt,
-    updatedAt: legacy.updatedAt,
-    confirmedAt: legacy.updatedAt,
-  }
-}
-
 /** Minimal structural check for the current-format record — anything short of this is treated as corrupt (fresh start), never thrown from. */
 function isWellFormedCurrentShape(value: Record<string, unknown>): boolean {
   return (
-    typeof value.seed === 'string' &&
+    typeof value.petId === 'string' &&
     typeof value.confirmed === 'boolean' &&
-    Array.isArray(value.candidatePetIds) &&
-    typeof value.currentCandidateIndex === 'number'
+    typeof value.topStat === 'string' &&
+    typeof value.secondStat === 'string'
   )
 }
 
@@ -105,13 +63,6 @@ export function loadStoredPetProfile(): StoredPetProfile | null {
     if (!raw) return null
     const parsed = JSON.parse(raw) as Record<string, unknown>
     if (!parsed || typeof parsed !== 'object') return null
-
-    if (isLegacyShape(parsed)) {
-      const migrated = migrateLegacy(parsed as unknown as LegacyStoredPetProfile)
-      saveStoredPetProfile(migrated)
-      return migrated
-    }
-
     if (!isWellFormedCurrentShape(parsed)) return null
     return parsed as unknown as StoredPetProfile
   } catch {
@@ -125,13 +76,13 @@ export function saveStoredPetProfile(profile: StoredPetProfile): void {
 }
 
 /**
- * Wipes the representative-pet record entirely (seed included), so the next
- * assignment starts completely fresh. Used by the QA Skip flow (see
- * game-flow.tsx) — both to silently clear a leftover *unconfirmed* record
- * before each Skip run (so repeated Skips don't keep reusing the same seed
- * and converging on the same pet), and as the explicit dev-only "대표 펫
- * 초기화" reset action for clearing a *confirmed* test pet between manual
- * QA passes. Real gameplay never calls this.
+ * Wipes the representative-pet record entirely, so the next assignment
+ * starts completely fresh. Used by the QA Skip flow (see game-flow.tsx) —
+ * both to silently clear a leftover *unconfirmed* record before each Skip
+ * run, and as the explicit dev-only "대표 펫 초기화" reset action for
+ * clearing a *confirmed* test pet between manual QA passes. Real gameplay
+ * never calls this directly (see resetAllPetData in game-flow.tsx for the
+ * real user-facing reset, which also clears care/memory state).
  */
 export function clearStoredPetProfile(): void {
   if (typeof window === 'undefined') return

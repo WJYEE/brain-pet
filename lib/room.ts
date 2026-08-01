@@ -8,7 +8,7 @@ import {
   PlayIcon,
   type RoomIconProps,
 } from '@/components/brain-bet/room-icons'
-import type { StatId } from '@/lib/brain-bet'
+import { PLAY_ORDER, type StatId } from '@/lib/brain-bet'
 
 export type CareActionId = 'feed' | 'shower' | 'clean' | 'play' | 'pet' | 'talk'
 
@@ -34,8 +34,14 @@ export const CARE_ACTIONS: CareActionDef[] = [
 ]
 
 /**
- * PHASE 1 placeholder for "Statling wants to play X today". GAME_SPEC leaves
- * the actual recommendation rule (daily random / lowest stat / etc.) TBD, so
- * this is a fixed example used only to demonstrate the UI treatment.
+ * "Statling wants to play X today" — GAME_SPEC left the exact rule (daily
+ * random / lowest stat / etc.) TBD; this picks the user's current
+ * lowest-scoring stat, so the ×1.5 Free Play EXP bonus it drives
+ * (free-play-result-screen.tsx) actually nudges the player toward their
+ * weakest area instead of always favoring the same stat. Ties (including
+ * "no games played yet", where every final is 0) fall back to PLAY_ORDER for
+ * a deterministic result.
  */
-export const RECOMMENDED_STAT_PLACEHOLDER: StatId = 'memory'
+export function getRecommendedStat(finals: Record<StatId, number>): StatId {
+  return PLAY_ORDER.reduce((lowest, id) => ((finals[id] ?? 0) < (finals[lowest] ?? 0) ? id : lowest))
+}

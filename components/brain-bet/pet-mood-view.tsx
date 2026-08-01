@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { AssetImage } from '@/components/brain-bet/asset-image'
 import { CharacterImage } from '@/components/brain-bet/character-image'
 import { PetSpeechBubble } from '@/components/brain-bet/pet-speech-bubble'
 import type { StatId } from '@/lib/brain-bet'
 import type { PetProfile } from '@/lib/pets/pet-profile'
 import {
+  buildCharacterStateFolder,
   CHARACTER_STATE_SEQUENCE,
   characterStateForInteraction,
   type CharacterStateFolder,
@@ -112,7 +113,18 @@ export function PetMoodView({
     previewTimeoutRef.current = window.setTimeout(() => setPreviewIndex(null), TESTER_PREVIEW_HOLD_MS)
   }
 
-  const liveStateKey = testerFolder
+  // The real representative pet's own 24-state folder — same asset-path
+  // convention as a tester folder (see buildCharacterStateFolder), so a real
+  // petProfile drives the exact same live mood/animation -> art mapping
+  // 01_치즈털실냥이 already used, instead of a single static idle image.
+  // testerFolder (QA override) always wins when both are present.
+  const realFolder = useMemo(
+    () => (petProfile ? buildCharacterStateFolder(petProfile.id, petProfile.name) : null),
+    [petProfile],
+  )
+  const activeFolder = testerFolder ?? realFolder
+
+  const liveStateKey = activeFolder
     ? characterStateForInteraction({ mood, animation, cleanliness, isOverPetted })
     : null
 
@@ -135,14 +147,16 @@ export function PetMoodView({
     }
   }, [liveStateKey])
 
+  // Manual click-preview only ever applies in tester mode — a real pet
+  // always just shows whatever mood/animation is actually happening.
   const isPreviewing = testerFolder != null && previewIndex != null
   const displayedLiveKey = isBlinking ? 'blink' : liveStateKey
   // Falls back to the sequence's first entry ('idle') rather than ever being
-  // undefined — testerFolder truthy must always resolve to *some* real
-  // tester asset, never fall through to the real petProfile/CharacterImage
-  // branch below (that branch showing up alongside the "실시간" caption was
-  // exactly the "wrong pet, broken image" bug).
-  const testerStateDef = isPreviewing
+  // undefined — activeFolder truthy must always resolve to *some* real
+  // asset, never fall through to the CharacterImage branch below (that
+  // branch showing up alongside a live/tester caption was exactly the
+  // "wrong pet, broken image" bug).
+  const stateDef = isPreviewing
     ? CHARACTER_STATE_SEQUENCE[previewIndex]
     : (CHARACTER_STATE_SEQUENCE.find((d) => d.key === displayedLiveKey) ?? CHARACTER_STATE_SEQUENCE[0])
 
@@ -164,17 +178,22 @@ export function PetMoodView({
             title="클릭하면 다음 표정을 미리 볼 수 있어요"
           >
             <AssetImage
-              key={`${testerStateDef.key}-${clickTick}`}
-              src={testerFolder.assets[testerStateDef.key]}
-              alt={`${testerFolder.displayName} — ${testerStateDef.label}`}
-              size={180}
+              key={`${stateDef.key}-${clickTick}`}
+              src={testerFolder.assets[stateDef.key]}
+              alt={`${testerFolder.displayName} — ${stateDef.label}`}
+              size={270}
               className={cn(isPreviewing ? 'animate-pop-in' : ANIMATION_CLASS[animation])}
             />
           </button>
-        ) : petProfile ? (
-          <AssetImage src={petProfile.imageSrc} alt={petProfile.name} size={180} className={ANIMATION_CLASS[animation]} />
+        ) : realFolder && petProfile ? (
+          <AssetImage
+            src={realFolder.assets[stateDef.key]}
+            alt={petProfile.name}
+            size={270}
+            className={ANIMATION_CLASS[animation]}
+          />
         ) : (
-          <CharacterImage type={topStat} size={180} className={ANIMATION_CLASS[animation]} />
+          <CharacterImage type={topStat} size={270} className={ANIMATION_CLASS[animation]} />
         )}
 
         {isPreviewing && (
@@ -187,15 +206,9 @@ export function PetMoodView({
               ✨
             </span>
             <span className="pointer-events-none absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-card px-2 py-0.5 text-[10px] font-bold text-foreground toy-border">
-              {testerStateDef?.number}. {testerStateDef?.label}
+              {stateDef?.number}. {stateDef?.label}
             </span>
           </>
-        )}
-
-        {testerFolder && !isPreviewing && (
-          <span className="pointer-events-none absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-secondary-foreground toy-border">
-            실시간 · {testerStateDef?.label}
-          </span>
         )}
 
         {!isPreviewing && animation === 'shake' && (

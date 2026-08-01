@@ -1,0 +1,280 @@
+'use client'
+
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Toast } from '@base-ui/react/toast'
+import { BookOpen, ChevronLeft, Palette, Save, Undo2 } from 'lucide-react'
+import { AssetImage } from '@/components/brain-bet/asset-image'
+import { CharacterImage } from '@/components/brain-bet/character-image'
+import { ConfirmDialog } from '@/components/brain-bet/confirm-dialog'
+import { DecoCanvas } from '@/components/brain-bet/deco-canvas'
+import { DecoPropertiesPanel } from '@/components/brain-bet/deco-properties-panel'
+import { DexScreen } from '@/components/brain-bet/screens/dex-screen'
+import { ThemeScreen } from '@/components/brain-bet/screens/theme-screen'
+import type { StatId } from '@/lib/brain-bet'
+import { applyDecoTransform, spawnDefaultDecoItem } from '@/lib/deco-placement-layout'
+import { deepCloneDecoPlacementState, decoPlacementStatesEqual, type DecoPlacementItem, type DecoPlacementState } from '@/lib/deco-placement-state'
+import { loadSavedDecoPlacementState, saveDecoPlacementState } from '@/lib/deco-placement-storage'
+import { getSupportedDecoAssetById, SUPPORTED_DECO_ASSETS } from '@/lib/deco-supported-assets'
+import type { PetProfile } from '@/lib/pets/pet-profile'
+import { cn } from '@/lib/utils'
+
+interface StatlingScreenProps {
+  statlingName: string
+  topStat: StatId
+  petProfile: PetProfile | null
+  onDirtyChange: (dirty: boolean) => void
+}
+
+type StatlingView = 'main' | 'room' | 'dex'
+
+/**
+ * The Statling tab — a hub, not a single screen: `main` is the Deco
+ * placement editor (stickers from public/assets/statling/characters/deco/
+ * 1supported only — see lib/deco-supported-assets.ts — placed anywhere
+ * inside a fixed Statling-centered zone, see lib/deco-placement-layout.ts),
+ * with "방 꾸미기" and "도감" opening as nested views (`room`/`dex`) rather
+ * than separate nav tabs, per the 5-tab cap on NavRail.
+ */
+export function StatlingScreen({ statlingName, topStat, petProfile, onDirtyChange }: StatlingScreenProps) {
+  const [view, setView] = useState<StatlingView>('main')
+  const [themeDirty, setThemeDirty] = useState(false)
+
+  const [savedDeco, setSavedDeco] = useState<DecoPlacementState>(() => loadSavedDecoPlacementState())
+  const [draftDeco, setDraftDeco] = useState<DecoPlacementState>(() => deepCloneDecoPlacementState(savedDeco))
+  const [selectedInstanceId, setSelectedInstanceId] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [confirmingDeleteDeco, setConfirmingDeleteDeco] = useState(false)
+  const toastManager = Toast.useToastManager()
+
+  const selectedItem = draftDeco.items.find((item) => item.instanceId === selectedInstanceId) ?? null
+  const selectedAsset = selectedItem ? getSupportedDecoAssetById(selectedItem.itemId) : null
+
+  const decoDirty = useMemo(() => !decoPlacementStatesEqual(draftDeco, savedDeco), [draftDeco, savedDeco])
+  const decoDirtyRef = useRef(decoDirty)
+  decoDirtyRef.current = decoDirty
+
+  useEffect(() => {
+    onDirtyChange(themeDirty || decoDirty)
+  }, [themeDirty, decoDirty, onDirtyChange])
+
+  // Warn on refresh/tab close only — never touches savedDeco itself. Mirrors theme-screen.tsx's identical guard.
+  useEffect(() => {
+    const handler = (event: BeforeUnloadEvent) => {
+      if (!decoDirtyRef.current) return
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [])
+
+  function updateItem(instanceId: string, patch: Partial<DecoPlacementItem>) {
+    setDraftDeco((prev) => ({
+      ...prev,
+      items: prev.items.map((item) => (item.instanceId === instanceId ? { ...item, ...patch } : item)),
+    }))
+  }
+
+  /** Each supported item can only be placed once — tapping an already-placed item just selects it (e.g. to drag it), instead of adding a duplicate sticker. Mirrors theme-screen.tsx#handleAssetClick. */
+  function handleAssetTap(assetId: string) {
+    const existing = draftDeco.items.find((item) => item.itemId === assetId)
+    if (existing) {
+      setSelectedInstanceId(existing.instanceId)
+      return
+    }
+    const asset = SUPPORTED_DECO_ASSETS.find((a) => a.id === assetId)
+    if (!asset) return
+    const newItem = spawnDefaultDecoItem(asset, draftDeco.items)
+    setDraftDeco((prev) => ({ ...prev, items: [...prev.items, newItem] }))
+    setSelectedInstanceId(newItem.instanceId)
+  }
+
+  function confirmDeleteSelected() {
+    if (!selectedInstanceId) return
+    setDraftDeco((prev) => ({ ...prev, items: prev.items.filter((item) => item.instanceId !== selectedInstanceId) }))
+    setSelectedInstanceId(null)
+    setConfirmingDeleteDeco(false)
+  }
+
+  function handleScaleChange(scale: number) {
+    if (!selectedInstanceId) return
+    const current = draftDeco.items.find((item) => item.instanceId === selectedInstanceId)
+    if (!current) return
+    const next = applyDecoTransform(current, { scale })
+    updateItem(selectedInstanceId, next)
+  }
+
+  function handleRotationChange(rotation: number) {
+    if (!selectedInstanceId) return
+    const current = draftDeco.items.find((item) => item.instanceId === selectedInstanceId)
+    if (!current) return
+    const next = applyDecoTransform(current, { rotation })
+    updateItem(selectedInstanceId, next)
+  }
+
+  function handleSetLayer(layer: 'behind' | 'front') {
+    if (!selectedInstanceId) return
+    updateItem(selectedInstanceId, { layer })
+  }
+
+  function handleSaveDeco() {
+    if (isSaving) return
+    setIsSaving(true)
+    try {
+      const persisted = saveDecoPlacementState(draftDeco)
+      setSavedDeco(persisted)
+      setDraftDeco(deepCloneDecoPlacementState(persisted))
+      toastManager.add({ title: '꾸미기가 저장되었어요.', type: 'success' })
+    } catch {
+      toastManager.add({ title: '저장하지 못했어요. 다시 시도해주세요.', type: 'error' })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  function handleRevertDeco() {
+    setDraftDeco(deepCloneDecoPlacementState(savedDeco))
+    setSelectedInstanceId(null)
+  }
+
+  if (view === 'room') {
+    return (
+      <>
+        <div className="mx-auto w-full max-w-3xl px-5 pt-8">
+          <button
+            type="button"
+            onClick={() => setView('main')}
+            className="flex items-center gap-1 text-xs font-bold text-muted-foreground"
+          >
+            <ChevronLeft size={16} strokeWidth={2.6} />
+            Statling으로
+          </button>
+        </div>
+        <ThemeScreen topStat={topStat} petProfile={petProfile} onDirtyChange={setThemeDirty} />
+      </>
+    )
+  }
+
+  if (view === 'dex') {
+    return <DexScreen onBack={() => setView('main')} />
+  }
+
+  const statlingSlot = petProfile ? (
+    <AssetImage src={petProfile.imageSrc} alt={petProfile.name} size={200} />
+  ) : (
+    <CharacterImage type={topStat} size={200} />
+  )
+
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col px-5 pb-28 pt-8">
+      <header>
+        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Statling</p>
+        <h1 className="font-display text-xl font-extrabold text-foreground">{statlingName || '내 Statling'}</h1>
+      </header>
+
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => setView('room')}
+          className="flex items-center justify-center gap-1.5 rounded-2xl bg-card px-4 py-3 text-sm font-bold text-foreground toy-border active:translate-y-0.5"
+        >
+          <Palette size={16} strokeWidth={2.4} />
+          방 꾸미기
+        </button>
+        <button
+          type="button"
+          onClick={() => setView('dex')}
+          className="flex items-center justify-center gap-1.5 rounded-2xl bg-card px-4 py-3 text-sm font-bold text-foreground toy-border active:translate-y-0.5"
+        >
+          <BookOpen size={16} strokeWidth={2.4} />
+          도감
+        </button>
+      </div>
+
+      <p className="mt-4 text-xs font-bold text-muted-foreground">
+        스티커를 눌러 붙이고, 드래그로 위치를 옮겨보세요. Statling 주변 정해진 범위 안에서만 움직일 수 있어요.
+      </p>
+
+      <DecoCanvas
+        items={draftDeco.items}
+        editable
+        selectedInstanceId={selectedInstanceId}
+        onSelectItem={setSelectedInstanceId}
+        onDeselectItem={() => setSelectedInstanceId(null)}
+        onChangeItem={updateItem}
+        className="mt-3 toy-border toy-shadow-lg"
+        statlingSlot={statlingSlot}
+      />
+
+      {selectedItem && selectedAsset && (
+        <DecoPropertiesPanel
+          item={selectedItem}
+          asset={selectedAsset}
+          onScaleChange={handleScaleChange}
+          onRotationChange={handleRotationChange}
+          onSetLayer={handleSetLayer}
+          onDelete={() => setConfirmingDeleteDeco(true)}
+        />
+      )}
+
+      <ConfirmDialog
+        open={confirmingDeleteDeco}
+        onOpenChange={setConfirmingDeleteDeco}
+        title="스티커를 뺄까요?"
+        description="선택한 스티커가 사라져요. 저장 전이라면 되돌리기로도 복원할 수 있어요."
+        confirmLabel="빼기"
+        cancelLabel="취소"
+        onConfirm={confirmDeleteSelected}
+      />
+
+      <div className="mt-4 grid grid-cols-5 gap-2 sm:grid-cols-6">
+        {SUPPORTED_DECO_ASSETS.map((asset) => {
+          const inUse = draftDeco.items.some((item) => item.itemId === asset.id)
+          return (
+            <button
+              key={asset.id}
+              type="button"
+              onClick={() => handleAssetTap(asset.id)}
+              aria-label={`${asset.name} 붙이기`}
+              aria-pressed={inUse}
+              className={cn(
+                'flex flex-col items-center gap-1 rounded-2xl bg-card p-2 toy-border transition-transform active:translate-y-0.5',
+                inUse && 'ring-2 ring-primary',
+              )}
+            >
+              <span className="grid h-12 w-12 place-items-center overflow-hidden rounded-xl bg-secondary">
+                {/* eslint-disable-next-line @next/next/no-img-element -- thumbnail of a pre-authored static PNG, matches theme-screen.tsx's convention */}
+                <img src={asset.src} alt="" loading="lazy" className="max-h-full max-w-full object-contain" draggable={false} />
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="mt-4 flex gap-2">
+        <button
+          type="button"
+          disabled={!decoDirty}
+          aria-disabled={!decoDirty}
+          onClick={handleRevertDeco}
+          className={cn(
+            'flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-card px-4 py-3 text-sm font-bold text-foreground toy-border',
+            !decoDirty && 'cursor-not-allowed opacity-50',
+          )}
+        >
+          <Undo2 size={16} />
+          되돌리기
+        </button>
+        <button
+          type="button"
+          disabled={isSaving}
+          onClick={handleSaveDeco}
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground toy-border toy-shadow"
+        >
+          <Save size={16} />
+          꾸미기 저장
+        </button>
+      </div>
+    </div>
+  )
+}

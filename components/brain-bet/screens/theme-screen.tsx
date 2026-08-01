@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Toast } from '@base-ui/react/toast'
-import { RotateCcw, Save, Undo2 } from 'lucide-react'
+import { RotateCcw, Save, Sparkles, Undo2 } from 'lucide-react'
 import { AssetImage } from '@/components/brain-bet/asset-image'
 import { CharacterImage } from '@/components/brain-bet/character-image'
 import { ConfirmDialog } from '@/components/brain-bet/confirm-dialog'
@@ -35,6 +35,15 @@ const CATEGORY_TABS: { id: RoomAssetCategory; label: string }[] = [
 
 const NUDGE_STEP = 0.005
 const NUDGE_STEP_LARGE = 0.02
+
+/**
+ * Beta-only messaging: right now every asset below is unlocked and free (no
+ * shop/currency/unlock system exists yet), so this notice is simply true.
+ * Defaults ON (matches "we're in beta right now") — flip
+ * NEXT_PUBLIC_ENABLE_BETA_FURNITURE_NOTICE to 'false' once a real
+ * shop/currency/unlock system ships and the claim stops being accurate.
+ */
+const SHOW_BETA_FURNITURE_NOTICE = process.env.NEXT_PUBLIC_ENABLE_BETA_FURNITURE_NOTICE !== 'false'
 
 /**
  * The 테마 tab — the app's only "admin/decorate" surface (there's no
@@ -200,6 +209,17 @@ export function ThemeScreen({ topStat, petProfile, onDirtyChange }: ThemeScreenP
           에셋을 눌러 추가하고, 드래그로 위치를 옮겨보세요. (에셋마다 하나씩만 놓을 수 있어요)
         </p>
       </header>
+
+      {/* Sets expectations up front: every basic asset below is unlocked and free right now — no
+          shop/currency/unlock system exists yet, so this is simply true, not a promotional claim. */}
+      {SHOW_BETA_FURNITURE_NOTICE && (
+        <div className="flex items-start gap-2 rounded-2xl bg-secondary px-4 py-3 text-secondary-foreground toy-border">
+          <Sparkles size={18} className="mt-0.5 shrink-0" strokeWidth={2.4} />
+          <p className="text-xs font-bold leading-relaxed">
+            지금은 기본 가구와 소품을 전부 무료로 제공하고 있어요. 마음껏 자유롭게 방을 꾸며보세요!
+          </p>
+        </div>
+      )}
 
       <RoomCanvas
         backgroundAsset={backgroundAsset}
