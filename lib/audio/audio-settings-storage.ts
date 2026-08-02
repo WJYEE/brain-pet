@@ -5,15 +5,18 @@ const SFX_ENABLED_KEY = 'statling:audio:sfxEnabled'
  * lib/pet-care/pet-care-storage.ts this is deliberately NOT namespaced by
  * device id — it's the same "is sound on for this browser" flag regardless
  * of which anonymous device record is active.
+ *
+ * Defaults to OFF: sound only turns on once the player explicitly flips the
+ * switch in MyPageScreen (spec: silent Intro, silent Room until opted in).
  */
 export function loadSfxEnabled(): boolean {
-  if (typeof window === 'undefined') return true
+  if (typeof window === 'undefined') return false
   try {
     const raw = window.localStorage.getItem(SFX_ENABLED_KEY)
-    if (raw === null) return true
+    if (raw === null) return false
     return raw === 'true'
   } catch {
-    return true
+    return false
   }
 }
 

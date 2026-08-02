@@ -31,6 +31,7 @@ import { StatlingScreen } from '@/components/brain-bet/screens/statling-screen'
 import { MyPageScreen } from '@/components/brain-bet/screens/my-page-screen'
 import { OnboardingModal } from '@/components/brain-bet/onboarding-modal'
 import { loadOnboardingSeen } from '@/lib/onboarding-storage'
+import { audioManager } from '@/lib/audio/audio-manager'
 import { NavRail, type NavTab } from '@/components/brain-bet/nav-rail'
 import { QaSkipMenu } from '@/components/brain-bet/qa-skip-menu'
 import { PLAY_ORDER, TOTAL_GAMES, getSecondStat, getTopStat, type StatId } from '@/lib/brain-bet'
@@ -314,6 +315,35 @@ export function GameFlow() {
     autoOnboardingShownRef.current = true
     if (!loadOnboardingSeen()) setShowOnboarding(true)
   }, [phase])
+
+  /**
+   * True for every screen that belongs to the Intro (First Play) onboarding
+   * run — Landing through Naming — regardless of how it was reached (fresh
+   * start, "이어서 하기" resume, "처음부터/다시 하기" restart, or the
+   * refresh-to-Reveal bounce-back above). 'game'/'complete' are shared with
+   * Free Play, which always runs as flowMode 'free' (see
+   * selectFreePlayGame/confirmFreePlayGame), so checking flowMode is what
+   * keeps a Free Play round from being mistaken for Intro.
+   */
+  const isIntroPhase =
+    phase === 'landing' ||
+    phase === 'status' ||
+    phase === 'egg' ||
+    phase === 'reveal' ||
+    phase === 'save' ||
+    phase === 'naming' ||
+    (flowMode === 'first' && (phase === 'game' || phase === 'complete'))
+
+  // Intro is always silent, no matter what the player previously chose in
+  // MyPage — sound only turns on once Room is reached, and even then only if
+  // the player has explicitly enabled it (default OFF, see
+  // lib/audio/audio-settings-storage.ts). `introLocked` is a separate flag
+  // from `muted` specifically so this can't race with AudioProvider's
+  // mount-time application of the persisted setting (see AudioManager's doc
+  // comment on the field).
+  useEffect(() => {
+    audioManager.setIntroLocked(isIntroPhase)
+  }, [isIntroPhase])
 
   /** First Play only — always stages the stat's classic game at Normal difficulty (see getClassicGameKey; spec §17: "Normal ... 최초 플레이 가능", the only tier Intro ever uses). Free Play picks a specific game+difficulty explicitly instead (see selectFreePlayGame/confirmFreePlayGame below). */
   const enterStatGame = (statId: StatId) => {

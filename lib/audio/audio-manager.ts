@@ -17,6 +17,18 @@ class AudioManager {
   private players = new Map<SoundName, SoundPlayer>()
   private lastPlayedAt = new Map<SoundName, number>()
   private muted = false
+  /**
+   * Independent of `muted` — forced true for the whole Intro flow (Landing
+   * through Naming, see game-flow.tsx's isIntroPhase) regardless of the
+   * player's persisted SFX preference, so Intro is always silent even for a
+   * returning player who already turned sound on in Room. Kept as a
+   * separate flag rather than folded into `muted` so the two can never race:
+   * AudioProvider applies the persisted `muted` setting once on mount while
+   * game-flow.tsx toggles `introLocked` on every phase change — combining
+   * them into one flag would make the outcome depend on which effect runs
+   * last.
+   */
+  private introLocked = false
   private unlocked = false
   private preloaded = false
 
@@ -39,7 +51,7 @@ class AudioManager {
   }
 
   play(name: SoundName): void {
-    if (this.muted || typeof window === 'undefined') return
+    if (this.muted || this.introLocked || typeof window === 'undefined') return
     try {
       const config = SFX_CONFIG[name]
       const minInterval = config.minIntervalMs ?? 0
@@ -76,6 +88,12 @@ class AudioManager {
     return this.muted
   }
 
+  /** See `introLocked` field doc above. Locking stops whatever's already playing, same as setMuted(true). */
+  setIntroLocked(locked: boolean): void {
+    this.introLocked = locked
+    if (locked) this.stopAll()
+  }
+
   /**
    * Mobile Safari (and Chrome autoplay policy generally) refuses to play
    * *any* <audio> until a real user gesture has reached the page — playing
@@ -96,9 +114,13 @@ class AudioManager {
    * public/assets/statling/audio/bgm/ today. This method (and BgmName)
    * exist purely so hooks/use-bgm.ts has a real singleton to call into;
    * wiring an actual track in later is a change to this method's body only,
-   * never to call sites.
+   * never to call sites. The muted/introLocked guard is already here so a
+   * future implementation automatically inherits "silent in Intro, silent
+   * until the player opts in" without any call site needing to re-check it.
    */
-  playBgm(_name: BgmName): void {}
+  playBgm(_name: BgmName): void {
+    if (this.muted || this.introLocked) return
+  }
   stopBgm(): void {}
   setBgmVolume(_volume: number): void {}
 }
