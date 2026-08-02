@@ -62,8 +62,8 @@ export const REASONING_DIFFICULTY_WEIGHTS: Record<number, number> = {
  * don't make the whole session feel like it's dragging.
  */
 export const REASONING_FEEDBACK_MS = 1400
-/** How long the Tutorial → Tutorial / Tutorial → Real transition message stays up. */
-export const REASONING_TUTORIAL_TRANSITION_MS = 1100
+/** How long the Tutorial → Tutorial / Tutorial → Real transition message stays up — raised from 1100ms so the rule callout is actually readable before Real starts. */
+export const REASONING_TUTORIAL_TRANSITION_MS = 2200
 
 /**
  * Reasoning Game Score — normalizedScore = difficultyWeightedAccuracy 75% +

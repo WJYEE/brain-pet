@@ -6,6 +6,7 @@ import { Save } from 'lucide-react'
 import { Logo } from '@/components/brain-bet/logo'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
+import { GameRuleReminder } from '@/components/brain-bet/games/shared/game-rule-reminder'
 import { STATS } from '@/lib/brain-bet'
 import {
   MEMORY_CLICK_FEEDBACK_MS,
@@ -381,6 +382,8 @@ export function MemoryGame({ index, mode, difficulty: gameDifficulty, onComplete
               </span>
             )}
           </div>
+
+          <GameRuleReminder text={INSTRUCTION_TEXT} />
         </div>
       )}
     </div>

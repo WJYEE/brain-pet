@@ -10,7 +10,12 @@ interface GameHudProps {
   gameName: string
   mode: 'first' | 'free'
   index: number
-  /** One short line always visible (spec §3: "게임 시작 전 짧은 한 줄 목표는 항상 표시 가능") — e.g. "목표 색만 클릭하세요". */
+  /**
+   * One short line always visible (spec §3: "게임 시작 전 짧은 한 줄 목표는 항상 표시 가능")
+   * — e.g. "목표 색만 클릭하세요". Styled orange (the same persistent rule-reminder
+   * look every other mini-game uses, see GameRuleReminder) so it doubles as the
+   * in-play rule reminder, not just a pre-game blurb.
+   */
   objective: string
   /** Right-aligned status chip content — a timer, round counter, or score-in-progress. */
   statusSlot?: ReactNode
@@ -50,7 +55,7 @@ export function GameHud({ stat, gameName, mode, index, objective, statusSlot, on
           <StatBadge stat={stat} size="md" />
           <div>
             <h1 className="font-display text-xl font-extrabold leading-none text-foreground">{gameName}</h1>
-            <p className="mt-1 max-w-[14rem] text-pretty text-xs font-semibold text-muted-foreground">
+            <p className="mt-1 max-w-[14rem] text-pretty text-xs font-semibold text-primary">
               {objective}
             </p>
           </div>

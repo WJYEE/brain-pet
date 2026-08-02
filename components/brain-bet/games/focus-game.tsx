@@ -7,6 +7,7 @@ import { Logo } from '@/components/brain-bet/logo'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { FocusSymbolView } from '@/components/brain-bet/games/focus-symbol'
+import { GameRuleReminder } from '@/components/brain-bet/games/shared/game-rule-reminder'
 import { STATS } from '@/lib/brain-bet'
 import {
   FOCUS_DIFFICULTY_SEQUENCE,
@@ -459,6 +460,8 @@ export function FocusGame({ index, mode, difficulty, onComplete }: FocusGameProp
           >
             없음 (안 보여요)
           </button>
+
+          <GameRuleReminder text={'정해진 모양만 찾아 눌러보세요 · 안 보이면 "없음"을 눌러주세요.'} />
         </div>
       )}
     </div>

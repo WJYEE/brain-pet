@@ -64,5 +64,5 @@ export function getFocusRoundTimeLimitForDifficulty(difficulty: GameDifficulty):
 /** How long the per-round correct/wrong/missed feedback stays up before advancing. */
 export const FOCUS_ROUND_FEEDBACK_MS = 650
 
-/** How long each Tutorial transition message stays up. */
-export const FOCUS_TUTORIAL_TRANSITION_MS = 1100
+/** How long each Tutorial transition message stays up — raised from 1100ms so the rule callout is actually readable before Real starts. */
+export const FOCUS_TUTORIAL_TRANSITION_MS = 2200

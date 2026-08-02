@@ -6,6 +6,7 @@ import { Logo } from '@/components/brain-bet/logo'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { ReasoningSymbolView } from '@/components/brain-bet/games/reasoning-symbol'
+import { GameRuleReminder } from '@/components/brain-bet/games/shared/game-rule-reminder'
 import { STATS } from '@/lib/brain-bet'
 import {
   getReasoningTimeLimitForDifficulty,
@@ -382,6 +383,8 @@ export function ReasoningGame({ index, mode, difficulty, onComplete }: Reasoning
               )
             })}
           </div>
+
+          <GameRuleReminder text="앞의 패턴에서 숨은 규칙을 찾아 다음에 올 것을 골라보세요." />
         </div>
       )}
     </div>

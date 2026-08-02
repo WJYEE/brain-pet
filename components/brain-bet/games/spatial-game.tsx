@@ -6,6 +6,7 @@ import { Logo } from '@/components/brain-bet/logo'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { SpatialShapeView } from '@/components/brain-bet/games/spatial-shape'
+import { GameRuleReminder } from '@/components/brain-bet/games/shared/game-rule-reminder'
 import { STATS } from '@/lib/brain-bet'
 import {
   SPATIAL_FEEDBACK_MS,
@@ -374,6 +375,8 @@ export function SpatialGame({ index, mode, difficulty, onComplete }: SpatialGame
               )
             })}
           </div>
+
+          <GameRuleReminder text="기준 조각을 머릿속으로 돌렸을 때 같은 모양이 되는 조각을 찾아주세요." />
         </div>
       )}
     </div>

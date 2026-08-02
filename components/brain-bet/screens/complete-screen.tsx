@@ -63,8 +63,10 @@ export function CompleteScreen({
         </span>
       </div>
 
-      <h1 className="mt-5 text-balance font-display text-3xl font-extrabold leading-tight text-foreground">
-        좋아요! {stat.name} 스탯을 발견했어요.
+      <h1 className="mt-5 font-display text-3xl font-extrabold leading-tight text-foreground">
+        좋아요!
+        <br />
+        <span className="text-primary">{stat.name}</span>을 발견했어요.
       </h1>
 
       {/* this round's gameScore — the headline number; raw detail (개수/정확도) is a small parenthetical below it, never the other way around */}

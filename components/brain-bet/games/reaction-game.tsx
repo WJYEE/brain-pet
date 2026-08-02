@@ -5,6 +5,7 @@ import { Hand, Save, Zap } from 'lucide-react'
 import { Logo } from '@/components/brain-bet/logo'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
+import { GameRuleReminder } from '@/components/brain-bet/games/shared/game-rule-reminder'
 import { STATS } from '@/lib/brain-bet'
 import {
   REACTION_DELAY_MS_MAX,
@@ -363,6 +364,8 @@ export function ReactionGame({ index, mode, difficulty, onComplete }: ReactionGa
           </p>
         </div>
       </div>
+
+      {stage !== 'intro' && <GameRuleReminder text={stat.howTo} className="mt-3" />}
     </div>
   )
 }
