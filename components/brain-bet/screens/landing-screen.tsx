@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowRight, Clock, Egg, RotateCcw, Save, Sparkles } from 'lucide-react'
+import { ArrowRight, Clock, RotateCcw, Save } from 'lucide-react'
 import { Logo } from '@/components/brain-bet/logo'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { PLAY_ORDER, STATS, TOTAL_GAMES } from '@/lib/brain-bet'
@@ -23,12 +23,7 @@ export function LandingScreen({ onStart, resumeCount = 0, onResume, onRestart }:
       <Logo size="md" />
 
       <div className="mt-10 flex flex-col items-center text-center sm:mt-14">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground toy-border toy-shadow-sm">
-          <Sparkles size={14} strokeWidth={2.6} />
-          {TOTAL_GAMES}개의 게임 · 하나의 MY STATUS
-        </span>
-
-        <h1 className="mt-5 text-balance font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-6xl">
+        <h1 className="text-balance font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-6xl">
           나의 숨겨진
           <br />
           <span className="text-primary">스탯</span>을 발견해보세요.
@@ -140,26 +135,6 @@ export function LandingScreen({ onStart, resumeCount = 0, onResume, onRestart }:
             Intro는 게임을 하나 완료할 때마다 자동 저장돼요.
             <br />
             언제든 다시 돌아와 이어서 진행할 수 있어요.
-          </p>
-        </div>
-      </div>
-
-      {/* Statling curiosity hook — hint at a birth, never reveal the character */}
-      <div className="mt-auto flex w-full flex-col items-center pt-12">
-        <div className="flex max-w-xs items-center gap-3 rounded-2xl bg-card px-4 py-3 toy-border toy-shadow-sm">
-          <span
-            className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent text-accent-foreground toy-border"
-            aria-hidden="true"
-          >
-            <Egg size={20} strokeWidth={2.4} />
-            <span className="absolute inset-0 animate-ping rounded-full bg-accent/40" />
-          </span>
-          <p className="text-pretty text-xs font-semibold leading-relaxed text-muted-foreground">
-            6개의 스탯을 모두 발견하면
-            <br />
-            나만의{' '}
-            <span className="font-display font-extrabold text-foreground">Statling</span>이
-            깨어나요.
           </p>
         </div>
       </div>
