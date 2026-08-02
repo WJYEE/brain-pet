@@ -397,6 +397,8 @@ export function FocusGame({ index, mode, difficulty, onComplete }: FocusGameProp
             </p>
           </div>
 
+          <GameRuleReminder text={'정해진 모양만 찾아 눌러보세요 · 안 보이면 "없음"을 눌러주세요.'} />
+
           {/* Fixed-height time gauge slot — static full bar during Tutorial. */}
           <div className={cn('h-2 w-full overflow-hidden rounded-full bg-muted', gridMaxWidthClass)}>
             <div
@@ -460,8 +462,6 @@ export function FocusGame({ index, mode, difficulty, onComplete }: FocusGameProp
           >
             없음 (안 보여요)
           </button>
-
-          <GameRuleReminder text={'정해진 모양만 찾아 눌러보세요 · 안 보이면 "없음"을 눌러주세요.'} />
         </div>
       )}
     </div>

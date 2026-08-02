@@ -342,6 +342,8 @@ export function SpatialGame({ index, mode, difficulty, onComplete }: SpatialGame
             )}
           </div>
 
+          <GameRuleReminder text="기준 조각을 머릿속으로 돌렸을 때 같은 모양이 되는 조각을 찾아주세요." />
+
           {/* Fixed-height time gauge slot — static full bar during Tutorial. */}
           <div className="h-2 w-full max-w-xs overflow-hidden rounded-full bg-muted">
             <div
@@ -375,8 +377,6 @@ export function SpatialGame({ index, mode, difficulty, onComplete }: SpatialGame
               )
             })}
           </div>
-
-          <GameRuleReminder text="기준 조각을 머릿속으로 돌렸을 때 같은 모양이 되는 조각을 찾아주세요." />
         </div>
       )}
     </div>

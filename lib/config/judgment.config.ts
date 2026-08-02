@@ -13,11 +13,16 @@ import type { JudgmentRuleId, JudgmentStimulus } from '@/lib/game/types'
  * v3: gameScore reworked to accuracy 60% + switch 15% + conflict 15% +
  * throughput 10%, clamped 0-100 (was an unbounded ~1000+-scale formula where
  * throughput dominated far more than the stated priority intended).
- * v4: Real play no longer switches rule mid-session (Tutorial still teaches
- * both rules back to back) and the session length was cut 15s → 10s. Purely
- * a behavior/pacing change — the gameScore formula itself is untouched.
+ * v4: Real play no longer switches rule mid-session and the session length
+ * was cut 15s → 10s. Purely a behavior/pacing change — the gameScore formula
+ * itself is untouched.
+ * v5: Narrowed v4 to Intro (First Play) only — Free Play keeps the original
+ * Rule Switch behavior (Tutorial demos both rules, Real play switches once)
+ * unchanged. Intro now fixes ONE rule for both its Tutorial and Real play
+ * (picked once per session), never demoing or switching to the other rule at
+ * all. Still purely a behavior change; gameScore formula untouched.
  */
-export const JUDGMENT_GAME_VERSION = 'judgment_v4'
+export const JUDGMENT_GAME_VERSION = 'judgment_v5'
 
 /** Total real-play session length. Shortened four times now (First Play fatigue reduction): 35s → 25s → 20s → 15s, and now → 10s — see getSegmentConfig for how the segment lengths were compressed alongside each cut to still reach full 3-way/Conflict difficulty at least once inside the shorter window. Draft value — easy to retune after Beta data. */
 export const JUDGMENT_GAME_DURATION_MS = 10_000
@@ -45,8 +50,8 @@ export const JUDGMENT_EARLY_CONFLICT_RATIO_MAX = 0.15
 
 /** How long the departing Block's clear/shake + "+1"/"MISS" flourish stays visible. Purely cosmetic — input for the next Block is already accepted before this finishes. */
 export const JUDGMENT_BLOCK_EXIT_MS = 220
-/** How long the compact "RULE CHANGE!" overlay blocks input during the Tutorial's rule demo (also used for the Tutorial → Real transition banner) — raised from 650ms so the rule callout is actually readable before advancing. */
-export const JUDGMENT_RULE_SWITCH_OVERLAY_MS = 1600
+/** How long the compact "RULE CHANGE!" overlay blocks input during the Tutorial's rule demo (also used for the Tutorial → Real transition banner) — raised from 650ms to 1600ms so the rule callout was actually readable, then trimmed back down ~1s once the callout got its own persistent reminder alongside it. */
+export const JUDGMENT_RULE_SWITCH_OVERLAY_MS = 600
 /** How long the one-time "선택지가 하나 더 늘어났어요!" heads-up stays up — only at the 2-way → 3-way step (segment index 1 → 2). Not scored. */
 export const JUDGMENT_THIRD_OPTION_INTRO_MS = 900
 
@@ -79,30 +84,29 @@ export const JUDGMENT_TUTORIAL_COUNT_STIMULI: JudgmentStimulus[] = [
 ]
 
 /**
- * The fixed difficulty progression by segment index, for one caller-chosen
- * `ruleId` held constant for the whole Real session.
+ * The fixed rule/difficulty progression by segment index — the ORIGINAL
+ * "Rule switches exactly once" behavior: segment 0 plays 'shape' (no switch
+ * yet, no Conflict possible), segment 1 is the one-and-only Rule Switch to
+ * 'count' (still 2-way, Conflict capped low), and segment 2+ keeps 'count'
+ * fixed forever while ramping to 3-way + the full Conflict band.
  *
- * Real play never changes the rule mid-session (First Play fatigue
- * reduction — a player who has just learned "it's the shape rule" shouldn't
- * also have to notice and adapt to it becoming the count rule under Time
- * Attack pressure). The Rule Switch itself is now taught entirely in the
- * Tutorial (see buildTutorialBlocks in judgment-game.tsx, which still walks
- * through both rules back to back) — the caller picks one ruleId once per
- * Real session and passes it in here for every segment. Segments 0-1 stay a
- * short, easy, 2-way, low/no-Conflict ramp; from segment 2 onward the
- * difficulty (3-way + full Conflict band) kicks in and continues
- * indefinitely, so a fast player who clears many segments keeps facing the
- * hardest difficulty rather than the ramp running out. The per-segment
- * mapping (Left/Down/Right assignment) still reshuffles every segment
- * regardless — that's a fresh read each time even though the rule itself
- * never changes. Score/PB and Combo Bonus Time are untouched, since both
- * read from per-trial flags computed generically regardless of which
- * segment produced them (switchAccuracy still has real trials to score,
- * from the mapping reshuffle and the 2-way→3-way step — see
- * lib/scoring/judgment.ts).
+ * This is now Free Play's behavior only — Free Play keeps the original Rule
+ * Switch logic unchanged. Intro (First Play) no longer calls this function's
+ * ruleId as-is: judgment-game.tsx's beginRealGame/buildSegmentBlocks pick one
+ * ruleId at random per Intro session and override the `ruleId` field this
+ * function returns with that fixed value for every segment (difficulty ramp
+ * — choiceCount/length/conflict ratios — still comes from here unchanged),
+ * so Intro's Time Attack never switches rule while Free Play still does. The
+ * per-segment mapping (Left/Down/Right assignment) still reshuffles every
+ * segment regardless of ruleId, in both modes — that's a fresh read each
+ * time even when the rule itself hasn't changed. Score/PB and Combo Bonus
+ * Time are untouched, since both read from per-trial flags computed
+ * generically regardless of which segment produced them (Intro's
+ * switchAccuracy still has real trials to score, from the mapping reshuffle
+ * and the 2-way→3-way step — see lib/scoring/judgment.ts).
  *
  * `length` is JUDGMENT_EARLY_SEGMENT_LENGTH (3, not the default 8) for
- * segments 0-1 — purely a pacing change (fewer Blocks before full
+ * segments 0-1 — purely a pacing change (fewer Blocks before the Switch/full
  * difficulty), not a difficulty change (same Conflict ratios/choiceCount as
  * before) — so the shortened 10s Time Attack still reaches segment 2 (3-way
  * + full Conflict) at least once for a normally-paced player, without
@@ -110,8 +114,9 @@ export const JUDGMENT_TUTORIAL_COUNT_STIMULI: JudgmentStimulus[] = [
  */
 export function getSegmentConfig(
   segmentIndex: number,
-  ruleId: JudgmentRuleId,
 ): { ruleId: JudgmentRuleId; choiceCount: 2 | 3; length: number; conflictRatioMin: number; conflictRatioMax: number } {
+  // The one-and-only switch (Free Play only — Intro overrides this ruleId at the call site): base rule at segment 0, the other rule from segment 1 onward, forever.
+  const ruleId: JudgmentRuleId = segmentIndex === 0 ? 'shape' : 'count'
   if (segmentIndex === 0) {
     return { ruleId, choiceCount: 2, length: JUDGMENT_EARLY_SEGMENT_LENGTH, conflictRatioMin: 0, conflictRatioMax: 0 }
   }

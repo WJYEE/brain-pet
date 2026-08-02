@@ -118,14 +118,24 @@ function labelForAnswer(mapping: JudgmentRuleMapping, answer: JudgmentAnswer): s
   return value === null ? '' : mappingValueLabel(value)
 }
 
+/**
+ * `forcedRuleId` is non-null only for an Intro (First Play) Real session,
+ * fixed once in beginTutorial and held for the whole session — overrides
+ * whatever ruleId getSegmentConfig would naturally pick for this segment,
+ * while leaving its choiceCount/length/Conflict ramp untouched. `null` (Free
+ * Play) leaves getSegmentConfig's own ruleId — and therefore the original
+ * one-time Rule Switch at segment 0 → 1 — completely alone.
+ */
 function buildSegmentBlocks(
   segmentIndex: number,
-  sessionRuleId: JudgmentRuleId,
+  forcedRuleId: JudgmentRuleId | null,
   startKey: number,
   previousMapping: JudgmentRuleMapping | null,
   lastMappingForRule: JudgmentRuleMapping | null,
 ): { blocks: QueueBlock[]; nextKey: number; mapping: JudgmentRuleMapping } {
-  const { ruleId, choiceCount, length, conflictRatioMin, conflictRatioMax } = getSegmentConfig(segmentIndex, sessionRuleId)
+  const segmentConfig = getSegmentConfig(segmentIndex)
+  const ruleId = forcedRuleId ?? segmentConfig.ruleId
+  const { choiceCount, length, conflictRatioMin, conflictRatioMax } = segmentConfig
   const mapping = generateRuleMapping(ruleId, choiceCount, lastMappingForRule)
   const pool = choiceCount === 3 ? JUDGMENT_STIMULI_3WAY : JUDGMENT_STIMULI_2WAY
   const classify = (s: JudgmentStimulus) => isConflictStimulus(s, mapping, previousMapping)
@@ -146,10 +156,10 @@ function buildSegmentBlocks(
   return { blocks, nextKey: key, mapping }
 }
 
-/** Keeps the queue topped up to JUDGMENT_QUEUE_PREVIEW_COUNT by generating whole segments ahead of time — the real queue is functionally endless until the Time Attack timer runs out. `sessionRuleId` is fixed once per Real session (see beginRealGame) — Real play never switches rule mid-session, only the mapping/choiceCount/Conflict ramp changes segment to segment. */
+/** Keeps the queue topped up to JUDGMENT_QUEUE_PREVIEW_COUNT by generating whole segments ahead of time — the real queue is functionally endless until the Time Attack timer runs out. `forcedRuleId` is threaded straight through to buildSegmentBlocks — see its doc comment. */
 function fillQueue(
   current: QueueBlock[],
-  sessionRuleId: JudgmentRuleId,
+  forcedRuleId: JudgmentRuleId | null,
   nextKeyRef: { current: number },
   nextSegmentRef: { current: number },
   previousMappingRef: { current: JudgmentRuleMapping | null },
@@ -158,23 +168,47 @@ function fillQueue(
   let q = current
   while (q.length < JUDGMENT_QUEUE_PREVIEW_COUNT) {
     const segmentIndex = nextSegmentRef.current
+    const ruleId = forcedRuleId ?? getSegmentConfig(segmentIndex).ruleId
     const { blocks, nextKey, mapping } = buildSegmentBlocks(
       segmentIndex,
-      sessionRuleId,
+      forcedRuleId,
       nextKeyRef.current,
       previousMappingRef.current,
-      lastMappingByRuleRef.current[sessionRuleId],
+      lastMappingByRuleRef.current[ruleId],
     )
     nextKeyRef.current = nextKey
     nextSegmentRef.current += 1
     previousMappingRef.current = mapping
-    lastMappingByRuleRef.current = { ...lastMappingByRuleRef.current, [sessionRuleId]: mapping }
+    lastMappingByRuleRef.current = { ...lastMappingByRuleRef.current, [ruleId]: mapping }
     q = [...q, ...blocks]
   }
   return q
 }
 
-function buildTutorialBlocks(): QueueBlock[] {
+/**
+ * `forcedRuleId` set (Intro/First Play): a single-rule practice set — just
+ * the 3 curated stimuli for that one rule, all under segmentIndex 0 — so the
+ * Tutorial never demos (or implies) a Rule Switch, matching Real play right
+ * after it. `forcedRuleId` null (Free Play): the original two-segment demo,
+ * 3 shape Blocks then 3 count Blocks, unchanged.
+ */
+function buildTutorialBlocks(forcedRuleId: JudgmentRuleId | null): QueueBlock[] {
+  if (forcedRuleId) {
+    const stimuli = forcedRuleId === 'shape' ? JUDGMENT_TUTORIAL_SHAPE_STIMULI : JUDGMENT_TUTORIAL_COUNT_STIMULI
+    const mapping = generateRuleMapping(forcedRuleId, 2, null)
+    return stimuli.map((stimulus, indexInSegment) => ({
+      key: indexInSegment,
+      stimulus,
+      ruleId: forcedRuleId,
+      choiceCount: 2,
+      ruleMapping: mapping,
+      segmentIndex: 0,
+      indexInSegment,
+      isConflictTrial: false,
+      recorded: false,
+    }))
+  }
+
   const shapeMapping = generateRuleMapping('shape', 2, null)
   const countMapping = generateRuleMapping('count', 2, null)
   let key = 0
@@ -208,16 +242,21 @@ function buildTutorialBlocks(): QueueBlock[] {
  * Attack rework. A continuous horizontal queue of Blocks is always visible;
  * the player clears the current (leftmost, highlighted) Block by choosing
  * Left/Down/Right, the queue shifts immediately (no blocking per-trial
- * feedback screen). The Rule Switch itself is taught only in the Tutorial
- * (shape rule blocks, then count rule blocks, back to back); Real play picks
- * one rule at random per session (see beginRealGame) and holds it fixed the
- * whole time — every segment boundary still reshuffles a fresh Left/Down/
+ * feedback screen). Every segment boundary reshuffles a fresh Left/Down/
  * Right mapping (held fixed for that whole segment) so the direction can't
- * be memorized by button position — only actually read off the Rule Banner,
- * and the 2-way→3-way step still introduces a third option — but the rule
- * itself never changes mid-session. Segment length is shorter for the early
- * eased segments, JUDGMENT_SEGMENT_LENGTH once full difficulty is reached.
- * The whole session runs against one global JUDGMENT_GAME_DURATION_MS timer.
+ * be memorized by button position — only actually read off the Rule Banner.
+ *
+ * Rule Switch behavior now differs by `mode`: Free Play keeps the original
+ * design — Tutorial demos shape then count back to back, Real play switches
+ * from shape to count exactly once, partway through the session (see
+ * getSegmentConfig). Intro (First Play) instead fixes ONE rule, picked at
+ * random in beginTutorial, for BOTH its Tutorial and Real play — never
+ * demoing or switching to the other rule at all (see the `forcedRuleId`
+ * threaded through buildTutorialBlocks/buildSegmentBlocks/fillQueue). In
+ * both modes the 2-way→3-way step still introduces a third option partway
+ * through Real play; segment length is shorter for the early eased segments,
+ * JUDGMENT_SEGMENT_LENGTH once full difficulty is reached. The whole session
+ * runs against one global JUDGMENT_GAME_DURATION_MS timer.
  */
 export function JudgmentGame({ index, mode, difficulty, onComplete }: JudgmentGameProps) {
   const stat = STATS.judgment
@@ -240,8 +279,13 @@ export function JudgmentGame({ index, mode, difficulty, onComplete }: JudgmentGa
 
   const nextKeyRef = useRef(0)
   const nextSegmentToGenerateRef = useRef(0)
-  /** The one rule Real play uses for the whole session — picked once in beginRealGame, never changed mid-session (see getSegmentConfig doc comment). */
-  const sessionRuleIdRef = useRef<JudgmentRuleId>('shape')
+  /**
+   * Non-null only for mode 'first' — the one rule BOTH Tutorial and Real
+   * play use for the whole session, picked once in beginTutorial and never
+   * changed afterward. Stays null for mode 'free', which leaves
+   * getSegmentConfig's own ruleId (and its one-time Rule Switch) alone.
+   */
+  const sessionRuleIdRef = useRef<JudgmentRuleId | null>(null)
   const previousMappingRef = useRef<JudgmentRuleMapping | null>(null)
   const lastMappingByRuleRef = useRef<LastMappingByRule>({ shape: null, count: null })
   const trialsRef = useRef<JudgmentTrial[]>([])
@@ -297,8 +341,11 @@ export function JudgmentGame({ index, mode, difficulty, onComplete }: JudgmentGa
   const beginTutorial = () => {
     play('game-start')
     clearScheduled()
+    // mode 'first' fixes one rule for the whole session (Tutorial + Real);
+    // mode 'free' stays null, leaving getSegmentConfig's own Rule Switch alone.
+    sessionRuleIdRef.current = mode === 'first' ? (Math.random() < 0.5 ? 'shape' : 'count') : null
     setAppStage('tutorial')
-    setQueue(buildTutorialBlocks())
+    setQueue(buildTutorialBlocks(sessionRuleIdRef.current))
     setExitingBlock(null)
     setIsRuleChanging(false)
     blockShownAtRef.current = performance.now()
@@ -308,7 +355,6 @@ export function JudgmentGame({ index, mode, difficulty, onComplete }: JudgmentGa
     clearScheduled()
     nextKeyRef.current = 0
     nextSegmentToGenerateRef.current = 0
-    sessionRuleIdRef.current = Math.random() < 0.5 ? 'shape' : 'count'
     previousMappingRef.current = null
     lastMappingByRuleRef.current = { shape: null, count: null }
     trialsRef.current = []
@@ -359,9 +405,11 @@ export function JudgmentGame({ index, mode, difficulty, onComplete }: JudgmentGa
 
     if (current.recorded && correctAnswer !== null) {
       const isSwitchTrial = current.indexInSegment === 0 && current.segmentIndex > 0
-      // Real play holds one ruleId for the whole session (see beginRealGame),
-      // so the "previous segment's rule" is always the same rule as this one.
-      const previousRuleId = current.segmentIndex > 0 ? current.ruleId : null
+      // mode 'first' holds one ruleId all session (see beginTutorial), so the
+      // "previous segment's rule" is always this same rule; mode 'free' looks
+      // it up from the original per-segment derivation (the one Rule Switch).
+      const previousRuleId =
+        current.segmentIndex > 0 ? (sessionRuleIdRef.current ?? getSegmentConfig(current.segmentIndex - 1).ruleId) : null
       const trial: JudgmentTrial = {
         trialIndex: trialsRef.current.length,
         segmentIndex: current.segmentIndex,
@@ -434,12 +482,14 @@ export function JudgmentGame({ index, mode, difficulty, onComplete }: JudgmentGa
 
     const upcoming = filled[0]
     if (upcoming && upcoming.segmentIndex !== current.segmentIndex) {
-      // `ruleChanged` only ever fires during the Tutorial's shape→count demo
-      // (segment 0 → 1) — Real play holds one fixed ruleId all session (see
-      // beginRealGame), so this is always false there. Later segment
-      // boundaries (2 → 3, 3 → 4, ...) reshuffle the mapping but keep the
-      // same rule and choiceCount, so no overlay interrupts play for those;
-      // the live Rule Banner already shows the fresh mapping.
+      // `ruleChanged` fires at a genuine ruleId change in each block — mode
+      // 'first' fixes one ruleId for both Tutorial and Real (see
+      // beginTutorial), so this is always false there; mode 'free' still
+      // switches once, either in its Tutorial demo (segment 0 → 1) or its
+      // Real session (see getSegmentConfig). Later segment boundaries
+      // (2 → 3, 3 → 4, ...) reshuffle the mapping but keep the same rule and
+      // choiceCount, so no overlay interrupts play for those; the live Rule
+      // Banner already shows the fresh mapping.
       const ruleChanged = upcoming.ruleId !== current.ruleId
       const choiceCountChanged = upcoming.choiceCount !== current.choiceCount
       if (ruleChanged || choiceCountChanged) {
@@ -615,6 +665,8 @@ export function JudgmentGame({ index, mode, difficulty, onComplete }: JudgmentGa
             )}
           </div>
 
+          <GameRuleReminder text="규칙에 맞게 Block을 빠르게 처리하세요 · 제한시간 안에 최대한 많이, 정확하게!" />
+
           {/* Block Queue: current (enlarged, glowing) + upcoming preview, fading out.
               Sizes are mobile-first (smaller) with `sm:` restoring the original desktop
               sizes exactly — the full 5-block preview plus a 96px current block otherwise
@@ -699,8 +751,6 @@ export function JudgmentGame({ index, mode, difficulty, onComplete }: JudgmentGa
               </button>
             ))}
           </div>
-
-          <GameRuleReminder text="규칙에 맞게 Block을 빠르게 처리하세요 · 제한시간 안에 최대한 많이, 정확하게!" />
 
           <p className="hidden text-[10px] font-semibold text-muted-foreground sm:block">
             {choiceCount === 3 ? '← ↓ → 방향키 사용 가능' : '← → 방향키 사용 가능'}

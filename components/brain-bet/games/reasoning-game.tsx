@@ -350,6 +350,8 @@ export function ReasoningGame({ index, mode, difficulty, onComplete }: Reasoning
             )}
           </div>
 
+          <GameRuleReminder text="앞의 패턴에서 숨은 규칙을 찾아 다음에 올 것을 골라보세요." />
+
           {/* Fixed-height time gauge slot — static full bar during Tutorial. */}
           <div className="h-2 w-full max-w-xs overflow-hidden rounded-full bg-muted">
             <div
@@ -383,8 +385,6 @@ export function ReasoningGame({ index, mode, difficulty, onComplete }: Reasoning
               )
             })}
           </div>
-
-          <GameRuleReminder text="앞의 패턴에서 숨은 규칙을 찾아 다음에 올 것을 골라보세요." />
         </div>
       )}
     </div>

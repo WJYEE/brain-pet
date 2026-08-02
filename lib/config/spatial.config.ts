@@ -68,8 +68,8 @@ export const SPATIAL_OPTION_COUNT = 4
 
 /** How long the per-question correct/wrong/timeout feedback (with the correct-answer highlight) stays up before advancing. */
 export const SPATIAL_FEEDBACK_MS = 750
-/** How long the Tutorial → Tutorial / Tutorial → Real transition message stays up — raised from 1100ms so the rule callout is actually readable before Real starts. */
-export const SPATIAL_TUTORIAL_TRANSITION_MS = 2200
+/** How long the Tutorial → Tutorial / Tutorial → Real transition message stays up — raised from 1100ms to 2200ms so the rule callout was actually readable, then trimmed back down ~1s once the callout got its own persistent reminder alongside it. */
+export const SPATIAL_TUTORIAL_TRANSITION_MS = 1200
 
 /**
  * Spatial ("회전 도형 찾기") Game Score — measures 공간 인지 능력(주어진

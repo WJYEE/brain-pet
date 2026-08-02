@@ -328,6 +328,8 @@ export function MemoryGame({ index, mode, difficulty: gameDifficulty, onComplete
             </p>
           </div>
 
+          <GameRuleReminder text={INSTRUCTION_TEXT} />
+
           {/* Fixed footprint (max-width + aspect-square) regardless of gridSize,
               so the grid's center never shifts between 3x3 and 6x6 rounds. */}
           <div
@@ -382,8 +384,6 @@ export function MemoryGame({ index, mode, difficulty: gameDifficulty, onComplete
               </span>
             )}
           </div>
-
-          <GameRuleReminder text={INSTRUCTION_TEXT} />
         </div>
       )}
     </div>

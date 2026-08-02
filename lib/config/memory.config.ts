@@ -75,8 +75,8 @@ export const MEMORY_CLICK_FEEDBACK_MS = 220
 /** How long the per-round result (PERFECT! / x/y 기억했어요 + full reveal) stays up before advancing. */
 export const MEMORY_ROUND_FEEDBACK_MS = 800
 
-/** How long the Tutorial → Real transition message stays up — raised from 1100ms so the rule callout is actually readable before Real starts. */
-export const MEMORY_TUTORIAL_TRANSITION_MS = 2200
+/** How long the Tutorial → Real transition message stays up — raised from 1100ms to 2200ms so the rule callout was actually readable, then trimmed back down ~1s once the callout got its own persistent reminder alongside it. */
+export const MEMORY_TUTORIAL_TRANSITION_MS = 1200
 
 /** Added to a round's response time per wrong click, before it counts toward scoring/Personal Best. */
 export const MEMORY_WRONG_TIME_PENALTY_MS = 500
