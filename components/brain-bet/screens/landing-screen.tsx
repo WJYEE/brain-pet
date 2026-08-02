@@ -1,27 +1,39 @@
-'use client'
+"use client";
 
-import { ArrowRight, Clock, RotateCcw, Save } from 'lucide-react'
-import { Logo } from '@/components/brain-bet/logo'
-import { StatBadge } from '@/components/brain-bet/stat-badge'
-import { PLAY_ORDER, STATS, TOTAL_GAMES } from '@/lib/brain-bet'
-import { useSound } from '@/hooks/use-sound'
+import { ArrowRight, Clock, RotateCcw, Save } from "lucide-react";
+import { Logo } from "@/components/brain-bet/logo";
+import { StatBadge } from "@/components/brain-bet/stat-badge";
+import { PLAY_ORDER, STATS, TOTAL_GAMES } from "@/lib/brain-bet";
+import { useSound } from "@/hooks/use-sound";
 
 interface LandingScreenProps {
-  onStart: () => void
-  /** How many of the 6 Intro games are already completed on a resumable checkpoint — 0 means nothing to resume, so the screen renders exactly as before. See lib/game/intro-progress-storage.ts. */
-  resumeCount?: number
-  onResume?: () => void
-  onRestart?: () => void
+  onStart: () => void;
+  /** 완료된 Intro 게임 수. 0이면 새 게임 시작 화면을 표시한다. */
+  resumeCount?: number;
+  onResume?: () => void;
+  onRestart?: () => void;
 }
 
-export function LandingScreen({ onStart, resumeCount = 0, onResume, onRestart }: LandingScreenProps) {
-  const { play } = useSound()
-  const canResume = resumeCount > 0
+export function LandingScreen({
+  onStart,
+  resumeCount = 0,
+  onResume,
+  onRestart,
+}: LandingScreenProps) {
+  const { play } = useSound();
+  const canResume = resumeCount > 0;
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col items-center px-5 py-10 sm:py-16">
+      {/* Brand */}
       <Logo size="md" />
 
+      <p className="mt-2 text-center text-xs font-bold text-muted-foreground sm:text-sm">
+        당신의 플레이로 태어나는{" "}
+        <span className="font-bold text-primary">성장형 펫</span>
+      </p>
+
+      {/* Hero */}
       <div className="mt-10 flex flex-col items-center text-center sm:mt-14">
         <h1 className="text-balance font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-6xl">
           나의 숨겨진
@@ -31,46 +43,53 @@ export function LandingScreen({ onStart, resumeCount = 0, onResume, onRestart }:
 
         <p className="mt-4 max-w-md text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
           6개의 짧은 미니게임을 플레이하고
-          <br className="hidden sm:block" /> 나만의 6가지 능력치를 확인해보세요.
+          <br />
+          <span className="font-bold text-foreground">
+            나만의 <span className="text-primary">Statling</span>을 깨워보세요.
+          </span>
         </p>
       </div>
 
-      {/* six stat preview — a peek at what you'll discover, not a menu */}
-      <div className="mt-9 w-full">
-        <p className="mb-3 text-center text-xs font-bold uppercase tracking-wide text-muted-foreground">
-          앞으로 발견하게 될 6가지 능력
+      {/* Stat preview */}
+      <div className="mt-8 w-full">
+        <p className="mb-3 text-center text-xs font-bold tracking-wide text-muted-foreground">
+          발견하게 될 6가지 능력
         </p>
+
         <ul className="flex flex-wrap items-center justify-center gap-2.5">
           {PLAY_ORDER.map((id) => {
-            const stat = STATS[id]
+            const stat = STATS[id];
+
             return (
               <li
                 key={id}
                 className="inline-flex items-center gap-2 rounded-full bg-card px-3 py-1.5 toy-border"
               >
                 <StatBadge stat={stat} size="xs" />
+
                 <span className="font-display text-sm font-extrabold leading-none text-foreground">
                   {stat.name}
                 </span>
               </li>
-            )
+            );
           })}
         </ul>
       </div>
 
       {/* CTA */}
-      <div className="mt-9 flex flex-col items-center gap-4">
+      <div className="mt-8 flex flex-col items-center gap-4">
         {canResume ? (
           <>
             <div className="flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground toy-border toy-shadow-sm">
-              진단 {resumeCount}/{TOTAL_GAMES}개 완료 · 이어서 할 수 있어요
+              진단 {resumeCount}/{TOTAL_GAMES}개 완료
             </div>
+
             <button
               type="button"
               data-sfx-skip
               onClick={() => {
-                play('ui-confirm')
-                onResume?.()
+                play("ui-confirm");
+                onResume?.();
               }}
               className="group inline-flex items-center gap-2 rounded-2xl bg-primary px-8 py-4 font-display text-xl font-extrabold text-primary-foreground toy-border toy-shadow-lg transition-transform duration-150 hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none"
             >
@@ -81,12 +100,13 @@ export function LandingScreen({ onStart, resumeCount = 0, onResume, onRestart }:
                 className="transition-transform duration-150 group-hover:translate-x-1"
               />
             </button>
+
             <button
               type="button"
               data-sfx-skip
               onClick={() => {
-                play('ui-back')
-                onRestart?.()
+                play("ui-back");
+                onRestart?.();
               }}
               className="inline-flex items-center gap-1.5 rounded-xl bg-card px-4 py-2 text-sm font-bold text-muted-foreground toy-border"
             >
@@ -100,8 +120,8 @@ export function LandingScreen({ onStart, resumeCount = 0, onResume, onRestart }:
               type="button"
               data-sfx-skip
               onClick={() => {
-                play('ui-confirm')
-                onStart()
+                play("ui-confirm");
+                onStart();
               }}
               className="group inline-flex items-center gap-2 rounded-2xl bg-primary px-8 py-4 font-display text-xl font-extrabold text-primary-foreground toy-border toy-shadow-lg transition-transform duration-150 hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none"
             >
@@ -112,32 +132,36 @@ export function LandingScreen({ onStart, resumeCount = 0, onResume, onRestart }:
                 className="transition-transform duration-150 group-hover:translate-x-1"
               />
             </button>
+
             <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
-              <Clock size={15} strokeWidth={2.4} />약 2~3분
+              <Clock size={15} strokeWidth={2.4} />
+              약 2~3분
             </span>
           </>
         )}
       </div>
 
-      {/* Always-visible reassurance card (not a tiny caption) — Intro autosaves per game, so leaving mid-run is always safe. See lib/game/intro-progress-storage.ts. */}
-      <div className="mt-6 flex w-full max-w-sm items-start gap-3 rounded-2xl bg-card px-4 py-3.5 toy-border toy-shadow-sm">
+      {/* Autosave notice */}
+      <div className="mt-6 flex w-full max-w-sm items-center gap-3 rounded-2xl bg-card px-4 py-3 toy-border toy-shadow-sm">
         <span
           className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent text-accent-foreground toy-border"
           aria-hidden="true"
         >
           <Save size={17} strokeWidth={2.4} />
         </span>
+
         <div className="min-w-0">
           <p className="font-display text-sm font-extrabold leading-tight text-foreground">
-            이어서 진행할 수 있어요.
+            자동 저장 지원
           </p>
-          <p className="mt-0.5 text-pretty text-xs leading-relaxed text-muted-foreground">
-            Intro는 게임을 하나 완료할 때마다 자동 저장돼요.
+
+          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+            게임을 완료할 때마다 저장돼요.
             <br />
-            언제든 다시 돌아와 이어서 진행할 수 있어요.
+            언제든 돌아와 이어서 할 수 있어요.
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }
