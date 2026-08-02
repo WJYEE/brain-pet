@@ -3,8 +3,8 @@ import { cn } from '@/lib/utils'
 interface AssetImageProps {
   src: string
   alt: string
-  /** Wrapper (square) size in px — this, not the PNG's own dimensions, is what makes every asset read as the same visual size on screen. */
-  size?: number
+  /** Wrapper (square) size — this, not the PNG's own dimensions, is what makes every asset read as the same visual size on screen. A plain number is px; a string (e.g. a `clamp()` expression) is used as-is, for callers that need a responsive size without a JS resize listener. */
+  size?: number | string
   /** Per-asset fine-tune multiplier (default 1) — compensates for a PNG having more/less internal transparent padding than its siblings. Never crops or resizes the file itself, only scales its on-screen presentation. */
   scale?: number
   className?: string

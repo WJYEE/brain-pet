@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { Toast } from '@base-ui/react/toast'
-import { CheckCircle2, MessageCircleHeart } from 'lucide-react'
-import { addFeedbackRecord } from '@/lib/feedback/feedback-storage'
+import { CheckCircle2, MessageCircleHeart, Pencil } from 'lucide-react'
+import { loadFeedbackRecord, upsertFeedbackRecord } from '@/lib/feedback/feedback-storage'
 import {
   emptyFeedbackDraft,
   FAVORITE_PART_OPTIONS,
@@ -12,10 +12,12 @@ import {
   SATISFACTION_OPTIONS,
   type FavoritePartValue,
   type FeedbackDraft,
+  type FeedbackRecord,
   type ImprovementAreaValue,
   type ReturnIntentValue,
   type SatisfactionValue,
 } from '@/lib/feedback/feedback-types'
+import type { PetProfile } from '@/lib/pets/pet-profile'
 import { cn } from '@/lib/utils'
 
 interface RadioGroupProps<T extends string> {
@@ -66,23 +68,45 @@ function RadioGroup<T extends string>({ name, options, value, onChange }: RadioG
 
 const FIELD_LABEL_CLASS = 'text-sm font-bold text-foreground'
 
+function draftFromRecord(record: FeedbackRecord): FeedbackDraft {
+  return {
+    satisfaction: record.satisfaction,
+    favoritePart: record.favoritePart,
+    improvementArea: record.improvementArea,
+    returnIntent: record.returnIntent,
+    comment: record.comment,
+  }
+}
+
+interface FeedbackSectionProps {
+  /** Stamped onto the saved record as statlingId/statlingName — see lib/feedback/feedback-storage.ts. Null before a Statling is hatched. */
+  petProfile: PetProfile | null
+}
+
 /**
- * "Statling, 어떠셨나요?" — a single-page satisfaction survey (repository
- * structure: see lib/feedback/feedback-storage.ts, localStorage today, a
- * one-line swap to Supabase later). Q1/Q2/Q3/Q4 are required single-select
- * radios; Q5 is an optional free-text comment. Submitting is guarded by
- * `isSubmitting` (blocks a double-click from writing two records) and the
- * form is replaced by a thank-you card right after a successful submit
- * (blocks an accidental immediate resubmit) — "다시 작성하기" explicitly
- * reopens a blank form for anyone who wants to leave feedback again later.
+ * "Statling, 어떠셨나요?" — a single-page satisfaction survey. Always exactly
+ * one feedback per device: a new submission UPDATEs the existing record
+ * rather than adding another (see lib/feedback/feedback-storage.ts's
+ * upsertFeedbackRecord) — "내 의견 수정하기," not "다른 의견도 남기기." On
+ * mount, an existing record (if any) pre-fills the form so editing reads as
+ * "here's what you told us, change anything" rather than starting blank.
+ * Q1/Q2/Q3/Q4 are required single-select radios; Q5 is an optional
+ * free-text comment. Submitting is guarded by `isSubmitting` (blocks a
+ * double-click from writing two updates in a row) and the form is replaced
+ * by a confirmation card right after a successful submit.
  */
-export function FeedbackSection() {
+export function FeedbackSection({ petProfile }: FeedbackSectionProps) {
   const toastManager = Toast.useToastManager()
-  const [draft, setDraft] = useState<FeedbackDraft>(() => emptyFeedbackDraft())
+  const [existingRecord, setExistingRecord] = useState<FeedbackRecord | null>(() => loadFeedbackRecord())
+  const [draft, setDraft] = useState<FeedbackDraft>(() => {
+    const existing = loadFeedbackRecord()
+    return existing ? draftFromRecord(existing) : emptyFeedbackDraft()
+  })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [justSubmitted, setJustSubmitted] = useState(false)
   const [showValidation, setShowValidation] = useState(false)
 
+  const isEditingExisting = existingRecord !== null
   const missingRequired =
     !draft.satisfaction || !draft.favoritePart || !draft.improvementArea || !draft.returnIntent
 
@@ -99,15 +123,18 @@ export function FeedbackSection() {
     }
     setIsSubmitting(true)
     try {
-      addFeedbackRecord({
+      const saved = upsertFeedbackRecord({
         satisfaction: draft.satisfaction as SatisfactionValue,
         favoritePart: draft.favoritePart as FavoritePartValue,
         improvementArea: draft.improvementArea as ImprovementAreaValue,
         returnIntent: draft.returnIntent as ReturnIntentValue,
         comment: draft.comment,
+        statlingId: petProfile?.id ?? null,
+        statlingName: petProfile?.name ?? null,
       })
+      setExistingRecord(saved)
       setJustSubmitted(true)
-      toastManager.add({ title: '소중한 의견 감사해요!', type: 'success' })
+      toastManager.add({ title: isEditingExisting ? '의견을 수정했어요!' : '소중한 의견 감사해요!', type: 'success' })
     } catch {
       toastManager.add({ title: '제출하지 못했어요. 다시 시도해주세요.', type: 'error' })
     } finally {
@@ -119,17 +146,19 @@ export function FeedbackSection() {
     return (
       <div className="mt-6 flex flex-col items-center gap-2 rounded-2xl bg-card px-4 py-8 text-center toy-border">
         <CheckCircle2 size={28} strokeWidth={2.4} className="text-primary" />
-        <p className="font-display text-sm font-extrabold text-foreground">피드백을 보내주셔서 감사해요!</p>
+        <p className="font-display text-sm font-extrabold text-foreground">
+          {isEditingExisting ? '의견이 수정되었어요!' : '피드백을 보내주셔서 감사해요!'}
+        </p>
         <button
           type="button"
           onClick={() => {
-            setDraft(emptyFeedbackDraft())
             setJustSubmitted(false)
             setShowValidation(false)
           }}
-          className="mt-2 text-xs font-bold text-primary underline underline-offset-2"
+          className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary underline underline-offset-2"
         >
-          다시 작성하기
+          <Pencil size={12} strokeWidth={2.6} />
+          내 의견 수정하기
         </button>
       </div>
     )
@@ -141,7 +170,9 @@ export function FeedbackSection() {
         <MessageCircleHeart size={18} strokeWidth={2.4} className="text-primary" />
         <h2 className="font-display text-base font-extrabold text-foreground">Statling, 어떠셨나요?</h2>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">더 나은 Statling을 만드는 데 큰 도움이 돼요.</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {isEditingExisting ? '보내주신 의견을 언제든 수정할 수 있어요.' : '더 나은 Statling을 만드는 데 큰 도움이 돼요.'}
+      </p>
 
       <div className="mt-4 flex flex-col gap-5">
         <div>
@@ -220,7 +251,7 @@ export function FeedbackSection() {
             isSubmitting && 'opacity-60',
           )}
         >
-          {isSubmitting ? '제출 중...' : '의견 보내기'}
+          {isSubmitting ? '제출 중...' : isEditingExisting ? '의견 수정하기' : '의견 보내기'}
         </button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AssetImage } from '@/components/brain-bet/asset-image'
 import { CharacterImage } from '@/components/brain-bet/character-image'
+import { DecoOverlay } from '@/components/brain-bet/deco-overlay'
 import { PetSpeechBubble } from '@/components/brain-bet/pet-speech-bubble'
 import type { StatId } from '@/lib/brain-bet'
 import type { PetProfile } from '@/lib/pets/pet-profile'
@@ -10,8 +11,20 @@ import {
   characterStateForInteraction,
   type CharacterStateFolder,
 } from '@/lib/character-state-assets'
+import { loadSavedDecoPlacementState } from '@/lib/deco-placement-storage'
 import type { Mood, PetAnimation } from '@/lib/pet-care/types'
 import { cn } from '@/lib/utils'
+
+/**
+ * Matches every AssetImage/CharacterImage call below — see DecoOverlay's doc
+ * comment for why this must stay in sync. A `clamp()` (not a plain number)
+ * so the Statling scales down on narrow phones instead of staying pinned at
+ * its desktop size — 270px in a ~330px-wide mobile Room canvas read as
+ * oversized. Pure CSS, no resize-listener/hydration-mismatch risk: at the
+ * `sm` breakpoint (640px) and up, 46vw already exceeds 270px, so the clamp
+ * ceiling keeps desktop pixel-identical to before.
+ */
+const CHARACTER_BOX_SIZE = 'clamp(160px, 44vw, 270px)'
 
 /** How long a manual click-preview (see the tester click handler below) overrides the live interaction-driven state before reverting. */
 const TESTER_PREVIEW_HOLD_MS = 1600
@@ -94,6 +107,13 @@ export function PetMoodView({
   onDismissSpeech,
   testerFolder,
 }: PetMoodViewProps) {
+  // Loaded once per mount — GameFlow remounts RoomScreen (and this) on every
+  // phase switch (see game-flow.tsx's stepKey), so returning here from the
+  // Statling tab after saving Deco edits always reflects the latest data
+  // without needing a separate refresh signal. Read-only here: Room never
+  // edits Deco, only displays it (see DecoOverlay).
+  const [decoItems] = useState(() => loadSavedDecoPlacementState().items)
+
   // Manual click-through preview (tester mode only) — null means "just show
   // whatever mood/animation would really display right now".
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
@@ -177,23 +197,39 @@ export function PetMoodView({
             className="block cursor-pointer rounded-full"
             title="클릭하면 다음 표정을 미리 볼 수 있어요"
           >
-            <AssetImage
-              key={`${stateDef.key}-${clickTick}`}
-              src={testerFolder.assets[stateDef.key]}
-              alt={`${testerFolder.displayName} — ${stateDef.label}`}
-              size={270}
-              className={cn(isPreviewing ? 'animate-pop-in' : ANIMATION_CLASS[animation])}
+            <DecoOverlay
+              items={decoItems}
+              characterSize={CHARACTER_BOX_SIZE}
+              characterSlot={
+                <AssetImage
+                  key={`${stateDef.key}-${clickTick}`}
+                  src={testerFolder.assets[stateDef.key]}
+                  alt={`${testerFolder.displayName} — ${stateDef.label}`}
+                  size={CHARACTER_BOX_SIZE}
+                  className={cn(isPreviewing ? 'animate-pop-in' : ANIMATION_CLASS[animation])}
+                />
+              }
             />
           </button>
         ) : realFolder && petProfile ? (
-          <AssetImage
-            src={realFolder.assets[stateDef.key]}
-            alt={petProfile.name}
-            size={270}
-            className={ANIMATION_CLASS[animation]}
+          <DecoOverlay
+            items={decoItems}
+            characterSize={CHARACTER_BOX_SIZE}
+            characterSlot={
+              <AssetImage
+                src={realFolder.assets[stateDef.key]}
+                alt={petProfile.name}
+                size={CHARACTER_BOX_SIZE}
+                className={ANIMATION_CLASS[animation]}
+              />
+            }
           />
         ) : (
-          <CharacterImage type={topStat} size={270} className={ANIMATION_CLASS[animation]} />
+          <DecoOverlay
+            items={decoItems}
+            characterSize={CHARACTER_BOX_SIZE}
+            characterSlot={<CharacterImage type={topStat} size={CHARACTER_BOX_SIZE} className={ANIMATION_CLASS[animation]} />}
+          />
         )}
 
         {isPreviewing && (

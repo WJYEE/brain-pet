@@ -6,7 +6,12 @@ import { GameHud } from '@/components/brain-bet/games/shared/game-hud'
 import { GameTutorialModal, type TutorialContent } from '@/components/brain-bet/games/shared/game-tutorial-modal'
 import { ToyButton } from '@/components/brain-bet/toy-button'
 import { STATS } from '@/lib/brain-bet'
-import { BEST_CHOICE_INTRO_COUNTDOWN_SECONDS, BEST_CHOICE_ROUND_COUNT } from '@/lib/config/best-choice.config'
+import {
+  BEST_CHOICE_INTRO_COUNTDOWN_SECONDS,
+  getBestChoiceRoundCountForDifficulty,
+} from '@/lib/config/best-choice.config'
+import { GAME_DIFFICULTIES } from '@/lib/game/difficulty'
+import type { GameDifficulty } from '@/lib/game/difficulty'
 import { pickDecisionScenarios } from '@/lib/game/decision-scenarios'
 import type { BestChoiceAnswer, BestChoiceRawSummary } from '@/lib/game/types'
 import { calculateBestChoiceScore, summarizeBestChoiceAnswers } from '@/lib/scoring/best-choice'
@@ -18,6 +23,7 @@ type Stage = 'intro' | 'countdown' | 'playing' | 'feedback'
 interface BestChoiceGameProps {
   index: number
   mode: 'first' | 'free'
+  difficulty: GameDifficulty
   onComplete: (payload: { answers: BestChoiceAnswer[]; rawSummary: BestChoiceRawSummary; gameScore: number }) => void
 }
 
@@ -29,10 +35,12 @@ const TUTORIAL: TutorialContent = {
 }
 
 /** "무엇을 선택할까" — new Judgment-stat game (spec §7). */
-export function BestChoiceGame({ index, mode, onComplete }: BestChoiceGameProps) {
+export function BestChoiceGame({ index, mode, difficulty, onComplete }: BestChoiceGameProps) {
   const stat = STATS.judgment
   const { play } = useSound()
-  const [scenarios] = useState(() => pickDecisionScenarios(BEST_CHOICE_ROUND_COUNT))
+  // Computed once at mount (lazy useState initializer) — at 'normal' (Load multiplier 1)
+  // this is exactly BEST_CHOICE_ROUND_COUNT, so First Play stays unchanged.
+  const [scenarios] = useState(() => pickDecisionScenarios(getBestChoiceRoundCountForDifficulty(difficulty)))
   const [stage, setStage] = useState<Stage>('intro')
   const [roundIndex, setRoundIndex] = useState(0)
   const [answers, setAnswers] = useState<BestChoiceAnswer[]>([])
@@ -115,6 +123,7 @@ export function BestChoiceGame({ index, mode, onComplete }: BestChoiceGameProps)
         }
         onHelp={() => setTutorialOpen(true)}
       />
+      <p className="mt-1 text-xs font-semibold text-muted-foreground">{GAME_DIFFICULTIES[difficulty].hint}</p>
 
       <div className="mt-5 flex flex-1 flex-col">
         {stage === 'intro' && (

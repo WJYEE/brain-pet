@@ -36,7 +36,7 @@ const CHARACTER_SCALE: Record<StatId, number> = {
 
 interface CharacterImageProps {
   type: StatId
-  size?: number
+  size?: number | string
   className?: string
 }
 

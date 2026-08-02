@@ -147,7 +147,7 @@ export function MyPageScreen({ statlingName, topStat, petProfile, onResetPet, on
         </button>
       )}
 
-      <FeedbackSection />
+      <FeedbackSection petProfile={petProfile} />
 
       <p className="mt-6 text-xs font-bold uppercase tracking-wide text-muted-foreground">설정</p>
       <button

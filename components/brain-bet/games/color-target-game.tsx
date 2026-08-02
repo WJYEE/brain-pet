@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { GameCountdown } from '@/components/brain-bet/games/shared/game-countdown'
 import { GameHud } from '@/components/brain-bet/games/shared/game-hud'
 import { GameTutorialModal, type TutorialContent } from '@/components/brain-bet/games/shared/game-tutorial-modal'
@@ -8,14 +8,15 @@ import { ToyButton } from '@/components/brain-bet/toy-button'
 import { STATS } from '@/lib/brain-bet'
 import {
   COLOR_TARGET_CHANGE_HIGHLIGHT_MS,
-  COLOR_TARGET_CHANGE_INTERVAL_STAGES_MS,
   COLOR_TARGET_GAME_DURATION_MS,
   COLOR_TARGET_INTRO_COUNTDOWN_SECONDS,
   COLOR_TARGET_OBJECT_COUNT_MAX,
   COLOR_TARGET_OBJECT_COUNT_MIN,
   COLOR_TARGET_PALETTE,
-  COLOR_TARGET_RESHUFFLE_INTERVAL_MS,
+  getColorTargetChangeIntervalStagesForDifficulty,
+  getColorTargetReshuffleIntervalForDifficulty,
 } from '@/lib/config/color-target.config'
+import { GAME_DIFFICULTIES, type GameDifficulty } from '@/lib/game/difficulty'
 import type { ColorTargetClickEvent, ColorTargetRawSummary } from '@/lib/game/types'
 import { calculateColorTargetScore, summarizeColorTargetEvents } from '@/lib/scoring/color-target'
 import { cn } from '@/lib/utils'
@@ -26,6 +27,7 @@ type Stage = 'intro' | 'countdown' | 'playing'
 interface ColorTargetGameProps {
   index: number
   mode: 'first' | 'free'
+  difficulty: GameDifficulty
   onComplete: (payload: { events: ColorTargetClickEvent[]; rawSummary: ColorTargetRawSummary; gameScore: number }) => void
 }
 
@@ -71,9 +73,17 @@ function randomObjects(targetColorId: string): ActiveObject[] {
 }
 
 /** "특정 색만 클릭" — new Focus-stat game (spec §5). */
-export function ColorTargetGame({ index, mode, onComplete }: ColorTargetGameProps) {
+export function ColorTargetGame({ index, mode, difficulty, onComplete }: ColorTargetGameProps) {
   const stat = STATS.focus
   const { play } = useSound()
+  const changeIntervalStagesMs = useMemo(
+    () => getColorTargetChangeIntervalStagesForDifficulty(difficulty),
+    [difficulty],
+  )
+  const reshuffleIntervalMs = useMemo(
+    () => getColorTargetReshuffleIntervalForDifficulty(difficulty),
+    [difficulty],
+  )
   const [stage, setStage] = useState<Stage>('intro')
   const [tutorialOpen, setTutorialOpen] = useState(false)
   const [remainingMs, setRemainingMs] = useState(COLOR_TARGET_GAME_DURATION_MS)
@@ -90,10 +100,10 @@ export function ColorTargetGame({ index, mode, onComplete }: ColorTargetGameProp
 
   const changeIntervalMs = () => {
     const stageIndex = Math.min(
-      COLOR_TARGET_CHANGE_INTERVAL_STAGES_MS.length - 1,
-      Math.floor((elapsedMsRef.current / COLOR_TARGET_GAME_DURATION_MS) * COLOR_TARGET_CHANGE_INTERVAL_STAGES_MS.length),
+      changeIntervalStagesMs.length - 1,
+      Math.floor((elapsedMsRef.current / COLOR_TARGET_GAME_DURATION_MS) * changeIntervalStagesMs.length),
     )
-    return COLOR_TARGET_CHANGE_INTERVAL_STAGES_MS[stageIndex]
+    return changeIntervalStagesMs[stageIndex]
   }
 
   const pickNewTarget = (isFirst: boolean) => {
@@ -144,10 +154,10 @@ export function ColorTargetGame({ index, mode, onComplete }: ColorTargetGameProp
 
   useEffect(() => {
     if (stage !== 'playing' || tutorialOpen) return
-    const t = window.setInterval(() => setObjects(randomObjects(targetColorId)), COLOR_TARGET_RESHUFFLE_INTERVAL_MS)
+    const t = window.setInterval(() => setObjects(randomObjects(targetColorId)), reshuffleIntervalMs)
     return () => window.clearInterval(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- targetColorId read fresh via closure is fine; only stage/tutorialOpen should restart this interval
-  }, [stage, tutorialOpen])
+  }, [stage, tutorialOpen, reshuffleIntervalMs])
 
   useEffect(() => {
     if (remainingMs <= 0 && stage === 'playing') finish()
@@ -208,6 +218,7 @@ export function ColorTargetGame({ index, mode, onComplete }: ColorTargetGameProp
         }
         onHelp={() => setTutorialOpen(true)}
       />
+      <p className="text-xs font-semibold text-muted-foreground">{GAME_DIFFICULTIES[difficulty].hint}</p>
 
       <div className="mt-5 flex flex-1 flex-col">
         {stage === 'intro' && (

@@ -114,3 +114,17 @@ export function findCharacterByStats(primaryStat: StatId, secondaryStat: StatId)
     CHARACTER_CATALOG[0]
   )
 }
+
+/**
+ * The lowest-numbered roster entry whose primaryStat is the given stat — one
+ * fixed "face" per stat for flavor UI that only has a single StatId to work
+ * with (not a full primary+secondary pair), e.g. the 궁합 compatibility
+ * cards. Same resolution rule character-image.tsx's CHARACTER_IMAGE_SRC
+ * fallback map already hand-picks per stat (reaction -> 01_치즈털실냥이,
+ * memory -> 05_노란병아리, focus -> 03_양, judgment -> 02_로봇, spatial ->
+ * 08_고래, reasoning -> 07_별사막여우) — expressed generically here instead
+ * of duplicating that lookup table.
+ */
+export function getRepresentativeCharacterForStat(stat: StatId): PetProfile {
+  return CHARACTER_CATALOG.find((pet) => pet.primaryStat === stat) ?? CHARACTER_CATALOG[0]
+}

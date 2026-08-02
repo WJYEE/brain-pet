@@ -63,7 +63,14 @@ import { FIT_PUZZLE_GAME_VERSION } from '@/lib/config/fit-puzzle.config'
 import { NUMBER_PATTERN_GAME_VERSION } from '@/lib/config/number-pattern.config'
 import { detectDevice } from '@/lib/game/device'
 import { generateSessionId } from '@/lib/game/id'
-import { computeCurrentStats, loadPlayerSkillState, recordMiniGameCompletion, savePlayerSkillState } from '@/lib/game/player-skill-storage'
+import type { GameDifficulty } from '@/lib/game/difficulty'
+import {
+  computeCurrentStats,
+  getAllRepresentativeRecords,
+  loadPlayerSkillState,
+  recordMiniGameCompletion,
+  savePlayerSkillState,
+} from '@/lib/game/player-skill-storage'
 import {
   clearIntroProgress,
   loadIntroProgress,
@@ -169,6 +176,8 @@ export function GameFlow() {
   const [activeStatId, setActiveStatId] = useState<StatId>(PLAY_ORDER[0])
   /** Which registered game (see lib/game/game-registry.ts) is currently showing for activeStatId — e.g. 'reaction-classic' vs 'reaction-dodge-run'. */
   const [activeGameKey, setActiveGameKey] = useState<string>(getClassicGameKey(PLAY_ORDER[0]))
+  /** Which of the 4 tiers is currently active — always 'normal' for First Play (enterStatGame), player-chosen for Free Play (confirmFreePlayGame/GrowGameScreen). See lib/game/difficulty.ts. */
+  const [activeDifficulty, setActiveDifficulty] = useState<GameDifficulty>('normal')
   const [statStatus, setStatStatus] = useState<StatStatusMap>(emptyStatStatusMap())
   const [lastResult, setLastResult] = useState<GameResult | null>(null)
   /**
@@ -306,10 +315,11 @@ export function GameFlow() {
     if (!loadOnboardingSeen()) setShowOnboarding(true)
   }, [phase])
 
-  /** First Play only — always stages the stat's classic game (see getClassicGameKey). Free Play picks a specific game explicitly instead (see selectFreePlayGame/confirmFreePlayGame below). */
+  /** First Play only — always stages the stat's classic game at Normal difficulty (see getClassicGameKey; spec §17: "Normal ... 최초 플레이 가능", the only tier Intro ever uses). Free Play picks a specific game+difficulty explicitly instead (see selectFreePlayGame/confirmFreePlayGame below). */
   const enterStatGame = (statId: StatId) => {
     setActiveStatId(statId)
     setActiveGameKey(getClassicGameKey(statId))
+    setActiveDifficulty('normal')
     currentAttemptIdRef.current = generateSessionId() // new round starting — see the ref's own doc comment
   }
 
@@ -329,6 +339,7 @@ export function GameFlow() {
       completionId: currentAttemptIdRef.current,
       gameId: activeGameKey,
       statCategory,
+      difficulty: activeDifficulty,
       normalizedScore: gameScore,
       completedAt: new Date().toISOString(),
     })
@@ -422,6 +433,7 @@ export function GameFlow() {
       sessionId: generateSessionId(),
       gameId: 'reaction',
       gameVersion: REACTION_GAME_VERSION,
+      difficulty: activeDifficulty,
       mode: flowMode,
       playedAt: new Date().toISOString(),
       device: detectDevice(),
@@ -463,6 +475,7 @@ export function GameFlow() {
       sessionId: generateSessionId(),
       gameId: 'memory',
       gameVersion: MEMORY_GAME_VERSION,
+      difficulty: activeDifficulty,
       mode: flowMode,
       playedAt: new Date().toISOString(),
       device: detectDevice(),
@@ -506,6 +519,7 @@ export function GameFlow() {
       sessionId: generateSessionId(),
       gameId: 'focus',
       gameVersion: FOCUS_GAME_VERSION,
+      difficulty: activeDifficulty,
       mode: flowMode,
       playedAt: new Date().toISOString(),
       device: detectDevice(),
@@ -549,6 +563,7 @@ export function GameFlow() {
       sessionId: generateSessionId(),
       gameId: 'judgment',
       gameVersion: JUDGMENT_GAME_VERSION,
+      difficulty: activeDifficulty,
       mode: flowMode,
       playedAt: new Date().toISOString(),
       device: detectDevice(),
@@ -592,6 +607,7 @@ export function GameFlow() {
       sessionId: generateSessionId(),
       gameId: 'spatial',
       gameVersion: SPATIAL_GAME_VERSION,
+      difficulty: activeDifficulty,
       mode: flowMode,
       playedAt: new Date().toISOString(),
       device: detectDevice(),
@@ -635,6 +651,7 @@ export function GameFlow() {
       sessionId: generateSessionId(),
       gameId: 'reasoning',
       gameVersion: REASONING_GAME_VERSION,
+      difficulty: activeDifficulty,
       mode: flowMode,
       playedAt: new Date().toISOString(),
       device: detectDevice(),
@@ -689,6 +706,7 @@ export function GameFlow() {
       gameId: 'memory',
       variant: 'story-recall',
       gameVersion: STORY_MEMORY_GAME_VERSION,
+      difficulty: activeDifficulty,
       mode: flowMode,
       playedAt: new Date().toISOString(),
       device: detectDevice(),
@@ -728,6 +746,7 @@ export function GameFlow() {
       gameId: 'focus',
       variant: 'color-target',
       gameVersion: COLOR_TARGET_GAME_VERSION,
+      difficulty: activeDifficulty,
       mode: flowMode,
       playedAt: new Date().toISOString(),
       device: detectDevice(),
@@ -767,6 +786,7 @@ export function GameFlow() {
       gameId: 'reaction',
       variant: 'dodge-run',
       gameVersion: DODGE_OBSTACLE_GAME_VERSION,
+      difficulty: activeDifficulty,
       mode: flowMode,
       playedAt: new Date().toISOString(),
       device: detectDevice(),
@@ -806,6 +826,7 @@ export function GameFlow() {
       gameId: 'judgment',
       variant: 'best-choice',
       gameVersion: BEST_CHOICE_GAME_VERSION,
+      difficulty: activeDifficulty,
       mode: flowMode,
       playedAt: new Date().toISOString(),
       device: detectDevice(),
@@ -845,6 +866,7 @@ export function GameFlow() {
       gameId: 'spatial',
       variant: 'fit-puzzle',
       gameVersion: FIT_PUZZLE_GAME_VERSION,
+      difficulty: activeDifficulty,
       mode: flowMode,
       playedAt: new Date().toISOString(),
       device: detectDevice(),
@@ -884,6 +906,7 @@ export function GameFlow() {
       gameId: 'reasoning',
       variant: 'number-pattern',
       gameVersion: NUMBER_PATTERN_GAME_VERSION,
+      difficulty: activeDifficulty,
       mode: flowMode,
       playedAt: new Date().toISOString(),
       device: detectDevice(),
@@ -913,9 +936,10 @@ export function GameFlow() {
     setPhase('grow-game')
   }
 
-  /** Free Play step 2 — a specific game was chosen in GrowGameScreen, start it. */
-  const confirmFreePlayGame = (gameKey: string) => {
+  /** Free Play step 2 — a specific game + difficulty was chosen in GrowGameScreen, start it. */
+  const confirmFreePlayGame = (gameKey: string, difficulty: GameDifficulty) => {
     setActiveGameKey(gameKey)
+    setActiveDifficulty(difficulty)
     currentAttemptIdRef.current = generateSessionId() // new round starting — see the ref's own doc comment
     setPhase('game')
   }
@@ -1084,38 +1108,38 @@ export function GameFlow() {
         {phase === 'game' &&
           (activeStatId === 'reaction' ? (
             activeGameKey === 'reaction-dodge-run' ? (
-              <DodgeObstacleGame index={index} mode={flowMode} onComplete={onDodgeObstacleComplete} />
+              <DodgeObstacleGame index={index} mode={flowMode} difficulty={activeDifficulty} onComplete={onDodgeObstacleComplete} />
             ) : (
-              <ReactionGame index={index} mode={flowMode} onComplete={onReactionComplete} />
+              <ReactionGame index={index} mode={flowMode} difficulty={activeDifficulty} onComplete={onReactionComplete} />
             )
           ) : activeStatId === 'memory' ? (
             activeGameKey === 'memory-story-recall' ? (
-              <StoryMemoryGame index={index} mode={flowMode} onComplete={onStoryMemoryComplete} />
+              <StoryMemoryGame index={index} mode={flowMode} difficulty={activeDifficulty} onComplete={onStoryMemoryComplete} />
             ) : (
-              <MemoryGame index={index} mode={flowMode} onComplete={onMemoryComplete} />
+              <MemoryGame index={index} mode={flowMode} difficulty={activeDifficulty} onComplete={onMemoryComplete} />
             )
           ) : activeStatId === 'focus' ? (
             activeGameKey === 'focus-color-target' ? (
-              <ColorTargetGame index={index} mode={flowMode} onComplete={onColorTargetComplete} />
+              <ColorTargetGame index={index} mode={flowMode} difficulty={activeDifficulty} onComplete={onColorTargetComplete} />
             ) : (
-              <FocusGame index={index} mode={flowMode} onComplete={onFocusComplete} />
+              <FocusGame index={index} mode={flowMode} difficulty={activeDifficulty} onComplete={onFocusComplete} />
             )
           ) : activeStatId === 'judgment' ? (
             activeGameKey === 'decision-best-choice' ? (
-              <BestChoiceGame index={index} mode={flowMode} onComplete={onBestChoiceComplete} />
+              <BestChoiceGame index={index} mode={flowMode} difficulty={activeDifficulty} onComplete={onBestChoiceComplete} />
             ) : (
-              <JudgmentGame index={index} mode={flowMode} onComplete={onJudgmentComplete} />
+              <JudgmentGame index={index} mode={flowMode} difficulty={activeDifficulty} onComplete={onJudgmentComplete} />
             )
           ) : activeStatId === 'spatial' ? (
             activeGameKey === 'spatial-fit-puzzle' ? (
-              <FitPuzzleGame index={index} mode={flowMode} onComplete={onFitPuzzleComplete} />
+              <FitPuzzleGame index={index} mode={flowMode} difficulty={activeDifficulty} onComplete={onFitPuzzleComplete} />
             ) : (
-              <SpatialGame index={index} mode={flowMode} onComplete={onSpatialComplete} />
+              <SpatialGame index={index} mode={flowMode} difficulty={activeDifficulty} onComplete={onSpatialComplete} />
             )
           ) : activeGameKey === 'reasoning-number-pattern' ? (
-            <NumberPatternGame index={index} mode={flowMode} onComplete={onNumberPatternComplete} />
+            <NumberPatternGame index={index} mode={flowMode} difficulty={activeDifficulty} onComplete={onNumberPatternComplete} />
           ) : (
-            <ReasoningGame index={index} mode={flowMode} onComplete={onReasoningComplete} />
+            <ReasoningGame index={index} mode={flowMode} difficulty={activeDifficulty} onComplete={onReasoningComplete} />
           ))}
 
         {phase === 'complete' && lastResult && (
@@ -1202,13 +1226,13 @@ export function GameFlow() {
             // full page reload.
             const skill = loadPlayerSkillState()
             const initialStats = petRecord?.initialFinals ?? finals
-            const currentStats = computeCurrentStats(skill.gameBestRecords, initialStats)
+            const currentStats = computeCurrentStats(skill, initialStats)
             return (
               <StatusScreen
                 context="my-stats"
                 values={currentStats}
                 initialStats={initialStats}
-                gameBestRecords={skill.gameBestRecords}
+                gameBestRecords={getAllRepresentativeRecords(skill)}
               />
             )
           })()}

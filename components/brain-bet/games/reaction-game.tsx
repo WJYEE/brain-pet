@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Hand, Zap } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Hand, Save, Zap } from 'lucide-react'
 import { Logo } from '@/components/brain-bet/logo'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
@@ -10,11 +10,13 @@ import {
   REACTION_DELAY_MS_MAX,
   REACTION_DELAY_MS_MIN,
   REACTION_PRACTICE_TRIALS,
-  REACTION_REAL_TRIALS,
   REACTION_TRIAL_FEEDBACK_MS,
+  getReactionRealTrialsForDifficulty,
 } from '@/lib/config/reaction.config'
 import { calculateReactionScore, summarizeReactionTrials } from '@/lib/scoring/reaction'
 import { detectDevice } from '@/lib/game/device'
+import { GAME_DIFFICULTIES } from '@/lib/game/difficulty'
+import type { GameDifficulty } from '@/lib/game/difficulty'
 import type { ReactionRawSummary, ReactionTrial } from '@/lib/game/types'
 import { cn } from '@/lib/utils'
 import { useSound } from '@/hooks/use-sound'
@@ -25,6 +27,7 @@ type Round = 'practice' | 'real'
 interface ReactionGameProps {
   index: number
   mode: 'first' | 'free'
+  difficulty: GameDifficulty
   onComplete: (payload: {
     trials: ReactionTrial[]
     rawSummary: ReactionRawSummary
@@ -89,9 +92,10 @@ export function recordFeedbackSubline(feedback: RecordFeedback): string {
  * Starts are excluded from that count and retried, but every attempt
  * (including false starts) is kept for the trial log.
  */
-export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
+export function ReactionGame({ index, mode, difficulty, onComplete }: ReactionGameProps) {
   const stat = STATS.reaction
   const { play } = useSound()
+  const realTrials = useMemo(() => getReactionRealTrialsForDifficulty(difficulty), [difficulty])
 
   const [stage, setStage] = useState<Stage>('intro')
   const [round, setRound] = useState<Round>('practice')
@@ -204,7 +208,7 @@ export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
       setTrials(updatedTrials)
 
       const validCount = updatedTrials.filter((t) => !t.isFalseStart).length
-      if (validCount >= REACTION_REAL_TRIALS) {
+      if (validCount >= realTrials) {
         const rawSummary = summarizeReactionTrials(updatedTrials)
         const gameScore = calculateReactionScore(rawSummary, detectDevice().inputType)
         setStage('feedback')
@@ -229,7 +233,13 @@ export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
       <header className="flex items-center justify-between gap-4">
         <Logo size="sm" />
         {mode === 'first' ? (
-          <ProgressTrack current={index} />
+          <div className="flex items-center gap-2">
+            <ProgressTrack current={index} />
+            <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-[10px] font-bold text-secondary-foreground toy-border">
+              <Save size={11} strokeWidth={2.6} />
+              자동 저장 중
+            </span>
+          </div>
         ) : (
           <span className="rounded-xl bg-secondary px-3 py-1.5 text-xs font-bold text-secondary-foreground toy-border">
             FREE PLAY
@@ -252,6 +262,7 @@ export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
                 이 기록은 결과에 포함되지 않아요.
               </p>
             )}
+            <p className="text-xs font-semibold text-muted-foreground">{GAME_DIFFICULTIES[difficulty].hint}</p>
           </div>
         </div>
         {round === 'practice' ? (
@@ -263,9 +274,9 @@ export function ReactionGame({ index, mode, onComplete }: ReactionGameProps) {
           <span className="rounded-xl bg-secondary px-3 py-2 text-center font-display text-sm font-extrabold text-secondary-foreground toy-border">
             실전{' '}
             <span className="text-primary">
-              {Math.min(validRealCount + 1, REACTION_REAL_TRIALS)}
+              {Math.min(validRealCount + 1, realTrials)}
             </span>{' '}
-            / {REACTION_REAL_TRIALS}
+            / {realTrials}
           </span>
         )}
       </div>

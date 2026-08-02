@@ -1,3 +1,6 @@
+import { DIFFICULTY_TIME_MULTIPLIER } from '@/lib/config/difficulty.config'
+import type { GameDifficulty } from '@/lib/game/difficulty'
+
 /** Focus ("Target Hunt") tuning constants — GAME_SPEC §45-54. */
 /** v2: gameScore reworked to weightedAccuracy 85% + miss/false-click penalty budget (15pt, miss weighted 2.5x), clamped 0-100 (was an unbounded ~1000-scale formula). */
 export const FOCUS_GAME_VERSION = 'focus_v2'
@@ -52,6 +55,11 @@ export const FOCUS_DIFFICULTY_ACCURACY_WEIGHTS = [1.0, 1.15, 1.2]
  * Final round keeps the same 3500ms pressure the old round 8 used.
  */
 export const FOCUS_ROUND_TIME_LIMIT_MS = [5000, 3800, 3500]
+
+/** Difficulty-scaled per-round time limits — bigger DIFFICULTY_TIME_MULTIPLIER = more time = easier. At 'normal' (multiplier 1) this is identical to FOCUS_ROUND_TIME_LIMIT_MS. */
+export function getFocusRoundTimeLimitForDifficulty(difficulty: GameDifficulty): number[] {
+  return FOCUS_ROUND_TIME_LIMIT_MS.map((ms) => Math.round(ms * DIFFICULTY_TIME_MULTIPLIER[difficulty]))
+}
 
 /** How long the per-round correct/wrong/missed feedback stays up before advancing. */
 export const FOCUS_ROUND_FEEDBACK_MS = 650

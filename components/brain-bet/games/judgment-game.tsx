@@ -1,8 +1,8 @@
 'use client'
 
 import type { CSSProperties } from 'react'
-import { useEffect, useRef, useState } from 'react'
-import { flushSync } from 'react-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Save } from 'lucide-react'
 import { Logo } from '@/components/brain-bet/logo'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
@@ -13,15 +13,17 @@ import {
   JUDGMENT_COMBO_BONUS_FEEDBACK_MS,
   JUDGMENT_COMBO_BONUS_INTERVAL,
   JUDGMENT_COMBO_BONUS_TIME_MS,
-  JUDGMENT_GAME_DURATION_MS,
   JUDGMENT_MAX_COMBO_TIME_BONUSES,
   JUDGMENT_QUEUE_PREVIEW_COUNT,
   JUDGMENT_RULE_SWITCH_OVERLAY_MS,
   JUDGMENT_THIRD_OPTION_INTRO_MS,
   JUDGMENT_TUTORIAL_COUNT_STIMULI,
   JUDGMENT_TUTORIAL_SHAPE_STIMULI,
+  getJudgmentGameDurationForDifficulty,
   getSegmentConfig,
 } from '@/lib/config/judgment.config'
+import { GAME_DIFFICULTIES } from '@/lib/game/difficulty'
+import type { GameDifficulty } from '@/lib/game/difficulty'
 import {
   JUDGMENT_STIMULI_2WAY,
   JUDGMENT_STIMULI_3WAY,
@@ -87,6 +89,7 @@ interface ComboBonusFeedback {
 interface JudgmentGameProps {
   index: number
   mode: 'first' | 'free'
+  difficulty: GameDifficulty
   onComplete: (payload: {
     trials: JudgmentTrial[]
     rawSummary: JudgmentRawSummary
@@ -197,16 +200,6 @@ function buildTutorialBlocks(): QueueBlock[] {
   return [...shapeBlocks, ...countBlocks]
 }
 
-/** Uses the View Transitions API when available for a smooth queue-shift; falls back to a plain (instant) state update everywhere else. */
-function withViewTransition(update: () => void) {
-  const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown }
-  if (typeof doc.startViewTransition === 'function') {
-    doc.startViewTransition(() => flushSync(update))
-  } else {
-    update()
-  }
-}
-
 /**
  * Real, interactive Judgment ("Rule Switch") game — GAME_SPEC §55-63, Time
  * Attack rework. A continuous horizontal queue of Blocks is always visible;
@@ -221,9 +214,12 @@ function withViewTransition(update: () => void) {
  * difficulty is reached. The whole session runs against one global
  * JUDGMENT_GAME_DURATION_MS timer.
  */
-export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
+export function JudgmentGame({ index, mode, difficulty, onComplete }: JudgmentGameProps) {
   const stat = STATS.judgment
   const { play } = useSound()
+
+  /** Total session length for the active difficulty — computed once (not re-derived per tick); at 'normal' this equals JUDGMENT_GAME_DURATION_MS exactly. */
+  const gameDurationMs = useMemo(() => getJudgmentGameDurationForDifficulty(difficulty), [difficulty])
 
   const [appStage, setAppStage] = useState<AppStage>('intro')
   const [queue, setQueue] = useState<QueueBlock[]>([])
@@ -234,7 +230,7 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
   const [trials, setTrials] = useState<JudgmentTrial[]>([])
   const [combo, setCombo] = useState(0)
   const [maxCombo, setMaxCombo] = useState(0)
-  const [timeLeftMs, setTimeLeftMs] = useState(JUDGMENT_GAME_DURATION_MS)
+  const [timeLeftMs, setTimeLeftMs] = useState(gameDurationMs)
   const [comboBonusFeedback, setComboBonusFeedback] = useState<ComboBonusFeedback | null>(null)
 
   const nextKeyRef = useRef(0)
@@ -277,7 +273,7 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
     stopTimer()
     setAppStage('finished')
     const finalTrials = trialsRef.current
-    const rawSummary = summarizeJudgmentTrials(finalTrials, JUDGMENT_GAME_DURATION_MS)
+    const rawSummary = summarizeJudgmentTrials(finalTrials, gameDurationMs)
     const gameScore = calculateJudgmentScore(rawSummary)
     schedule(() => onComplete({ trials: finalTrials, rawSummary, gameScore }), 300)
   }
@@ -317,8 +313,8 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
     setIsRuleChanging(false)
     setQueue(fillQueue([], nextKeyRef, nextSegmentToGenerateRef, previousMappingRef, lastMappingByRuleRef))
     setAppStage('playing')
-    endAtRef.current = performance.now() + JUDGMENT_GAME_DURATION_MS
-    setTimeLeftMs(JUDGMENT_GAME_DURATION_MS)
+    endAtRef.current = performance.now() + gameDurationMs
+    setTimeLeftMs(gameDurationMs)
     blockShownAtRef.current = performance.now()
     startTimer()
   }
@@ -402,7 +398,7 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
 
     if (!current.recorded && rest.length === 0) {
       // Tutorial exhausted — short completion beat, then the real Time Attack begins.
-      withViewTransition(() => setQueue([]))
+      setQueue([])
       setIsRuleChanging(true)
       setUpcomingMapping(null)
       setRuleChangeMessage('튜토리얼 완료! 이제 실전을 시작할게요.')
@@ -412,7 +408,7 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
     }
 
     const filled = current.recorded ? fillQueue(rest, nextKeyRef, nextSegmentToGenerateRef, previousMappingRef, lastMappingByRuleRef) : rest
-    withViewTransition(() => setQueue(filled))
+    setQueue(filled)
     blockShownAtRef.current = performance.now()
 
     const upcoming = filled[0]
@@ -437,46 +433,61 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
     }
   }
 
+  const current = queue[0] ?? null
+  const upcomingPreview = queue.slice(1, JUDGMENT_QUEUE_PREVIEW_COUNT)
+  const choiceCount = current?.choiceCount ?? 2
+
+  // resolveCurrent already guards on appStage/isRuleChanging/queue internally,
+  // so the keydown listener only needs a ref to the latest closure (updated
+  // every render) rather than being torn down and re-added itself whenever
+  // those values change — previously this effect had no dependency array, so
+  // it re-subscribed on every render, including every 100ms Timer tick.
+  const resolveCurrentRef = useRef(resolveCurrent)
+  resolveCurrentRef.current = resolveCurrent
+  const choiceCountRef = useRef(choiceCount)
+  choiceCountRef.current = choiceCount
+
   // Arrow keys mirror the on-screen buttons. event.repeat is blocked so holding
   // a key down never auto-fires more than the one Block it was pressed for.
+  // Mounted once (empty deps) — see resolveCurrentRef above for why this is safe.
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.repeat) return
-      if (appStage !== 'tutorial' && appStage !== 'playing') return
-      if (isRuleChanging || queue.length === 0) return
       if (e.key === 'ArrowLeft') {
         e.preventDefault()
-        resolveCurrent('left')
+        resolveCurrentRef.current('left')
       } else if (e.key === 'ArrowRight') {
         e.preventDefault()
-        resolveCurrent('right')
-      } else if (e.key === 'ArrowDown' && queue[0].choiceCount === 3) {
+        resolveCurrentRef.current('right')
+      } else if (e.key === 'ArrowDown' && choiceCountRef.current === 3) {
         e.preventDefault()
-        resolveCurrent('down')
+        resolveCurrentRef.current('down')
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  })
-
-  const current = queue[0] ?? null
-  const upcomingPreview = queue.slice(1, JUDGMENT_QUEUE_PREVIEW_COUNT)
-  const choiceCount = current?.choiceCount ?? 2
+  }, [])
   const visibleAnswers: JudgmentAnswer[] = choiceCount === 3 ? ['left', 'down', 'right'] : ['left', 'right']
   const secondsLeft = Math.ceil(timeLeftMs / 1000)
-  const timePercent = Math.max(0, Math.min(100, (timeLeftMs / JUDGMENT_GAME_DURATION_MS) * 100))
+  const timePercent = Math.max(0, Math.min(100, (timeLeftMs / gameDurationMs) * 100))
   const bannerMapping = isRuleChanging ? upcomingMapping : (current?.ruleMapping ?? null)
 
-  function renderStimulus(stimulus: JudgmentStimulus, color: string, size: number) {
-    return <JudgmentSymbolView stimulus={stimulus} color={color} size={size} />
+  function renderStimulus(stimulus: JudgmentStimulus, color: string, size: number, className?: string) {
+    return <JudgmentSymbolView stimulus={stimulus} color={color} size={size} className={className} />
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-5 py-6">
+    <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-4 py-6 sm:px-5">
       <header className="flex items-center justify-between gap-4">
         <Logo size="sm" />
         {mode === 'first' ? (
-          <ProgressTrack current={index} />
+          <div className="flex items-center gap-2">
+            <ProgressTrack current={index} />
+            <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-[10px] font-bold text-secondary-foreground toy-border">
+              <Save size={11} strokeWidth={2.6} />
+              자동 저장 중
+            </span>
+          </div>
         ) : (
           <span className="rounded-xl bg-secondary px-3 py-1.5 text-xs font-bold text-secondary-foreground toy-border">
             FREE PLAY
@@ -541,13 +552,14 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
             <p className="font-display text-lg font-bold leading-snug text-foreground">
               규칙에 맞게 Block을 빠르게 처리하세요. 제한시간 안에 최대한 많이, 정확하게!
             </p>
+            <p className="mt-1 text-xs font-semibold text-muted-foreground">{GAME_DIFFICULTIES[difficulty].hint}</p>
             <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1 text-xs font-bold text-muted-foreground toy-border">
               탭해서 시작하기
             </p>
           </div>
         </button>
       ) : (
-        <div className="relative mt-5 flex flex-1 flex-col items-center justify-center gap-4 rounded-3xl bg-card px-6 py-6 toy-border toy-shadow-lg">
+        <div className="relative mt-5 flex flex-1 flex-col items-center justify-center gap-4 rounded-3xl bg-card px-4 py-5 toy-border toy-shadow-lg sm:px-6 sm:py-6">
           {/* Rule Banner — fixed height so the Rule Change overlay never shifts the layout. Mapping is randomized per segment, so it's shown here (and on the buttons below) rather than ever assumed memorized. */}
           <div className="flex min-h-16 w-full max-w-sm flex-col items-center justify-center gap-1.5 rounded-2xl bg-secondary px-4 py-3 text-center toy-border">
             {isRuleChanging ? (
@@ -580,26 +592,29 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
             )}
           </div>
 
-          {/* Block Queue: current (enlarged, glowing) + upcoming preview, fading out. */}
-          <div className="flex h-24 w-full max-w-lg items-center justify-center gap-2">
+          {/* Block Queue: current (enlarged, glowing) + upcoming preview, fading out.
+              Sizes are mobile-first (smaller) with `sm:` restoring the original desktop
+              sizes exactly — the full 5-block preview plus a 96px current block otherwise
+              overflows a 375px-wide screen, so mobile also shows fewer preview blocks. */}
+          <div className="flex h-16 w-full max-w-lg items-center justify-center gap-1.5 sm:h-24 sm:gap-2">
             <div className="relative">
               {current && (
                 <div
-                  className="grid h-24 w-24 place-items-center rounded-3xl bg-background toy-border toy-shadow-lg"
+                  className="grid h-16 w-16 place-items-center rounded-2xl bg-background toy-border toy-shadow-lg sm:h-24 sm:w-24 sm:rounded-3xl"
                   style={{ boxShadow: `0 0 0 3px var(${stat.colorVar})` } as CSSProperties}
                 >
-                  {renderStimulus(current.stimulus, `var(${stat.colorVar})`, 60)}
+                  {renderStimulus(current.stimulus, `var(${stat.colorVar})`, 40, 'sm:h-[60px] sm:w-[60px]')}
                 </div>
               )}
               {exitingBlock && (
                 <div
                   className={cn(
-                    'absolute inset-0 grid place-items-center rounded-3xl bg-background toy-border',
+                    'absolute inset-0 grid place-items-center rounded-2xl bg-background toy-border sm:rounded-3xl',
                     exitingBlock.outcome === 'correct' ? 'animate-block-clear' : 'animate-block-shake-once',
                   )}
                   aria-hidden="true"
                 >
-                  {renderStimulus(exitingBlock.stimulus, `var(${stat.colorVar})`, 60)}
+                  {renderStimulus(exitingBlock.stimulus, `var(${stat.colorVar})`, 40, 'sm:h-[60px] sm:w-[60px]')}
                   <span
                     className={cn(
                       'animate-badge-float absolute -top-2 right-0 rounded-full px-2 py-0.5 text-xs font-extrabold',
@@ -614,16 +629,22 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
               )}
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-1.5">
               {upcomingPreview.map((block, i) => (
                 <div
                   key={block.key}
                   className={cn(
-                    'grid place-items-center rounded-2xl bg-background toy-border',
-                    i === 0 ? 'h-16 w-16 opacity-80' : 'h-12 w-12 opacity-45',
+                    'grid place-items-center rounded-xl bg-background toy-border sm:rounded-2xl',
+                    i === 0 ? 'h-12 w-12 opacity-80 sm:h-16 sm:w-16' : 'h-9 w-9 opacity-45 sm:h-12 sm:w-12',
+                    i >= 3 && 'hidden sm:grid',
                   )}
                 >
-                  {renderStimulus(block.stimulus, `var(${stat.colorVar})`, i === 0 ? 34 : 24)}
+                  {renderStimulus(
+                    block.stimulus,
+                    `var(${stat.colorVar})`,
+                    i === 0 ? 26 : 18,
+                    i === 0 ? 'sm:h-[34px] sm:w-[34px]' : 'sm:h-6 sm:w-6',
+                  )}
                 </div>
               ))}
             </div>
@@ -655,6 +676,14 @@ export function JudgmentGame({ index, mode, onComplete }: JudgmentGameProps) {
               </button>
             ))}
           </div>
+
+          {/* Persistent mini instruction — the intro screen's own guidance
+              text, kept visible (small, out of the way) for the whole
+              Tutorial/Time Attack session instead of disappearing the moment
+              play starts, so the rule can be re-checked anytime. */}
+          <p className="text-pretty text-center text-[10px] font-semibold text-primary">
+            규칙에 맞게 Block을 빠르게 처리하세요 · 제한시간 안에 최대한 많이, 정확하게!
+          </p>
 
           <p className="hidden text-[10px] font-semibold text-muted-foreground sm:block">
             {choiceCount === 3 ? '← ↓ → 방향키 사용 가능' : '← → 방향키 사용 가능'}

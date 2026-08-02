@@ -4,6 +4,8 @@ interface JudgmentSymbolViewProps {
   stimulus: JudgmentStimulus
   color: string
   size?: number
+  /** Optional responsive size override (e.g. `sm:h-[60px] sm:w-[60px]`) — a CSS width/height class always wins over the `size` attribute once its breakpoint matches, so callers can pass a smaller mobile `size` plus a `sm:` class to restore the desktop size exactly. */
+  className?: string
 }
 
 /**
@@ -11,7 +13,7 @@ interface JudgmentSymbolViewProps {
  * cue, dot count (1/2/3) carries the Count Rule cue — color is decorative
  * only, never the deciding cue (GAME_SPEC-style color-vision independence).
  */
-export function JudgmentSymbolView({ stimulus, color, size = 64 }: JudgmentSymbolViewProps) {
+export function JudgmentSymbolView({ stimulus, color, size = 64, className }: JudgmentSymbolViewProps) {
   const dotPositions: [number, number][] =
     stimulus.dotCount === 1
       ? [[32, 32]]
@@ -27,7 +29,7 @@ export function JudgmentSymbolView({ stimulus, color, size = 64 }: JudgmentSymbo
           ]
 
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" className={className}>
       <g fill={color} stroke="var(--ink)" strokeWidth={2.5} strokeLinejoin="round">
         {stimulus.shape === 'circle' && <circle cx={32} cy={32} r={26} />}
         {stimulus.shape === 'square' && <rect x={8} y={8} width={48} height={48} rx={8} />}

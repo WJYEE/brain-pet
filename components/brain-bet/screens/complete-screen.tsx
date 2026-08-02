@@ -84,10 +84,10 @@ export function CompleteScreen({
           {gameScore}
           <span className="text-lg">점</span>
         </p>
-        <p className="mt-2 text-xs font-semibold text-muted-foreground">
-          ({raw.primary}
-          {raw.secondary ? ` · ${raw.secondary}` : ''})
-        </p>
+        <div className="mt-2 flex flex-col items-center gap-0.5">
+          <p className="text-xs font-semibold text-muted-foreground">{raw.primary}</p>
+          {raw.secondary && <p className="text-xs font-semibold text-muted-foreground">{raw.secondary}</p>}
+        </div>
 
         {personalBestScore != null && !isNewRecord && (
           <div className="mt-4 border-t border-border pt-3">

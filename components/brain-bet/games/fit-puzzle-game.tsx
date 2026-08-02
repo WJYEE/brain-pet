@@ -7,7 +7,13 @@ import { GameHud } from '@/components/brain-bet/games/shared/game-hud'
 import { GameTutorialModal, type TutorialContent } from '@/components/brain-bet/games/shared/game-tutorial-modal'
 import { ToyButton } from '@/components/brain-bet/toy-button'
 import { STATS } from '@/lib/brain-bet'
-import { FIT_PUZZLE_CELL_SIZE_PX, FIT_PUZZLE_INTRO_COUNTDOWN_SECONDS, FIT_PUZZLE_SNAP_TOLERANCE_PX } from '@/lib/config/fit-puzzle.config'
+import {
+  FIT_PUZZLE_CELL_SIZE_PX,
+  FIT_PUZZLE_INTRO_COUNTDOWN_SECONDS,
+  getFitPuzzleSnapToleranceForDifficulty,
+} from '@/lib/config/fit-puzzle.config'
+import { GAME_DIFFICULTIES } from '@/lib/game/difficulty'
+import type { GameDifficulty } from '@/lib/game/difficulty'
 import { pickFitPuzzleSession, finalFootprint, type PuzzlePieceSpec } from '@/lib/game/puzzle-levels'
 import type { FitPuzzleRoundResult, FitPuzzleRawSummary } from '@/lib/game/types'
 import { calculateFitPuzzleScore, summarizeFitPuzzleRounds } from '@/lib/scoring/fit-puzzle'
@@ -27,6 +33,7 @@ interface PieceState {
 interface FitPuzzleGameProps {
   index: number
   mode: 'first' | 'free'
+  difficulty: GameDifficulty
   onComplete: (payload: { rounds: FitPuzzleRoundResult[]; rawSummary: FitPuzzleRawSummary; gameScore: number }) => void
 }
 
@@ -49,9 +56,10 @@ function renderedFootprint(piece: PieceState) {
 }
 
 /** "퍼즐 끼우기" — new Spatial-stat game (spec §8). Pointer-based drag (works uniformly for mouse + touch via Pointer Events + setPointerCapture), tap-to-select + rotate button, target-zone (not pixel-perfect) snap detection with generous tolerance. */
-export function FitPuzzleGame({ index, mode, onComplete }: FitPuzzleGameProps) {
+export function FitPuzzleGame({ index, mode, difficulty, onComplete }: FitPuzzleGameProps) {
   const stat = STATS.spatial
   const { play } = useSound()
+  const snapToleranceRef = useRef(getFitPuzzleSnapToleranceForDifficulty(difficulty))
   const [levels] = useState(() => pickFitPuzzleSession())
   const [stage, setStage] = useState<Stage>('intro')
   const [tutorialOpen, setTutorialOpen] = useState(false)
@@ -175,7 +183,7 @@ export function FitPuzzleGame({ index, mode, onComplete }: FitPuzzleGameProps) {
           y: p.spec.targetRow * FIT_PUZZLE_CELL_SIZE_PX + (height * FIT_PUZZLE_CELL_SIZE_PX) / 2,
         }
         const distance = Math.hypot(pieceCenter.x - targetCenter.x, pieceCenter.y - targetCenter.y)
-        if (distance <= FIT_PUZZLE_SNAP_TOLERANCE_PX && (!bestTarget || distance < bestTarget.distance)) {
+        if (distance <= snapToleranceRef.current && (!bestTarget || distance < bestTarget.distance)) {
           bestTarget = { spec: p.spec, distance }
         }
       }
@@ -231,6 +239,7 @@ export function FitPuzzleGame({ index, mode, onComplete }: FitPuzzleGameProps) {
         }
         onHelp={() => setTutorialOpen(true)}
       />
+      <p className="-mt-2 text-xs font-semibold text-muted-foreground">{GAME_DIFFICULTIES[difficulty].hint}</p>
 
       <div className="mt-5 flex flex-1 flex-col">
         {stage === 'intro' && (
@@ -248,67 +257,73 @@ export function FitPuzzleGame({ index, mode, onComplete }: FitPuzzleGameProps) {
 
         {stage === 'playing' && (
           <div className="flex flex-1 flex-col items-center rounded-3xl bg-card px-4 py-5 toy-border toy-shadow-lg">
-            <div
-              ref={arenaRef}
-              className="relative"
-              style={{ width: Math.max(boardWidthPx, 280), height: trayTopPx + 90 }}
-            >
-              {/* board */}
+            {/* Board + tray are laid out with absolute-pixel geometry (see layoutPieces/footprintPx)
+                that can exceed a 375px-wide screen once several pieces are queued in the tray —
+                wrapping in a horizontally scrollable strip keeps every piece reachable on mobile
+                instead of silently rendering off-canvas. Inert on desktop, where content already fits. */}
+            <div className="w-full overflow-x-auto">
               <div
-                className="absolute rounded-xl bg-secondary/50"
-                style={{ width: boardWidthPx, height: boardHeightPx, left: 0, top: 0 }}
+                ref={arenaRef}
+                className="relative mx-auto"
+                style={{ width: Math.max(boardWidthPx, 280), height: trayTopPx + 90 }}
               >
-                {level.pieces.map((spec) => {
-                  const { width, height } = finalFootprint(spec)
+                {/* board */}
+                <div
+                  className="absolute rounded-xl bg-secondary/50"
+                  style={{ width: boardWidthPx, height: boardHeightPx, left: 0, top: 0 }}
+                >
+                  {level.pieces.map((spec) => {
+                    const { width, height } = finalFootprint(spec)
+                    return (
+                      <div
+                        key={spec.id}
+                        className="absolute rounded-lg border-2 border-dashed border-foreground/30"
+                        style={{
+                          width: width * FIT_PUZZLE_CELL_SIZE_PX - 4,
+                          height: height * FIT_PUZZLE_CELL_SIZE_PX - 4,
+                          left: spec.targetCol * FIT_PUZZLE_CELL_SIZE_PX + 2,
+                          top: spec.targetRow * FIT_PUZZLE_CELL_SIZE_PX + 2,
+                        }}
+                      />
+                    )
+                  })}
+                </div>
+
+                {/* rotate button, anchored just above the selected (undropped) piece */}
+                {selectedPiece && !selectedPiece.placed && (
+                  <button
+                    type="button"
+                    onClick={rotateSelected}
+                    aria-label="선택한 조각 90도 회전"
+                    className="absolute z-20 grid h-9 w-9 place-items-center rounded-full bg-accent text-accent-foreground toy-border toy-shadow-sm"
+                    style={{ left: selectedPiece.x + renderedFootprint(selectedPiece).w / 2 - 18, top: selectedPiece.y - 44 }}
+                  >
+                    <RotateCw size={16} strokeWidth={2.6} aria-hidden="true" />
+                  </button>
+                )}
+
+                {pieces.map((piece) => {
+                  const { w, h } = renderedFootprint(piece)
                   return (
                     <div
-                      key={spec.id}
-                      className="absolute rounded-lg border-2 border-dashed border-foreground/30"
-                      style={{
-                        width: width * FIT_PUZZLE_CELL_SIZE_PX - 4,
-                        height: height * FIT_PUZZLE_CELL_SIZE_PX - 4,
-                        left: spec.targetCol * FIT_PUZZLE_CELL_SIZE_PX + 2,
-                        top: spec.targetRow * FIT_PUZZLE_CELL_SIZE_PX + 2,
-                      }}
+                      key={piece.spec.id}
+                      data-piece-id={piece.spec.id}
+                      onPointerDown={(e) => handlePointerDown(e, piece.spec.id)}
+                      onPointerMove={handlePointerMove}
+                      onPointerUp={(e) => handlePointerUp(e, piece.spec.id)}
+                      role="button"
+                      tabIndex={piece.placed ? -1 : 0}
+                      aria-label={`퍼즐 조각 ${piece.spec.id}${piece.placed ? ' (배치 완료)' : ''}`}
+                      className={cn(
+                        'absolute touch-none rounded-lg toy-border transition-shadow',
+                        piece.placed ? 'cursor-default' : 'toy-shadow cursor-grab active:cursor-grabbing',
+                        selectedId === piece.spec.id && !piece.placed && 'ring-2 ring-accent',
+                      )}
+                      style={{ width: w - 4, height: h - 4, left: piece.x + 2, top: piece.y + 2, backgroundColor: piece.spec.color }}
                     />
                   )
                 })}
               </div>
-
-              {/* rotate button, anchored just above the selected (undropped) piece */}
-              {selectedPiece && !selectedPiece.placed && (
-                <button
-                  type="button"
-                  onClick={rotateSelected}
-                  aria-label="선택한 조각 90도 회전"
-                  className="absolute z-20 grid h-9 w-9 place-items-center rounded-full bg-accent text-accent-foreground toy-border toy-shadow-sm"
-                  style={{ left: selectedPiece.x + renderedFootprint(selectedPiece).w / 2 - 18, top: selectedPiece.y - 44 }}
-                >
-                  <RotateCw size={16} strokeWidth={2.6} aria-hidden="true" />
-                </button>
-              )}
-
-              {pieces.map((piece) => {
-                const { w, h } = renderedFootprint(piece)
-                return (
-                  <div
-                    key={piece.spec.id}
-                    data-piece-id={piece.spec.id}
-                    onPointerDown={(e) => handlePointerDown(e, piece.spec.id)}
-                    onPointerMove={handlePointerMove}
-                    onPointerUp={(e) => handlePointerUp(e, piece.spec.id)}
-                    role="button"
-                    tabIndex={piece.placed ? -1 : 0}
-                    aria-label={`퍼즐 조각 ${piece.spec.id}${piece.placed ? ' (배치 완료)' : ''}`}
-                    className={cn(
-                      'absolute touch-none rounded-lg toy-border transition-shadow',
-                      piece.placed ? 'cursor-default' : 'toy-shadow cursor-grab active:cursor-grabbing',
-                      selectedId === piece.spec.id && !piece.placed && 'ring-2 ring-accent',
-                    )}
-                    style={{ width: w - 4, height: h - 4, left: piece.x + 2, top: piece.y + 2, backgroundColor: piece.spec.color }}
-                  />
-                )
-              })}
             </div>
           </div>
         )}

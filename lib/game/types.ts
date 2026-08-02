@@ -1,4 +1,5 @@
 import type { RawRecord, StatId } from '@/lib/brain-bet'
+import type { GameDifficulty } from '@/lib/game/difficulty'
 
 export type GameId = StatId
 
@@ -31,6 +32,8 @@ export interface BaseGameResult {
   isPersonalBest: boolean
   isValidAttempt: boolean
   invalidReason: InvalidReason
+  /** Which of the 4 tiers this attempt was played at — see lib/game/difficulty.ts. Drives lib/game/player-skill-storage.ts's per-tier best tracking and spec §18's representative-record rule. */
+  difficulty: GameDifficulty
   /**
    * Which registered game (see lib/game/game-registry.ts) produced this
    * result, e.g. 'reaction-classic' | 'reaction-dodge-run'. Optional and

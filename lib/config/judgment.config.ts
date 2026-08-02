@@ -1,3 +1,5 @@
+import { DIFFICULTY_TIME_MULTIPLIER } from '@/lib/config/difficulty.config'
+import type { GameDifficulty } from '@/lib/game/difficulty'
 import type { JudgmentRuleId, JudgmentStimulus } from '@/lib/game/types'
 
 /**
@@ -16,6 +18,11 @@ export const JUDGMENT_GAME_VERSION = 'judgment_v3'
 
 /** Total real-play session length. Shortened three times now (First Play fatigue reduction): 35s → 25s → 20s, and now → 15s — see getSegmentConfig for how the segment lengths were compressed alongside each cut to still reach full 3-way/Conflict difficulty at least once inside the shorter window. Draft value — easy to retune after Beta data. */
 export const JUDGMENT_GAME_DURATION_MS = 15_000
+
+/** Total real-play session length scaled by the shared difficulty Time multiplier — at 'normal' (multiplier 1) this returns exactly JUDGMENT_GAME_DURATION_MS, so First Play stays byte-identical. Only the global session clock scales; segment lengths, conflict ratios, combo bonuses, and scoring weights are untouched. */
+export function getJudgmentGameDurationForDifficulty(difficulty: GameDifficulty): number {
+  return Math.round(JUDGMENT_GAME_DURATION_MS * DIFFICULTY_TIME_MULTIPLIER[difficulty])
+}
 
 /** Default Block count per fixed-rule segment (used from segment index 2 onward — see getSegmentConfig for the shorter early-segment lengths). Processing-count-based switching (not time-based) keeps a fast player's extra throughput naturally reaching more/harder segments. */
 export const JUDGMENT_SEGMENT_LENGTH = 8

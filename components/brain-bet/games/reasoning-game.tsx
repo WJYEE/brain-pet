@@ -1,17 +1,20 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { Save } from 'lucide-react'
 import { Logo } from '@/components/brain-bet/logo'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { ReasoningSymbolView } from '@/components/brain-bet/games/reasoning-symbol'
 import { STATS } from '@/lib/brain-bet'
 import {
+  getReasoningTimeLimitForDifficulty,
   REASONING_FEEDBACK_MS,
   REASONING_REAL_QUESTIONS,
-  REASONING_TIME_LIMIT_MS,
   REASONING_TUTORIAL_TRANSITION_MS,
 } from '@/lib/config/reasoning.config'
+import { GAME_DIFFICULTIES } from '@/lib/game/difficulty'
+import type { GameDifficulty } from '@/lib/game/difficulty'
 import { detectDevice } from '@/lib/game/device'
 import {
   buildTutorialQuestion1,
@@ -31,6 +34,7 @@ type QuestionOutcome = { kind: 'option'; optionIndex: number } | { kind: 'timeou
 interface ReasoningGameProps {
   index: number
   mode: 'first' | 'free'
+  difficulty: GameDifficulty
   onComplete: (payload: {
     trials: ReasoningTrial[]
     rawSummary: ReasoningRawSummary
@@ -67,7 +71,7 @@ interface LastOutcome {
  * closures) with a `hasResolvedRef` guard — the same pattern already
  * stabilized in Focus and Spatial, applied here from the start.
  */
-export function ReasoningGame({ index, mode, onComplete }: ReasoningGameProps) {
+export function ReasoningGame({ index, mode, difficulty, onComplete }: ReasoningGameProps) {
   const stat = STATS.reasoning
   const { play } = useSound()
 
@@ -120,7 +124,7 @@ export function ReasoningGame({ index, mode, onComplete }: ReasoningGameProps) {
     const question =
       nextRound === 'tutorial-1' ? buildTutorialQuestion1() : realQuestionsRef.current[nextRealIndex]
 
-    const limit = nextRound === 'real' ? REASONING_TIME_LIMIT_MS[question.difficultyLevel] : null
+    const limit = nextRound === 'real' ? getReasoningTimeLimitForDifficulty(question.difficultyLevel, difficulty) : null
     const startedAt = performance.now()
 
     roundRef.current = nextRound
@@ -245,7 +249,13 @@ export function ReasoningGame({ index, mode, onComplete }: ReasoningGameProps) {
       <header className="flex items-center justify-between gap-4">
         <Logo size="sm" />
         {mode === 'first' ? (
-          <ProgressTrack current={index} />
+          <div className="flex items-center gap-2">
+            <ProgressTrack current={index} />
+            <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-[10px] font-bold text-secondary-foreground toy-border">
+              <Save size={11} strokeWidth={2.6} />
+              자동 저장 중
+            </span>
+          </div>
         ) : (
           <span className="rounded-xl bg-secondary px-3 py-1.5 text-xs font-bold text-secondary-foreground toy-border">
             FREE PLAY
@@ -288,6 +298,7 @@ export function ReasoningGame({ index, mode, onComplete }: ReasoningGameProps) {
             <p className="font-display text-lg font-bold leading-snug text-foreground">
               앞의 패턴에서 숨은 규칙을 찾아 다음에 올 것을 골라보세요.
             </p>
+            <p className="text-xs font-semibold text-muted-foreground">{GAME_DIFFICULTIES[difficulty].hint}</p>
             <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1 text-xs font-bold text-muted-foreground toy-border">
               탭해서 시작하기
             </p>

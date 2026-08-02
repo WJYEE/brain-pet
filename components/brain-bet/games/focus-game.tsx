@@ -1,7 +1,8 @@
 'use client'
 
 import type { CSSProperties } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Save } from 'lucide-react'
 import { Logo } from '@/components/brain-bet/logo'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
@@ -13,13 +14,14 @@ import {
   FOCUS_REAL_GRID_SIZE,
   FOCUS_REAL_ROUNDS,
   FOCUS_ROUND_FEEDBACK_MS,
-  FOCUS_ROUND_TIME_LIMIT_MS,
   FOCUS_TUTORIAL_DIFFICULTY,
   FOCUS_TUTORIAL_GRID_SIZE,
   FOCUS_TUTORIAL_ROUNDS,
   FOCUS_TUTORIAL_TRANSITION_MS,
+  getFocusRoundTimeLimitForDifficulty,
 } from '@/lib/config/focus.config'
 import { buildFocusRound, type FocusRoundView } from '@/lib/game/focus-grid'
+import { GAME_DIFFICULTIES, type GameDifficulty } from '@/lib/game/difficulty'
 import { selectNoTargetRoundIndices } from '@/lib/game/focus-rounds'
 import { FOCUS_TARGET_SYMBOL } from '@/lib/game/focus-symbol'
 import type { FocusRawSummary, FocusRoundTrial } from '@/lib/game/types'
@@ -34,6 +36,7 @@ type RoundOutcome = { kind: 'cell'; cellId: string } | { kind: 'none' } | { kind
 interface FocusGameProps {
   index: number
   mode: 'first' | 'free'
+  difficulty: GameDifficulty
   onComplete: (payload: {
     rounds: FocusRoundTrial[]
     rawSummary: FocusRawSummary
@@ -96,9 +99,11 @@ export function computeFocusFeedbackMessage(
  * the time it fires. `hasResolvedRef` additionally guarantees a round is
  * resolved exactly once even if a timeout and a click land back-to-back.
  */
-export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
+export function FocusGame({ index, mode, difficulty, onComplete }: FocusGameProps) {
   const stat = STATS.focus
   const { play } = useSound()
+
+  const roundTimeLimitMs = useMemo(() => getFocusRoundTimeLimitForDifficulty(difficulty), [difficulty])
 
   const [stage, setStage] = useState<Stage>('intro')
   const [round, setRound] = useState<Round>('tutorial-target')
@@ -157,7 +162,7 @@ export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
     // they can never end up describing two different rounds.
     const viewNow = buildFocusRound(gridSizeNow, distractorCountNow, targetPresentNow, difficultyNow.similarityLevel)
 
-    const limit = isReal ? FOCUS_ROUND_TIME_LIMIT_MS[nextRealIndex] : null
+    const limit = isReal ? roundTimeLimitMs[nextRealIndex] : null
     const startedAt = performance.now()
 
     roundRef.current = nextRound
@@ -309,7 +314,13 @@ export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
       <header className="flex items-center justify-between gap-4">
         <Logo size="sm" />
         {mode === 'first' ? (
-          <ProgressTrack current={index} />
+          <div className="flex items-center gap-2">
+            <ProgressTrack current={index} />
+            <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-[10px] font-bold text-secondary-foreground toy-border">
+              <Save size={11} strokeWidth={2.6} />
+              자동 저장 중
+            </span>
+          </div>
         ) : (
           <span className="rounded-xl bg-secondary px-3 py-1.5 text-xs font-bold text-secondary-foreground toy-border">
             FREE PLAY
@@ -351,6 +362,7 @@ export function FocusGame({ index, mode, onComplete }: FocusGameProps) {
             <p className="font-display text-lg font-bold leading-snug text-foreground">
               정해진 모양만 찾아 눌러보세요. 다른 모양은 누르면 안 돼요.
             </p>
+            <p className="mt-1 text-xs font-semibold text-muted-foreground">{GAME_DIFFICULTIES[difficulty].hint}</p>
             <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1 text-xs font-bold text-muted-foreground toy-border">
               탭해서 시작하기
             </p>

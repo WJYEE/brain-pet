@@ -24,7 +24,7 @@ export function CareActionButton({ action, cooldown, showAttentionDot, onClick, 
       disabled={isDisabled}
       aria-label={cooldown.onCooldown ? `${action.label} (${remainingSeconds}초 후 가능)` : action.label}
       className={cn(
-        'relative flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-card px-1 py-2.5 toy-border transition-transform',
+        'relative flex min-h-13 flex-col items-center justify-center gap-0.5 rounded-2xl bg-card px-1 py-1.5 toy-border transition-transform sm:min-h-16 sm:gap-1 sm:py-2.5',
         isDisabled ? 'cursor-not-allowed opacity-50' : 'active:translate-y-0.5',
       )}
     >

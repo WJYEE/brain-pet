@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowRight, Clock, Egg, RotateCcw, Sparkles } from 'lucide-react'
+import { ArrowRight, Clock, Egg, RotateCcw, Save, Sparkles } from 'lucide-react'
 import { Logo } from '@/components/brain-bet/logo'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { PLAY_ORDER, STATS, TOTAL_GAMES } from '@/lib/brain-bet'
@@ -122,9 +122,26 @@ export function LandingScreen({ onStart, resumeCount = 0, onResume, onRestart }:
             </span>
           </>
         )}
-        <p className="text-center text-[11px] font-semibold text-muted-foreground">
-          잠깐 나갔다 돌아와도 완료한 진단부터 이어서 할 수 있어요.
-        </p>
+      </div>
+
+      {/* Always-visible reassurance card (not a tiny caption) — Intro autosaves per game, so leaving mid-run is always safe. See lib/game/intro-progress-storage.ts. */}
+      <div className="mt-6 flex w-full max-w-sm items-start gap-3 rounded-2xl bg-card px-4 py-3.5 toy-border toy-shadow-sm">
+        <span
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent text-accent-foreground toy-border"
+          aria-hidden="true"
+        >
+          <Save size={17} strokeWidth={2.4} />
+        </span>
+        <div className="min-w-0">
+          <p className="font-display text-sm font-extrabold leading-tight text-foreground">
+            이어서 진행할 수 있어요.
+          </p>
+          <p className="mt-0.5 text-pretty text-xs leading-relaxed text-muted-foreground">
+            Intro는 게임을 하나 완료할 때마다 자동 저장돼요.
+            <br />
+            언제든 다시 돌아와 이어서 진행할 수 있어요.
+          </p>
+        </div>
       </div>
 
       {/* Statling curiosity hook — hint at a birth, never reveal the character */}

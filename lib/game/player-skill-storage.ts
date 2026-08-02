@@ -1,11 +1,13 @@
 import { PLAY_ORDER, type StatId } from '@/lib/brain-bet'
+import { GAME_DIFFICULTY_ORDER, type GameDifficulty } from '@/lib/game/difficulty'
 import { clampScore, isBetterByGameScore } from '@/lib/scoring/shared'
 
 /**
- * One mini-game's representative performance — REUSES the game's own
- * already-validated `gameScore` (0-100, see lib/game/types.ts#BaseGameResult)
- * as `normalizedScore` rather than recomputing anything from raw accuracy/
- * response-time fields. `gameId` here is the *specific* registered game (a
+ * One mini-game's best-ever performance AT ONE DIFFICULTY TIER. REUSES the
+ * game's own already-validated `gameScore` (0-100, see
+ * lib/game/types.ts#BaseGameResult) as `normalizedScore` rather than
+ * recomputing anything from raw accuracy/response-time fields. `gameId`
+ * here is the *specific* registered game (a
  * lib/game/game-registry.ts#GamePoolEntry.key, e.g. 'memory-story-recall'),
  * not the stat category — game-flow.tsx's `activeGameKey` state already
  * tracks exactly this and is threaded straight through.
@@ -14,8 +16,13 @@ export interface MiniGamePerformanceRecord {
   completionId: string
   gameId: string
   statCategory: StatId
+  difficulty: GameDifficulty
   normalizedScore: number
   completedAt: string
+}
+
+function recordKey(gameId: string, difficulty: GameDifficulty): string {
+  return `${gameId}:${difficulty}`
 }
 
 /**
@@ -25,33 +32,71 @@ export interface MiniGamePerformanceRecord {
  * best-per-*stat*) and from lib/pets/pet-storage.ts's StoredPetProfile
  * (initialFinals/latestFinals — the hatch-time snapshot, untouched by this
  * file). `currentStats` (a category's real-skill average) is deliberately
- * NOT stored here — it's always derived fresh from `gameBestRecords` via
- * computeCurrentStats, so there is exactly one source of truth and no risk
- * of the two drifting apart.
+ * NOT stored here — it's always derived fresh via computeCurrentStats, so
+ * there is exactly one source of truth and no risk of the two drifting
+ * apart.
+ *
+ * v2: one best record PER (gameId, difficulty) pair, not one overall best
+ * per game — needed so Hard/Extreme unlock checks (lib/game/
+ * difficulty-unlock.ts) can read "what's my best at exactly this tier,"
+ * and so the representative record (getRepresentativeRecord) can apply the
+ * "highest difficulty *attempted*, not highest score" rule from spec §18.
  */
 export interface PlayerSkillState {
-  version: 1
-  /** Keyed by GamePoolEntry.key — one representative (highest-normalizedScore-ever) record per registered game. */
-  gameBestRecords: Record<string, MiniGamePerformanceRecord>
+  version: 2
+  /** Keyed by `${gameId}:${difficulty}` — see recordKey. */
+  gameDifficultyBestRecords: Record<string, MiniGamePerformanceRecord>
   /** Idempotency ledger (see recordMiniGameCompletion) — capped, not a full history. */
   processedCompletionIds: string[]
   updatedAt: string
 }
 
-const STORAGE_KEY = 'statling.playerSkill.v1'
+const STORAGE_KEY = 'statling.playerSkill.v1' // key unchanged across v1->v2 — migrateToV2 below reshapes old data in place rather than abandoning it under a new key
 /** processedCompletionIds is a dedupe window, not an audit log — this comfortably outlives any realistic burst of accidental duplicate calls (Strict Mode double-invoke, a few stray re-renders) without growing unbounded across a long play history. */
 const MAX_PROCESSED_IDS = 200
 
 export function createDefaultPlayerSkillState(): PlayerSkillState {
-  return { version: 1, gameBestRecords: {}, processedCompletionIds: [], updatedAt: new Date(0).toISOString() }
+  return { version: 2, gameDifficultyBestRecords: {}, processedCompletionIds: [], updatedAt: new Date(0).toISOString() }
 }
 
-function isWellFormed(value: Record<string, unknown>): boolean {
-  return (
-    typeof value.gameBestRecords === 'object' &&
-    value.gameBestRecords !== null &&
-    Array.isArray(value.processedCompletionIds)
-  )
+/**
+ * v1 (pre-difficulty) records had no `difficulty` field and were keyed
+ * directly by gameId. Every real v1 record came from what is now called
+ * 'normal' (the only tier that existed), so migration re-keys each one to
+ * `${gameId}:normal` and stamps difficulty:'normal' — a real player's
+ * existing best score is preserved exactly, not reset to zero.
+ */
+function migrateToV2(parsed: Record<string, unknown>): PlayerSkillState {
+  const fallback = createDefaultPlayerSkillState()
+  const rawBest = parsed.gameDifficultyBestRecords ?? parsed.gameBestRecords
+  if (!rawBest || typeof rawBest !== 'object') return fallback
+
+  const gameDifficultyBestRecords: Record<string, MiniGamePerformanceRecord> = {}
+  for (const [key, value] of Object.entries(rawBest as Record<string, unknown>)) {
+    if (!value || typeof value !== 'object') continue
+    const v = value as Record<string, unknown>
+    if (typeof v.gameId !== 'string' || typeof v.statCategory !== 'string' || typeof v.normalizedScore !== 'number') continue
+    const difficulty: GameDifficulty =
+      typeof v.difficulty === 'string' && (GAME_DIFFICULTY_ORDER as string[]).includes(v.difficulty)
+        ? (v.difficulty as GameDifficulty)
+        : 'normal' // v1 records (or malformed data) default to 'normal', the only tier that existed pre-migration
+    const record: MiniGamePerformanceRecord = {
+      completionId: typeof v.completionId === 'string' ? v.completionId : `migrated_${key}`,
+      gameId: v.gameId,
+      statCategory: v.statCategory as StatId,
+      difficulty,
+      normalizedScore: clampScore(v.normalizedScore),
+      completedAt: typeof v.completedAt === 'string' ? v.completedAt : fallback.updatedAt,
+    }
+    gameDifficultyBestRecords[recordKey(record.gameId, record.difficulty)] = record
+  }
+
+  const processedCompletionIds = Array.isArray(parsed.processedCompletionIds)
+    ? (parsed.processedCompletionIds as unknown[]).filter((id): id is string => typeof id === 'string').slice(-MAX_PROCESSED_IDS)
+    : []
+  const updatedAt = typeof parsed.updatedAt === 'string' ? parsed.updatedAt : fallback.updatedAt
+
+  return { version: 2, gameDifficultyBestRecords, processedCompletionIds, updatedAt }
 }
 
 export function loadPlayerSkillState(): PlayerSkillState {
@@ -60,8 +105,8 @@ export function loadPlayerSkillState(): PlayerSkillState {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (!raw) return createDefaultPlayerSkillState()
     const parsed = JSON.parse(raw) as Record<string, unknown>
-    if (!parsed || typeof parsed !== 'object' || !isWellFormed(parsed)) return createDefaultPlayerSkillState()
-    return parsed as unknown as PlayerSkillState
+    if (!parsed || typeof parsed !== 'object') return createDefaultPlayerSkillState()
+    return migrateToV2(parsed)
   } catch {
     return createDefaultPlayerSkillState()
   }
@@ -76,6 +121,7 @@ export interface RecordCompletionInput {
   completionId: string
   gameId: string
   statCategory: StatId
+  difficulty: GameDifficulty
   normalizedScore: number
   completedAt: string
 }
@@ -96,12 +142,12 @@ export interface RecordCompletionResult {
  * repeats of the *same* logical completion but changes for a genuinely new
  * one — see game-flow.tsx's `currentAttemptIdRef`.
  *
- * Within a single completionId, gameBestRecords[gameId] only ever improves:
- * a new normalizedScore replaces the stored one exactly when
- * isBetterByGameScore says so (lib/scoring/shared.ts — the same "higher
- * gameScore wins" rule the rest of the app's Personal Best logic already
- * uses), so replaying a game with a lower score never lowers its
- * contribution to the category average.
+ * Within a single completionId, gameDifficultyBestRecords[gameId:difficulty]
+ * only ever improves: a new normalizedScore replaces the stored one exactly
+ * when isBetterByGameScore says so (lib/scoring/shared.ts — the same
+ * "higher gameScore wins" rule the rest of the app's Personal Best logic
+ * already uses), so replaying a tier with a lower score never lowers that
+ * tier's best.
  */
 export function recordMiniGameCompletion(
   state: PlayerSkillState,
@@ -111,53 +157,99 @@ export function recordMiniGameCompletion(
     return { state, applied: false }
   }
 
-  const existing = state.gameBestRecords[input.gameId]
+  const key = recordKey(input.gameId, input.difficulty)
+  const existing = state.gameDifficultyBestRecords[key]
   const shouldReplace = !existing || isBetterByGameScore(input.normalizedScore, existing.normalizedScore)
 
-  const gameBestRecords = shouldReplace
+  const gameDifficultyBestRecords = shouldReplace
     ? {
-        ...state.gameBestRecords,
-        [input.gameId]: {
+        ...state.gameDifficultyBestRecords,
+        [key]: {
           completionId: input.completionId,
           gameId: input.gameId,
           statCategory: input.statCategory,
+          difficulty: input.difficulty,
           normalizedScore: clampScore(input.normalizedScore),
           completedAt: input.completedAt,
         },
       }
-    : state.gameBestRecords
+    : state.gameDifficultyBestRecords
 
   const processedCompletionIds = [...state.processedCompletionIds, input.completionId].slice(-MAX_PROCESSED_IDS)
 
   return {
     applied: true,
-    state: { ...state, gameBestRecords, processedCompletionIds, updatedAt: input.completedAt },
+    state: { ...state, gameDifficultyBestRecords, processedCompletionIds, updatedAt: input.completedAt },
   }
+}
+
+/** This game's best score at exactly one difficulty tier, or null if never played at that tier. Used by lib/game/difficulty-unlock.ts. */
+export function getBestScoreAtDifficulty(
+  state: PlayerSkillState,
+  gameId: string,
+  difficulty: GameDifficulty,
+): number | null {
+  return state.gameDifficultyBestRecords[recordKey(gameId, difficulty)]?.normalizedScore ?? null
+}
+
+/**
+ * One game's representative record (spec §18): the best record from the
+ * HIGHEST difficulty tier the player has ever attempted at this game,
+ * EXCLUDING Easy (practice-only, never a representative record) — not
+ * simply "the highest score across all tiers." E.g. Normal 84 / Hard 70 ->
+ * representative is the Hard record (70), because Hard is the higher tier
+ * actually reached, even though its score is lower. Null if the game has
+ * never been played at Normal or above.
+ */
+export function getRepresentativeRecord(state: PlayerSkillState, gameId: string): MiniGamePerformanceRecord | null {
+  for (let i = GAME_DIFFICULTY_ORDER.length - 1; i >= 0; i--) {
+    const difficulty = GAME_DIFFICULTY_ORDER[i]
+    if (difficulty === 'easy') continue
+    const record = state.gameDifficultyBestRecords[recordKey(gameId, difficulty)]
+    if (record) return record
+  }
+  return null
+}
+
+/** Every registered game's representative record (see getRepresentativeRecord), keyed by gameId — the shape StatusScreen's per-stat breakdown reads. */
+export function getAllRepresentativeRecords(state: PlayerSkillState): Record<string, MiniGamePerformanceRecord> {
+  const byGameId = new Map<string, MiniGamePerformanceRecord>()
+  for (const record of Object.values(state.gameDifficultyBestRecords)) {
+    if (record.difficulty === 'easy') continue
+    const current = byGameId.get(record.gameId)
+    if (!current || GAME_DIFFICULTY_ORDER.indexOf(record.difficulty) >= GAME_DIFFICULTY_ORDER.indexOf(current.difficulty)) {
+      // ">=": when two records tie on tier rank this can't actually happen (one gameId+difficulty is one key), so this only ever fires when record's tier is strictly higher than current's — kept as >= defensively rather than assuming key uniqueness here too.
+      byGameId.set(record.gameId, record)
+    }
+  }
+  return Object.fromEntries(byGameId)
 }
 
 /**
  * currentStats["카테고리 평균"]: the average of that category's registered
- * games' best-ever normalizedScore, one representative score per gameId (a
- * game played 50 times still contributes exactly once — its single best
- * run) — so no category can be inflated just by grinding one game, and a
- * category with more registered games isn't automatically favored over one
- * with fewer, since each game contributes one score regardless of how many
- * siblings it has.
+ * games' REPRESENTATIVE record (spec §18's highest-difficulty-attempted
+ * rule, Easy excluded), one score per gameId (a game played 50 times still
+ * contributes exactly once) — so no category can be inflated just by
+ * grinding one game or one easy tier, and a category with more registered
+ * games isn't automatically favored over one with fewer, since each game
+ * contributes one score regardless of how many siblings it has. No
+ * weighting by difficulty tier — spec §18 explicitly rules that out.
  *
- * A stat with zero recorded games yet falls back to `initialStats[stat]`
- * (the Intro diagnostic) rather than showing 0 or a fake value — real data,
- * just not from repeated play — see StatusScreen's "최초 진단값" display for
- * why this reads better than either alternative.
+ * A stat with zero recorded (Normal+) games yet falls back to
+ * `initialStats[stat]` (the Intro diagnostic) rather than showing 0 or a
+ * fake value — real data, just not from repeated play — see StatusScreen's
+ * "최초 진단값" display for why this reads better than either alternative.
  */
 export function computeCurrentStats(
-  gameBestRecords: Record<string, MiniGamePerformanceRecord>,
+  state: PlayerSkillState,
   initialStats: Record<StatId, number>,
 ): Record<StatId, number> {
+  const representatives = getAllRepresentativeRecords(state)
   const scoresByStat: Record<StatId, number[]> = Object.fromEntries(
     PLAY_ORDER.map((stat) => [stat, [] as number[]]),
   ) as Record<StatId, number[]>
 
-  for (const record of Object.values(gameBestRecords)) {
+  for (const record of Object.values(representatives)) {
     scoresByStat[record.statCategory].push(record.normalizedScore)
   }
 
@@ -171,10 +263,7 @@ export function computeCurrentStats(
   ) as Record<StatId, number>
 }
 
-/** How many distinct registered games actually contributed to a stat's current average — shown alongside the number per section 11's UI spec ("반영된 미니게임 수"). */
-export function countContributingGames(
-  gameBestRecords: Record<string, MiniGamePerformanceRecord>,
-  stat: StatId,
-): number {
-  return Object.values(gameBestRecords).filter((record) => record.statCategory === stat).length
+/** How many distinct registered games actually contributed a representative record to a stat's current average. */
+export function countContributingGames(state: PlayerSkillState, stat: StatId): number {
+  return Object.values(getAllRepresentativeRecords(state)).filter((record) => record.statCategory === stat).length
 }

@@ -1,3 +1,6 @@
+import { DIFFICULTY_TIME_MULTIPLIER } from '@/lib/config/difficulty.config'
+import type { GameDifficulty } from '@/lib/game/difficulty'
+
 export const COLOR_TARGET_GAME_VERSION = 'color_target_v1'
 
 export const COLOR_TARGET_INTRO_COUNTDOWN_SECONDS = 3
@@ -12,6 +15,16 @@ export const COLOR_TARGET_OBJECT_COUNT_MIN = 8
 export const COLOR_TARGET_OBJECT_COUNT_MAX = 16
 /** How often the on-screen objects reshuffle position/color (independent of the target-color change cadence). */
 export const COLOR_TARGET_RESHUFFLE_INTERVAL_MS = 1400
+
+/** Difficulty-scaled target-color-change interval stages — bigger DIFFICULTY_TIME_MULTIPLIER = longer intervals = easier. At 'normal' (multiplier 1) this is identical to COLOR_TARGET_CHANGE_INTERVAL_STAGES_MS. */
+export function getColorTargetChangeIntervalStagesForDifficulty(difficulty: GameDifficulty): number[] {
+  return COLOR_TARGET_CHANGE_INTERVAL_STAGES_MS.map((ms) => Math.round(ms * DIFFICULTY_TIME_MULTIPLIER[difficulty]))
+}
+
+/** Difficulty-scaled object reshuffle interval — bigger DIFFICULTY_TIME_MULTIPLIER = longer interval = easier. At 'normal' (multiplier 1) this is identical to COLOR_TARGET_RESHUFFLE_INTERVAL_MS. */
+export function getColorTargetReshuffleIntervalForDifficulty(difficulty: GameDifficulty): number {
+  return Math.round(COLOR_TARGET_RESHUFFLE_INTERVAL_MS * DIFFICULTY_TIME_MULTIPLIER[difficulty])
+}
 
 export interface ColorTargetPalette {
   id: string

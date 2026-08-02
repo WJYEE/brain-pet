@@ -7,10 +7,12 @@ import { GameTutorialModal, type TutorialContent } from '@/components/brain-bet/
 import { ToyButton } from '@/components/brain-bet/toy-button'
 import { STATS } from '@/lib/brain-bet'
 import {
+  getNumberPatternTimeLimitForDifficulty,
   NUMBER_PATTERN_INTRO_COUNTDOWN_SECONDS,
   NUMBER_PATTERN_QUESTION_COUNT,
-  NUMBER_PATTERN_TIME_LIMIT_MS,
 } from '@/lib/config/number-pattern.config'
+import { GAME_DIFFICULTIES } from '@/lib/game/difficulty'
+import type { GameDifficulty } from '@/lib/game/difficulty'
 import { detectDevice } from '@/lib/game/device'
 import { pickNumberPatternSession } from '@/lib/game/number-pattern-data'
 import type { NumberPatternAnswer, NumberPatternRawSummary } from '@/lib/game/types'
@@ -23,6 +25,7 @@ type Stage = 'intro' | 'countdown' | 'playing' | 'feedback'
 interface NumberPatternGameProps {
   index: number
   mode: 'first' | 'free'
+  difficulty: GameDifficulty
   onComplete: (payload: { answers: NumberPatternAnswer[]; rawSummary: NumberPatternRawSummary; gameScore: number }) => void
 }
 
@@ -34,10 +37,11 @@ const TUTORIAL: TutorialContent = {
 }
 
 /** "숫자 규칙" — new Reasoning-stat game (spec §9). Questions are drawn each session from a verified static bank (see lib/game/number-pattern-data.ts), never runtime-random-generated. */
-export function NumberPatternGame({ index, mode, onComplete }: NumberPatternGameProps) {
+export function NumberPatternGame({ index, mode, difficulty, onComplete }: NumberPatternGameProps) {
   const stat = STATS.reasoning
   const { play } = useSound()
   const [questions] = useState(() => pickNumberPatternSession(NUMBER_PATTERN_QUESTION_COUNT))
+  const timeLimitMs = getNumberPatternTimeLimitForDifficulty(difficulty)
   const [stage, setStage] = useState<Stage>('intro')
   const [qIndex, setQIndex] = useState(0)
   const [answers, setAnswers] = useState<NumberPatternAnswer[]>([])
@@ -63,7 +67,7 @@ export function NumberPatternGame({ index, mode, onComplete }: NumberPatternGame
 
   const startQuestion = (i: number) => {
     setSelected(null)
-    setRemainingMs(NUMBER_PATTERN_TIME_LIMIT_MS)
+    setRemainingMs(timeLimitMs)
     shownAtRef.current = performance.now()
     setQIndex(i)
     setStage('playing')
@@ -118,6 +122,7 @@ export function NumberPatternGame({ index, mode, onComplete }: NumberPatternGame
         }
         onHelp={() => setTutorialOpen(true)}
       />
+      <p className="text-xs font-semibold text-muted-foreground">{GAME_DIFFICULTIES[difficulty].hint}</p>
 
       <div className="mt-5 flex flex-1 flex-col">
         {stage === 'intro' && (

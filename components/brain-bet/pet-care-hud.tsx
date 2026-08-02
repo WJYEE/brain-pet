@@ -50,8 +50,8 @@ interface PetCareHudProps {
 
 export function PetCareHud({ stats, intimacyLevel, intimacyExp, expToNext, floatingDeltas }: PetCareHudProps) {
   return (
-    <div className="mt-3 space-y-2">
-      <div className="flex items-center gap-2 rounded-xl bg-secondary/60 px-3 py-1.5 toy-border">
+    <div className="mt-2 space-y-1.5 sm:mt-3 sm:space-y-2">
+      <div className="flex items-center gap-2 rounded-xl bg-secondary/60 px-2.5 py-1 toy-border sm:px-3 sm:py-1.5">
         <span className="font-display text-xs font-extrabold text-secondary-foreground">Lv.{intimacyLevel}</span>
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-card">
           <div
@@ -69,7 +69,7 @@ export function PetCareHud({ stats, intimacyLevel, intimacyExp, expToNext, float
         </span>
       </div>
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2">
         {STAT_ORDER.map((statId) => {
           const Icon = STAT_ICON[statId]
           const value = stats[statId]
@@ -79,15 +79,16 @@ export function PetCareHud({ stats, intimacyLevel, intimacyExp, expToNext, float
             <div
               key={statId}
               className={cn(
-                'relative flex items-center gap-2 rounded-xl bg-card px-3 py-2 toy-border',
+                'relative flex items-center gap-1.5 rounded-xl bg-card px-2 py-1.5 toy-border sm:gap-2 sm:px-3 sm:py-2',
                 low && 'ring-2 ring-destructive/50',
               )}
             >
-              <Icon size={20} />
+              <Icon size={18} className="shrink-0 sm:hidden" />
+              <Icon size={20} className="hidden shrink-0 sm:block" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-[11px] font-bold text-muted-foreground">{STAT_LABEL[statId]}</span>
-                  <span className="font-display text-sm font-extrabold tabular-nums text-foreground">{value}</span>
+                  <span className="text-[10px] font-bold text-muted-foreground sm:text-[11px]">{STAT_LABEL[statId]}</span>
+                  <span className="font-display text-xs font-extrabold tabular-nums text-foreground sm:text-sm">{value}</span>
                 </div>
                 <div
                   role="progressbar"
@@ -102,7 +103,7 @@ export function PetCareHud({ stats, intimacyLevel, intimacyExp, expToNext, float
                     style={{ width: `${value}%` }}
                   />
                 </div>
-                <span className="text-[10px] font-semibold text-muted-foreground">{statusLabel(statId, value)}</span>
+                <span className="hidden text-[10px] font-semibold text-muted-foreground sm:block">{statusLabel(statId, value)}</span>
               </div>
               {delta && <FloatingDeltaText key={delta.id} delta={delta.delta} className="right-2 top-1" />}
             </div>

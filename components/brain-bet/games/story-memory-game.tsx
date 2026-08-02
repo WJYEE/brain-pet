@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, X } from 'lucide-react'
 import { GameCountdown } from '@/components/brain-bet/games/shared/game-countdown'
 import { GameHud } from '@/components/brain-bet/games/shared/game-hud'
@@ -9,8 +9,10 @@ import { ToyButton } from '@/components/brain-bet/toy-button'
 import { STATS } from '@/lib/brain-bet'
 import {
   STORY_MEMORY_INTRO_COUNTDOWN_SECONDS,
-  STORY_MEMORY_QUESTION_TIME_LIMIT_MS,
+  getStoryMemoryQuestionTimeLimitForDifficulty,
 } from '@/lib/config/story-memory.config'
+import { GAME_DIFFICULTIES } from '@/lib/game/difficulty'
+import type { GameDifficulty } from '@/lib/game/difficulty'
 import { pickNextStoryRound } from '@/lib/game/story-memory-data'
 import type { StoryMemoryAnswer, StoryMemoryRawSummary } from '@/lib/game/types'
 import { calculateStoryMemoryScore, summarizeStoryMemoryAnswers } from '@/lib/scoring/story-memory'
@@ -22,6 +24,7 @@ type Stage = 'intro' | 'countdown' | 'reading' | 'question' | 'feedback'
 interface StoryMemoryGameProps {
   index: number
   mode: 'first' | 'free'
+  difficulty: GameDifficulty
   onComplete: (payload: { answers: StoryMemoryAnswer[]; rawSummary: StoryMemoryRawSummary; gameScore: number }) => void
 }
 
@@ -40,9 +43,13 @@ const TUTORIAL: TutorialContent = {
  * deliberately tight duration instead. Only the question-answering phase is
  * scored on speed.
  */
-export function StoryMemoryGame({ index, mode, onComplete }: StoryMemoryGameProps) {
+export function StoryMemoryGame({ index, mode, difficulty, onComplete }: StoryMemoryGameProps) {
   const stat = STATS.memory
   const { play } = useSound()
+  const questionTimeLimitMs = useMemo(
+    () => getStoryMemoryQuestionTimeLimitForDifficulty(difficulty),
+    [difficulty],
+  )
   const [round] = useState(() => pickNextStoryRound())
   const [stage, setStage] = useState<Stage>('intro')
   const [questionIndex, setQuestionIndex] = useState(0)
@@ -86,7 +93,7 @@ export function StoryMemoryGame({ index, mode, onComplete }: StoryMemoryGameProp
 
   const startQuestion = (qIndex: number) => {
     setSelected(null)
-    setRemainingMs(STORY_MEMORY_QUESTION_TIME_LIMIT_MS)
+    setRemainingMs(questionTimeLimitMs)
     questionShownAtRef.current = performance.now()
     setStage('question')
     setQuestionIndex(qIndex)
@@ -141,6 +148,7 @@ export function StoryMemoryGame({ index, mode, onComplete }: StoryMemoryGameProp
         }
         onHelp={() => setTutorialOpen(true)}
       />
+      <p className="text-xs font-semibold text-muted-foreground">{GAME_DIFFICULTIES[difficulty].hint}</p>
 
       <div className="mt-5 flex flex-1 flex-col">
         {stage === 'intro' && (

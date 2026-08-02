@@ -8,6 +8,7 @@ import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { ToyButton } from '@/components/brain-bet/toy-button'
 import { useSound } from '@/hooks/use-sound'
 import { pickTopTwoStats, STATS, STAT_DISPLAY_ORDER, type StatId } from '@/lib/brain-bet'
+import { GAME_DIFFICULTIES } from '@/lib/game/difficulty'
 import { getGameDisplayName, getGamePoolSize } from '@/lib/game/game-registry'
 import type { MiniGamePerformanceRecord } from '@/lib/game/player-skill-storage'
 import { cn } from '@/lib/utils'
@@ -166,13 +167,18 @@ export function StatusScreen({
                         <ul className="mt-1.5 flex flex-col gap-1">
                           {records.map((record) => (
                             <li key={record.gameId} className="flex items-center justify-between text-xs font-semibold text-foreground">
-                              <span>{getGameDisplayName(record.gameId)}</span>
+                              <span className="flex items-center gap-1.5">
+                                {getGameDisplayName(record.gameId)}
+                                <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[9px] font-bold text-secondary-foreground">
+                                  {GAME_DIFFICULTIES[record.difficulty].label}
+                                </span>
+                              </span>
                               <span>{record.normalizedScore}</span>
                             </li>
                           ))}
                         </ul>
                         <p className="mt-2 text-[11px] font-semibold text-muted-foreground">
-                          {records.length}개 기록의 평균 · 플레이 횟수·EXP는 반영되지 않아요.
+                          {records.length}개 기록의 평균 (게임마다 가장 높이 도전한 난이도 기록 기준) · 플레이 횟수·EXP는 반영되지 않아요.
                         </p>
                       </>
                     )}

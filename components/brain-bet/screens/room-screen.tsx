@@ -143,22 +143,26 @@ export function RoomScreen({ statlingName, topStat, petProfile, onGrow, testerFo
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col px-5 pb-28 pt-8" data-interaction-mode={mode}>
+    <div className="mx-auto flex w-full max-w-3xl flex-col px-5 pb-24 pt-4 sm:pb-28 sm:pt-8" data-interaction-mode={mode}>
       <header className="flex items-center justify-between gap-3">
-        <h1 className="flex items-baseline gap-1.5 font-display text-xl font-extrabold text-foreground">
-          <span className="text-sm font-bold text-muted-foreground">우리 방 ·</span>
+        <h1 className="flex items-baseline gap-1.5 font-display text-lg font-extrabold text-foreground sm:text-xl">
+          <span className="text-xs font-bold text-muted-foreground sm:text-sm">우리 방 ·</span>
           {statlingName}
         </h1>
         <StatBadge stat={STATS[topStat]} size="sm" />
       </header>
 
       <div className="mt-1 flex items-center gap-2">
-        <span className="font-display text-sm font-bold text-foreground">현재 기분: {MOOD_LABEL[care.mood]}</span>
-        {secondaryLabel && <span className="text-xs font-semibold text-muted-foreground">· {secondaryLabel}</span>}
+        <span className="font-display text-xs font-bold text-foreground sm:text-sm">현재 기분: {MOOD_LABEL[care.mood]}</span>
+        {secondaryLabel && <span className="text-[11px] font-semibold text-muted-foreground sm:text-xs">· {secondaryLabel}</span>}
       </div>
 
-      {/* room canvas — the focal point of this screen. Read-only: no drag/resize handles, no selection outlines, just the saved room state. */}
-      <div className="relative mt-4 overflow-hidden rounded-3xl toy-border toy-shadow-lg">
+      {/* room canvas — the focal point of this screen. Read-only: no drag/resize handles, no selection outlines, just the saved room state.
+          Capped narrower on mobile (still centered, still a perfect square so
+          the background art is never cropped/distorted) — full edge-to-edge
+          at 270px-Statling scale left too little room below it for the HUD
+          and care actions to fit without scrolling on a 375px-wide phone. */}
+      <div className="relative mx-auto mt-3 w-full max-w-70 overflow-hidden rounded-3xl toy-border toy-shadow-lg sm:mt-4 sm:max-w-none">
         <RoomCanvas
           backgroundAsset={backgroundAsset}
           items={roomState.items}
@@ -192,7 +196,7 @@ export function RoomScreen({ statlingName, topStat, petProfile, onGrow, testerFo
       />
 
       {/* care actions — compact icon buttons, 3x2 on mobile / one row on desktop */}
-      <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
+      <div className="mt-2 grid grid-cols-3 gap-1.5 sm:mt-3 sm:grid-cols-6 sm:gap-2">
         {CARE_ACTIONS.map((action) => (
           <CareActionButton
             key={action.id}
@@ -206,7 +210,7 @@ export function RoomScreen({ statlingName, topStat, petProfile, onGrow, testerFo
       </div>
 
       {/* grow CTA — the one action on this screen meant to stand out more than the compact HUD above */}
-      <ToyButton className="mx-auto mt-4 w-full max-w-xs px-5 py-3" onClick={onGrow}>
+      <ToyButton className="mx-auto mt-3 w-full max-w-xs px-5 py-2.5 sm:mt-4 sm:py-3" onClick={onGrow}>
         <Sparkles size={18} strokeWidth={2.6} />
         성장시키기
         <ArrowRight size={18} strokeWidth={2.8} />

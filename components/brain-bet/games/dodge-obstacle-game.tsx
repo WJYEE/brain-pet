@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { GameCountdown } from '@/components/brain-bet/games/shared/game-countdown'
 import { GameHud } from '@/components/brain-bet/games/shared/game-hud'
@@ -13,11 +13,11 @@ import {
   DODGE_OBSTACLE_DURATION_MS,
   DODGE_OBSTACLE_INTRO_COUNTDOWN_SECONDS,
   DODGE_OBSTACLE_LANE_COUNT,
-  DODGE_OBSTACLE_SPAWN_INTERVAL_MS_END,
-  DODGE_OBSTACLE_SPAWN_INTERVAL_MS_START,
-  DODGE_OBSTACLE_SPEED_PX_PER_S_END,
-  DODGE_OBSTACLE_SPEED_PX_PER_S_START,
+  getDodgeObstacleSpawnIntervalForDifficulty,
+  getDodgeObstacleSpeedForDifficulty,
 } from '@/lib/config/dodge-obstacle.config'
+import { GAME_DIFFICULTIES } from '@/lib/game/difficulty'
+import type { GameDifficulty } from '@/lib/game/difficulty'
 import type { DodgeObstacleEvent, DodgeObstacleRawSummary } from '@/lib/game/types'
 import { calculateDodgeObstacleScore, summarizeDodgeObstacleEvents } from '@/lib/scoring/dodge-obstacle'
 import { cn } from '@/lib/utils'
@@ -48,14 +48,18 @@ let obstacleIdCounter = 0
 export function DodgeObstacleGame({
   index,
   mode,
+  difficulty,
   onComplete,
 }: {
   index: number
   mode: 'first' | 'free'
+  difficulty: GameDifficulty
   onComplete: (payload: { events: DodgeObstacleEvent[]; rawSummary: DodgeObstacleRawSummary; gameScore: number }) => void
 }) {
   const stat = STATS.reaction
   const { play } = useSound()
+  const speed = useMemo(() => getDodgeObstacleSpeedForDifficulty(difficulty), [difficulty])
+  const spawnInterval = useMemo(() => getDodgeObstacleSpawnIntervalForDifficulty(difficulty), [difficulty])
   const [stage, setStage] = useState<Stage>('intro')
   const [tutorialOpen, setTutorialOpen] = useState(false)
   const [playerLane, setPlayerLane] = useState<Lane>(1)
@@ -137,12 +141,12 @@ export function DodgeObstacleGame({
 
   const speedAt = (elapsedMs: number) => {
     const ratio = Math.min(1, elapsedMs / DODGE_OBSTACLE_DURATION_MS)
-    return DODGE_OBSTACLE_SPEED_PX_PER_S_START + ratio * (DODGE_OBSTACLE_SPEED_PX_PER_S_END - DODGE_OBSTACLE_SPEED_PX_PER_S_START)
+    return speed.start + ratio * (speed.end - speed.start)
   }
 
   const spawnIntervalAt = (elapsedMs: number) => {
     const ratio = Math.min(1, elapsedMs / DODGE_OBSTACLE_DURATION_MS)
-    return DODGE_OBSTACLE_SPAWN_INTERVAL_MS_START + ratio * (DODGE_OBSTACLE_SPAWN_INTERVAL_MS_END - DODGE_OBSTACLE_SPAWN_INTERVAL_MS_START)
+    return spawnInterval.start + ratio * (spawnInterval.end - spawnInterval.start)
   }
 
   // Pause/resume bookkeeping: while the tutorial is open, freeze the elapsed-time clock the rAF loop reads from.
@@ -252,6 +256,7 @@ export function DodgeObstacleGame({
         }
         onHelp={() => setTutorialOpen(true)}
       />
+      <p className="-mt-2 text-xs font-semibold text-muted-foreground">{GAME_DIFFICULTIES[difficulty].hint}</p>
 
       <div className="mt-5 flex flex-1 flex-col">
         {stage === 'intro' && (

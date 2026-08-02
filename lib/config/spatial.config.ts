@@ -1,3 +1,5 @@
+import { DIFFICULTY_TIME_MULTIPLIER } from '@/lib/config/difficulty.config'
+import type { GameDifficulty } from '@/lib/game/difficulty'
 import type { SpatialDistractorType } from '@/lib/game/types'
 
 /** Spatial ("2D Mental Rotation") tuning constants — GAME_SPEC §64-73. */
@@ -34,6 +36,11 @@ export const SPATIAL_TIME_LIMIT_MS: Record<number, number> = {
   2: 9_000,
   3: 8_000,
   4: 7_000,
+}
+
+/** SPATIAL_TIME_LIMIT_MS[level] scaled by the shared game-wide difficulty tier (DIFFICULTY_TIME_MULTIPLIER) — at 'normal' this is exactly SPATIAL_TIME_LIMIT_MS[level]. */
+export function getSpatialTimeLimitForDifficulty(level: number, difficulty: GameDifficulty): number {
+  return Math.round(SPATIAL_TIME_LIMIT_MS[level] * DIFFICULTY_TIME_MULTIPLIER[difficulty])
 }
 
 /**

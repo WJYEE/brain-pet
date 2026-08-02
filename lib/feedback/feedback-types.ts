@@ -58,11 +58,20 @@ export const RETURN_INTENT_OPTIONS: { value: ReturnIntentValue; label: string }[
 ]
 
 /**
- * One submitted feedback response. `satisfaction`/`favoritePart`/
- * `improvementArea`/`returnIntent` are the four required single-select
- * questions; `comment` is the only optional field. No name/contact field
- * exists on purpose — the form itself warns against writing personal info
- * into `comment` (see feedback-section.tsx).
+ * One user's feedback — always exactly one per device (see
+ * lib/feedback/feedback-storage.ts#upsertFeedbackRecord: a new submission
+ * UPDATEs this record rather than adding another one). `satisfaction`/
+ * `favoritePart`/`improvementArea`/`returnIntent` are the four required
+ * single-select questions; `comment` is the only optional field. No name/
+ * contact field exists on purpose — the form itself warns against writing
+ * personal info into `comment` (see feedback-section.tsx).
+ *
+ * `appVersion`/`deviceType`/`statlingId`/`statlingName` are captured
+ * automatically (not asked of the user) — lightweight context for reading
+ * feedback later, same idea as GameResult's own `device` field.
+ * `submittedAt` is set once, at first submission, and never changes;
+ * `updatedAt` moves on every re-submission — same initial/current split
+ * convention as lib/pets/pet-storage.ts's initialFinals/latestFinals.
  */
 export interface FeedbackRecord {
   id: string
@@ -71,7 +80,13 @@ export interface FeedbackRecord {
   improvementArea: ImprovementAreaValue
   returnIntent: ReturnIntentValue
   comment: string
+  appVersion: string
+  deviceType: string
+  /** The representative pet's catalog id at the time of this submission, if one exists yet — see lib/pets/pet-profile.ts. */
+  statlingId: string | null
+  statlingName: string | null
   submittedAt: string
+  updatedAt: string
 }
 
 export type FeedbackDraft = {

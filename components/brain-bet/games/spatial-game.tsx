@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { Save } from 'lucide-react'
 import { Logo } from '@/components/brain-bet/logo'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
@@ -9,10 +10,12 @@ import { STATS } from '@/lib/brain-bet'
 import {
   SPATIAL_FEEDBACK_MS,
   SPATIAL_REAL_QUESTIONS,
-  SPATIAL_TIME_LIMIT_MS,
   SPATIAL_TUTORIAL_TRANSITION_MS,
+  getSpatialTimeLimitForDifficulty,
 } from '@/lib/config/spatial.config'
 import { detectDevice } from '@/lib/game/device'
+import { GAME_DIFFICULTIES } from '@/lib/game/difficulty'
+import type { GameDifficulty } from '@/lib/game/difficulty'
 import {
   buildTutorialQuestion1,
   buildTutorialQuestion2,
@@ -30,6 +33,7 @@ type Round = 'tutorial-1' | 'real'
 interface SpatialGameProps {
   index: number
   mode: 'first' | 'free'
+  difficulty: GameDifficulty
   onComplete: (payload: {
     trials: SpatialTrial[]
     rawSummary: SpatialRawSummary
@@ -68,7 +72,7 @@ type QuestionOutcome = { kind: 'option'; optionIndex: number } | { kind: 'timeou
  * the time it fires. `hasResolvedRef` additionally guarantees a question is
  * resolved exactly once even if a timeout and a click land back-to-back.
  */
-export function SpatialGame({ index, mode, onComplete }: SpatialGameProps) {
+export function SpatialGame({ index, mode, difficulty, onComplete }: SpatialGameProps) {
   const stat = STATS.spatial
   const { play } = useSound()
 
@@ -121,7 +125,7 @@ export function SpatialGame({ index, mode, onComplete }: SpatialGameProps) {
     const question =
       nextRound === 'tutorial-1' ? buildTutorialQuestion1() : realQuestionsRef.current[nextRealIndex]
 
-    const limit = nextRound === 'real' ? SPATIAL_TIME_LIMIT_MS[question.difficultyLevel] : null
+    const limit = nextRound === 'real' ? getSpatialTimeLimitForDifficulty(question.difficultyLevel, difficulty) : null
     const startedAt = performance.now()
 
     roundRef.current = nextRound
@@ -244,7 +248,13 @@ export function SpatialGame({ index, mode, onComplete }: SpatialGameProps) {
       <header className="flex items-center justify-between gap-4">
         <Logo size="sm" />
         {mode === 'first' ? (
-          <ProgressTrack current={index} />
+          <div className="flex items-center gap-2">
+            <ProgressTrack current={index} />
+            <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-[10px] font-bold text-secondary-foreground toy-border">
+              <Save size={11} strokeWidth={2.6} />
+              자동 저장 중
+            </span>
+          </div>
         ) : (
           <span className="rounded-xl bg-secondary px-3 py-1.5 text-xs font-bold text-secondary-foreground toy-border">
             FREE PLAY
@@ -296,6 +306,7 @@ export function SpatialGame({ index, mode, onComplete }: SpatialGameProps) {
             <p className="font-display text-lg font-bold leading-snug text-foreground">
               기준 조각을 머릿속으로 돌렸을 때 같은 모양이 되는 조각을 찾아주세요.
             </p>
+            <p className="text-xs font-semibold text-muted-foreground">{GAME_DIFFICULTIES[difficulty].hint}</p>
             <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1 text-xs font-bold text-muted-foreground toy-border">
               탭해서 시작하기
             </p>

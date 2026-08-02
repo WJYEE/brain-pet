@@ -1,14 +1,14 @@
 'use client'
 
 import type { CSSProperties } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Save } from 'lucide-react'
 import { Logo } from '@/components/brain-bet/logo'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { STATS } from '@/lib/brain-bet'
 import {
   MEMORY_CLICK_FEEDBACK_MS,
-  MEMORY_DIFFICULTY_SEQUENCE,
   MEMORY_PENALTY_FLASH_MS,
   MEMORY_PRACTICE_ROUNDS,
   MEMORY_PRE_FLASH_DELAY_MS,
@@ -16,8 +16,11 @@ import {
   MEMORY_ROUND_FEEDBACK_MS,
   MEMORY_TUTORIAL_DIFFICULTY,
   MEMORY_TUTORIAL_TRANSITION_MS,
+  getMemoryDifficultySequenceForDifficulty,
   type MemoryDifficultyLevel,
 } from '@/lib/config/memory.config'
+import { GAME_DIFFICULTIES } from '@/lib/game/difficulty'
+import type { GameDifficulty } from '@/lib/game/difficulty'
 import { detectDevice } from '@/lib/game/device'
 import { pickRandomTargetCells } from '@/lib/game/memory-grid'
 import type { MemoryRawSummary, MemoryRoundTrial } from '@/lib/game/types'
@@ -32,6 +35,7 @@ type CellState = 'idle' | 'flash' | 'click-correct' | 'click-wrong' | 'selected'
 interface MemoryGameProps {
   index: number
   mode: 'first' | 'free'
+  difficulty: GameDifficulty
   onComplete: (payload: {
     rounds: MemoryRoundTrial[]
     rawSummary: MemoryRawSummary
@@ -50,9 +54,14 @@ const INSTRUCTION_TEXT = '분홍색으로 깜빡이는 타일의 위치를 기�
  * discarded) then MEMORY_REAL_ROUNDS fixed-difficulty rounds; wrong/incomplete
  * rounds never end the session early (no Life system).
  */
-export function MemoryGame({ index, mode, onComplete }: MemoryGameProps) {
+export function MemoryGame({ index, mode, difficulty: gameDifficulty, onComplete }: MemoryGameProps) {
   const stat = STATS.memory
   const { play } = useSound()
+
+  const difficultySequence = useMemo(
+    () => getMemoryDifficultySequenceForDifficulty(gameDifficulty),
+    [gameDifficulty],
+  )
 
   const [stage, setStage] = useState<Stage>('intro')
   const [round, setRound] = useState<Round>('practice')
@@ -94,7 +103,7 @@ export function MemoryGame({ index, mode, onComplete }: MemoryGameProps) {
   const beginRound = (nextRound: Round, nextRealRoundIndex: number) => {
     clearScheduled()
     const d =
-      nextRound === 'practice' ? MEMORY_TUTORIAL_DIFFICULTY : MEMORY_DIFFICULTY_SEQUENCE[nextRealRoundIndex]
+      nextRound === 'practice' ? MEMORY_TUTORIAL_DIFFICULTY : difficultySequence[nextRealRoundIndex]
     setDifficulty(d)
     setTargetCells(pickRandomTargetCells(d.gridSize, d.targetCount))
     setSelectedCells([])
@@ -243,7 +252,13 @@ export function MemoryGame({ index, mode, onComplete }: MemoryGameProps) {
       <header className="flex items-center justify-between gap-4">
         <Logo size="sm" />
         {mode === 'first' ? (
-          <ProgressTrack current={index} />
+          <div className="flex items-center gap-2">
+            <ProgressTrack current={index} />
+            <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-[10px] font-bold text-secondary-foreground toy-border">
+              <Save size={11} strokeWidth={2.6} />
+              자동 저장 중
+            </span>
+          </div>
         ) : (
           <span className="rounded-xl bg-secondary px-3 py-1.5 text-xs font-bold text-secondary-foreground toy-border">
             FREE PLAY
@@ -283,6 +298,7 @@ export function MemoryGame({ index, mode, onComplete }: MemoryGameProps) {
           </span>
           <div className="max-w-sm">
             <p className="font-display text-lg font-bold leading-snug text-foreground">{INSTRUCTION_TEXT}</p>
+            <p className="mt-2 text-xs font-semibold text-muted-foreground">{GAME_DIFFICULTIES[gameDifficulty].hint}</p>
             <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1 text-xs font-bold text-muted-foreground toy-border">
               탭해서 시작하기
             </p>

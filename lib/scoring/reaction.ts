@@ -101,15 +101,22 @@ export function calculateReactionScore(summary: ReactionRawSummary, inputType: I
   return clampScore(validityRatio * validityWeight + speedScore * speedWeight)
 }
 
-/** Formats the raw summary into the display RawRecord — never invents a "pts" unit (GAME_SPEC §3-5). */
+/**
+ * Formats the raw summary into the display RawRecord — never invents a "pts"
+ * unit (GAME_SPEC §3-5). Leads with the average (mean, not the scoring-only
+ * median) so the headline number reflects the whole session rather than a
+ * single lucky trial, with the best single trial right alongside it — a
+ * bare "Best" figure with no average to compare it against previously read
+ * as the only number that mattered.
+ */
 export function formatReactionRawRecord(summary: ReactionRawSummary): RawRecord {
   if (summary.validTrials === 0) {
     return { primary: '기록 없음', secondary: `False Start ${summary.falseStarts}회` }
   }
-  const secondaryParts = [`Best ${summary.bestReactionMs} ms`]
+  const secondaryParts = [`최고 기록 ${summary.bestReactionMs}ms`]
   if (summary.falseStarts > 0) secondaryParts.push(`False Start ${summary.falseStarts}회`)
   return {
-    primary: `${summary.medianReactionMs} ms`,
+    primary: `평균 ${summary.averageReactionMs}ms`,
     secondary: secondaryParts.join(' · '),
   }
 }

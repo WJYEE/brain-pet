@@ -1,5 +1,8 @@
 /** Reasoning ("Pattern Reasoning") tuning constants — GAME_SPEC §74-84. */
 /** v2: gameScore reworked to difficultyWeightedAccuracy 75% + time 15% + timeout-solve-rate 10%, clamped 0-100 (was an unbounded ~800+-scale formula). */
+import { DIFFICULTY_TIME_MULTIPLIER } from '@/lib/config/difficulty.config'
+import type { GameDifficulty } from '@/lib/game/difficulty'
+
 export const REASONING_GAME_VERSION = 'reasoning_v2'
 
 export const REASONING_LEVELS = [1, 2, 3, 4] as const
@@ -29,6 +32,15 @@ export const REASONING_TIME_LIMIT_MS: Record<number, number> = {
   2: 12_000,
   3: 15_000,
   4: 18_000,
+}
+
+/**
+ * Game-wide difficulty tier scaling on top of the per-Level base above —
+ * see lib/config/difficulty.config.ts. At `normal` (DIFFICULTY_TIME_MULTIPLIER
+ * === 1) this returns exactly REASONING_TIME_LIMIT_MS[level].
+ */
+export function getReasoningTimeLimitForDifficulty(level: number, difficulty: GameDifficulty): number {
+  return Math.round(REASONING_TIME_LIMIT_MS[level] * DIFFICULTY_TIME_MULTIPLIER[difficulty])
 }
 
 /**

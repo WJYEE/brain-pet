@@ -1,5 +1,8 @@
 /** Memory ("Memory Tiles") tuning constants — GAME_SPEC §34-44. */
 /** v2: gameScore reworked to weightedAccuracy 85% + 응답속도 15%, clamped 0-100 (was an unbounded ~1000-scale formula). */
+import { DIFFICULTY_TIME_MULTIPLIER } from '@/lib/config/difficulty.config'
+import type { GameDifficulty } from '@/lib/game/difficulty'
+
 export const MEMORY_GAME_VERSION = 'memory_v2'
 
 export const MEMORY_PRACTICE_ROUNDS = 1
@@ -38,6 +41,19 @@ export const MEMORY_DIFFICULTY_SEQUENCE: MemoryDifficultyLevel[] = [
   { level: 2, gridSize: 5, targetCount: 7, exposureMs: 750 },
   { level: 3, gridSize: 6, targetCount: 9, exposureMs: 650 },
 ]
+
+/**
+ * MEMORY_DIFFICULTY_SEQUENCE scaled by the player's chosen game difficulty —
+ * only `exposureMs` (the "how long until X" time-budget knob) is scaled;
+ * `gridSize`/`targetCount` are unaffected. At 'normal' DIFFICULTY_TIME_MULTIPLIER
+ * is exactly 1, so this returns entries identical to the base sequence.
+ */
+export function getMemoryDifficultySequenceForDifficulty(difficulty: GameDifficulty): MemoryDifficultyLevel[] {
+  return MEMORY_DIFFICULTY_SEQUENCE.map((level) => ({
+    ...level,
+    exposureMs: Math.round(level.exposureMs * DIFFICULTY_TIME_MULTIPLIER[difficulty]),
+  }))
+}
 
 /**
  * Per-round weight for Weighted Accuracy — harder rounds count slightly more.
