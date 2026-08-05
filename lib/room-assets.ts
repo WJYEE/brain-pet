@@ -36,26 +36,72 @@ const ROOM_BASE = '/assets/statling/room'
 
 export const ROOM_ASSETS: Record<string, RoomAsset> = {
   // -- backgrounds ------------------------------------------------------
+  // All 7 entries below share one normalization pass so switching between
+  // any of them never shifts or resizes the room: each source's room
+  // illustration (border/transparent-margin cropped off first) is uniformly
+  // scaled to the same 660x611 content box — aspect ratio preserved per
+  // source, only a few % of anisotropic scale where a source's native ratio
+  // didn't already match the shared average (worst case ~7%, on
+  // green-background, imperceptible on flat vector art) — then re-padded
+  // into an identical 724x724 canvas at an identical (32, 56) offset. Every
+  // *-normalized.png is a generated file; the untouched raw source
+  // (wood_back-Photoroom.png / green_back.png / *_back.png /
+  // bubblewhiteblue.png / lightwhite.png) is what's still in the backgrounds
+  // folder for reference. Never hand-edit a -normalized.png directly —
+  // regenerate from source instead.
   'wood-background': {
     id: 'wood-background',
     name: '우드 배경',
     category: 'background',
-    src: `${ROOM_BASE}/backgrounds/wood_back-Photoroom.png`,
+    src: `${ROOM_BASE}/backgrounds/wood_back-normalized.png`,
     naturalWidth: 724,
     naturalHeight: 724,
   },
-  // naturalWidth normalized to match wood-background's 724 (source file is
-  // 727x724, a 0.4% difference) — both are rendered into an identical square
-  // Room Stage via object-fit: cover regardless, so this only removes a
-  // spurious discrepancy in the catalog metadata itself. Note: the two
-  // background *illustrations* still have a genuinely different wall/floor
-  // split (green's wall band + hanging vines run taller than wood's) — that
-  // is real art content, not something this metadata field controls.
   'green-background': {
     id: 'green-background',
     name: '그린 배경',
     category: 'background',
-    src: `${ROOM_BASE}/backgrounds/green_back-Photoroom.png`,
+    src: `${ROOM_BASE}/backgrounds/green_back-normalized.png`,
+    naturalWidth: 724,
+    naturalHeight: 724,
+  },
+  'bluegrey-background': {
+    id: 'bluegrey-background',
+    name: '블루그레이 배경',
+    category: 'background',
+    src: `${ROOM_BASE}/backgrounds/bluegrey_back-normalized.png`,
+    naturalWidth: 724,
+    naturalHeight: 724,
+  },
+  'blue-background': {
+    id: 'blue-background',
+    name: '블루 배경',
+    category: 'background',
+    src: `${ROOM_BASE}/backgrounds/bubblewhiteblue-normalized.png`,
+    naturalWidth: 724,
+    naturalHeight: 724,
+  },
+  'ivory-background': {
+    id: 'ivory-background',
+    name: '아이보리 배경',
+    category: 'background',
+    src: `${ROOM_BASE}/backgrounds/lightwhite-normalized.png`,
+    naturalWidth: 724,
+    naturalHeight: 724,
+  },
+  'pink-background': {
+    id: 'pink-background',
+    name: '핑크 배경',
+    category: 'background',
+    src: `${ROOM_BASE}/backgrounds/pink_back-normalized.png`,
+    naturalWidth: 724,
+    naturalHeight: 724,
+  },
+  'purple-background': {
+    id: 'purple-background',
+    name: '퍼플 배경',
+    category: 'background',
+    src: `${ROOM_BASE}/backgrounds/puple_back-normalized.png`,
     naturalWidth: 724,
     naturalHeight: 724,
   },
