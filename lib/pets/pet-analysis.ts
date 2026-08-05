@@ -1,4 +1,4 @@
-import { STATS, STAT_DISPLAY_ORDER, type StatId } from '@/lib/brain-bet'
+import { STAT_DISPLAY_ORDER, type StatId } from '@/lib/brain-bet'
 import type { PetProfile, StatVector } from '@/lib/pets/pet-profile'
 
 /** All 6 stat ids ranked by a vector's value, highest first. */
@@ -6,35 +6,9 @@ export function rankStatsByVector(vector: StatVector): StatId[] {
   return [...STAT_DISPLAY_ORDER].sort((a, b) => vector[b] - vector[a])
 }
 
-/** The pet's own strongest stat, derived from its affinity vector (not a separately-authored field). */
-export function getPetPrimaryStat(pet: PetProfile): StatId {
-  return rankStatsByVector(pet.vector)[0]
-}
-
 /** The pet's own second-strongest stat. */
 export function getPetSecondaryStat(pet: PetProfile): StatId {
   return rankStatsByVector(pet.vector)[1]
-}
-
-/** Korean subject particle (이/가) by whether the name's last syllable has a trailing consonant (batchim). Non-Hangul names fall back to 가. */
-export function subjectParticle(name: string): '이' | '가' {
-  const code = name.charCodeAt(name.length - 1) - 0xac00
-  if (code < 0 || code > 11171) return '가'
-  return code % 28 === 0 ? '가' : '이'
-}
-
-/**
- * Why this particular pet was selected — combines the user's actual top/
- * second stat with whether the pet's own strongest stat directly matches
- * either of them (a closer, more literal fit) or not (still the best
- * available match, just not a 1:1 overlap). Never repeats petProfile.tagline.
- */
-export function buildSelectionReason(pet: PetProfile, topStat: StatId, secondaryStat: StatId): string {
-  const petPrimary = getPetPrimaryStat(pet)
-  const isDirectMatch = petPrimary === topStat || petPrimary === secondaryStat
-  const closenessClause = isDirectMatch ? '꼭 닮아 있어서' : '가장 잘 어울려서'
-
-  return `6개의 스탯을 모두 분석한 결과, ${STATS[topStat].name}과 ${STATS[secondaryStat].name}이 돋보이는 당신의 성향과 ${closenessClause}, ${pet.name}${subjectParticle(pet.name)} 대표 Statling으로 선택되었어요.`
 }
 
 /** Short "~하는" clause per stat, composable into 1-2 sentence trait summaries. */
@@ -69,10 +43,10 @@ export function buildCoreTraitSummary(
   const gap = (finals[topStat] ?? 0) - (finals[secondaryStat] ?? 0)
 
   if (stdev < BALANCE_STDEV_THRESHOLD) {
-    return '한 가지 능력에만 기대기보다, 상황에 맞춰 여러 강점을 골고루 꺼내 쓰는 타입이에요.'
+    return '나는 한 가지 능력에만 기대기보다, 상황에 맞춰 여러 강점을 골고루 꺼내 쓰는 편이에요.'
   }
   if (gap >= DOMINANT_GAP_THRESHOLD) {
-    return `${TRAIT_DESCRIPTOR[topStat]}. 집중할 목표가 분명할 때 가장 강한 힘을 발휘해요.`
+    return `나는 ${TRAIT_DESCRIPTOR[topStat]}. 집중할 목표가 분명할 때 가장 강한 힘을 발휘해요.`
   }
-  return `${TRAIT_DESCRIPTOR[topStat]}. 동시에 ${TRAIT_DESCRIPTOR[secondaryStat]}.`
+  return `나는 ${TRAIT_DESCRIPTOR[topStat]}. 동시에 ${TRAIT_DESCRIPTOR[secondaryStat]}.`
 }

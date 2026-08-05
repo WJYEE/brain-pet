@@ -13,7 +13,7 @@ interface OnboardingModalProps {
 }
 
 const TABS = [
-  { emoji: '🎮', title: '미니게임', desc: '플레이하며 나만의 스탯을 확인해보세요.' },
+  { emoji: '🎮', title: '미니게임', desc: '홈 탭 "성장하기"로 플레이해보세요' },
   { emoji: '📊', title: '내 스탯', desc: '현재 나의 6가지 능력을 확인할 수 있어요.' },
   { emoji: '🐾', title: 'Statling', desc: '내 펫을 꾸미고 성장시켜보세요.' },
   { emoji: '🏠', title: 'Room', desc: '돌보고, 꾸미고, 함께 시간을 보내세요.' },

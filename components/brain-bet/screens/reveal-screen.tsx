@@ -14,7 +14,7 @@ import { ToyButton } from '@/components/brain-bet/toy-button'
 import { StatlingShareCard } from '@/components/share/statling-share-card'
 import { STATLING_TYPES, STATS, type StatId } from '@/lib/brain-bet'
 import { getStatCompatibility } from '@/lib/pets/compatibility'
-import { buildCoreTraitSummary, buildSelectionReason } from '@/lib/pets/pet-analysis'
+import { buildCoreTraitSummary } from '@/lib/pets/pet-analysis'
 import type { PetProfile } from '@/lib/pets/pet-profile'
 import { buildShareImageFilename, downloadShareImage } from '@/lib/share/download-share-image'
 import { createShareImage } from '@/lib/share/create-share-image'
@@ -104,7 +104,6 @@ export function RevealScreen({
     }
   }
 
-  const selectionReason = buildSelectionReason(petProfile, topStat, secondaryStat)
   const coreTraitSummary = buildCoreTraitSummary(finals, topStat, secondaryStat)
   const compatibility = getStatCompatibility(petProfile)
   const insight = buildStatInsight(topStat, secondaryStat)
@@ -124,10 +123,6 @@ export function RevealScreen({
           coreTrait={coreTraitSummary}
         />
       </div>
-
-      <p className="mt-2 line-clamp-2 max-w-xs text-pretty text-center text-xs leading-relaxed text-muted-foreground">
-        {selectionReason}
-      </p>
 
       <CharacterTraits insight={insight} />
 
