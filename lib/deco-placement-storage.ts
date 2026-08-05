@@ -1,10 +1,13 @@
+import { DEFAULT_CHARACTER_ANCHORS } from '@/lib/character-anchor.config'
 import { getSupportedDecoAssetById } from '@/lib/deco-supported-assets'
 import {
+  clampDecoAnchor,
   clampDecoItemPosition,
   clampDecoLayer,
   clampDecoRotation,
   clampDecoScale,
   clampDecoWidth,
+  defaultAnchorForAsset,
   DECO_SCALE_DEFAULT,
 } from '@/lib/deco-placement-layout'
 import { createDefaultDecoPlacementState, type DecoPlacementItem, type DecoPlacementState } from '@/lib/deco-placement-state'
@@ -41,11 +44,35 @@ function migrateDecoItem(rawItem: unknown): DecoPlacementItem | null {
   const scale = clampDecoScale(typeof item.scale === 'number' ? item.scale : DECO_SCALE_DEFAULT)
   const rotation = clampDecoRotation(typeof item.rotation === 'number' ? item.rotation : 0)
   const layer = clampDecoLayer(item.layer)
-  const rawX = typeof item.x === 'number' ? item.x : 0.5
-  const rawY = typeof item.y === 'number' ? item.y : 0.5
+  // A save from before `flipped` existed has no such field — defaults to
+  // false, same migration rule as scale/rotation/layer above.
+  const flipped = typeof item.flipped === 'boolean' ? item.flipped : false
+
+  // Pre-anchor saves stored an absolute (x, y) instead of anchor+offset (see
+  // lib/deco-placement-state.ts's doc comment) — convert once, here, using
+  // the generic idle anchor set (migration has no live character/state
+  // context to resolve a curated one against, and this is a one-time,
+  // approximate carry-over of old data, not an ongoing source of truth).
+  const anchor = typeof item.anchor === 'string' ? clampDecoAnchor(item.anchor) : defaultAnchorForAsset(asset.id)
+  const anchorPoint = DEFAULT_CHARACTER_ANCHORS[anchor]
+  const hasOffset = typeof item.offsetX === 'number' && typeof item.offsetY === 'number'
+  const rawX = hasOffset ? anchorPoint.x + (item.offsetX as number) : typeof item.x === 'number' ? item.x : anchorPoint.x
+  const rawY = hasOffset ? anchorPoint.y + (item.offsetY as number) : typeof item.y === 'number' ? item.y : anchorPoint.y
   const { x, y } = clampDecoItemPosition(rawX, rawY, width, height, scale, rotation)
 
-  return { instanceId, itemId: asset.id, x, y, width, height, scale, rotation, layer }
+  return {
+    instanceId,
+    itemId: asset.id,
+    anchor,
+    offsetX: x - anchorPoint.x,
+    offsetY: y - anchorPoint.y,
+    width,
+    height,
+    scale,
+    rotation,
+    layer,
+    flipped,
+  }
 }
 
 /**

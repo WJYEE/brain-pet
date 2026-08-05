@@ -1,3 +1,4 @@
+import type { AnchorPoint, CharacterAnchorKey, CharacterAnchorSet } from '@/lib/character-anchor.config'
 import type { SupportedDecoAsset } from '@/lib/deco-supported-assets'
 import type { DecoPlacementItem } from '@/lib/deco-placement-state'
 
@@ -20,13 +21,16 @@ export const DECO_STATLING_Z_INDEX = 50
 export const DECO_BEHIND_Z_BASE = 20
 export const DECO_FRONT_Z_BASE = 60
 
-export const DECO_SCALE_MIN = 0.5
-export const DECO_SCALE_MAX = 1.8
+/**
+ * Widened from the original 0.5–1.8 so face decorations (안경/고글 등) can be
+ * dragged large enough to actually cover the Statling's face via the
+ * in-canvas corner handle — see deco-item-handle.tsx. clampDecoItemPosition
+ * already keeps an oversized sticker's center within DECO_ZONE and a slice
+ * of it always visible, so raising the ceiling here needed no other change.
+ */
+export const DECO_SCALE_MIN = 0.3
+export const DECO_SCALE_MAX = 4
 export const DECO_SCALE_DEFAULT = 1
-
-export const DECO_ROTATION_MIN = -180
-export const DECO_ROTATION_MAX = 180
-export const DECO_ROTATION_STEP = 5
 
 const DEFAULT_WIDTH = 0.16
 const MIN_WIDTH = 0.06
@@ -60,15 +64,44 @@ export function clampDecoScale(scale: number): number {
   return clamp(scale, DECO_SCALE_MIN, DECO_SCALE_MAX)
 }
 
-/** Clamps to [-180, 180] and snaps to DECO_ROTATION_STEP so every stored value (however it arrived — slider, migration, hand-edited storage) reads the same "5도 단위" the slider itself produces. */
+/**
+ * Wraps any angle into (-180, 180] — a modulo wrap, not a clamp, since
+ * rotation is now driven by dragging an on-canvas handle (deco-item-handle.tsx)
+ * through a full continuous turn: clamping would dead-stop the drag at ±180
+ * instead of letting it keep spinning past. Every stored value (drag,
+ * pinch, migration, hand-edited storage) is normalized through here so
+ * -180/180/540 all end up meaning the same orientation.
+ */
 export function clampDecoRotation(rotation: number): number {
-  if (Number.isNaN(rotation)) return 0
-  const snapped = Math.round(rotation / DECO_ROTATION_STEP) * DECO_ROTATION_STEP
-  return clamp(snapped, DECO_ROTATION_MIN, DECO_ROTATION_MAX)
+  if (!Number.isFinite(rotation)) return 0
+  return (((rotation + 180) % 360) + 360) % 360 - 180
 }
 
 export function clampDecoLayer(layer: unknown): 'behind' | 'front' {
   return layer === 'behind' ? 'behind' : 'front' // unknown/missing (old position-only saves) defaults to 'front' per the migration rule
+}
+
+export function clampDecoAnchor(anchor: unknown): CharacterAnchorKey {
+  return anchor === 'head' || anchor === 'face' || anchor === 'body' ? anchor : 'body'
+}
+
+/** Hats/ribbons/headbands etc. — checked before FACE_KEYWORDS so a compound name like '고글모자' (goggle-hat, worn on the head) doesn't match on '고글' first. */
+const HEAD_KEYWORDS = ['모자', '리본', '화관', '왕관', '머리띠']
+/** Glasses/masks/eyepatches — things worn specifically over the eyes/face. */
+const FACE_KEYWORDS = ['안경', '고글', '가면', '안대']
+
+/**
+ * A sensible starting anchor for a newly-placed sticker, guessed from its
+ * (Korean) asset name — see lib/deco-supported-assets.ts. Only decides the
+ * *default*; the player can reassign it afterward via deco-properties-panel.tsx,
+ * so an imperfect guess here is never a dead end. Anything that isn't
+ * obviously a head/face item (wings, a held wand, an umbrella, ...) defaults
+ * to 'body'.
+ */
+export function defaultAnchorForAsset(assetId: string): CharacterAnchorKey {
+  if (HEAD_KEYWORDS.some((keyword) => assetId.includes(keyword))) return 'head'
+  if (FACE_KEYWORDS.some((keyword) => assetId.includes(keyword))) return 'face'
+  return 'body'
 }
 
 function heightFor(asset: SupportedDecoAsset, width: number): number {
@@ -142,8 +175,18 @@ export function clampDecoItemPosition(
  * SPAWN_OFFSET_CYCLE). Each asset can only be placed once (mirrors
  * theme-screen.tsx#handleAssetClick's existing "one instance per asset"
  * rule) — the caller is responsible for checking that before calling this.
+ * `anchors` is the resolved anchor set for whatever character/state is
+ * currently showing (see lib/character-anchor.config.ts) — the sticker's
+ * default anchor (defaultAnchorForAsset) is resolved against it once, up
+ * front, then stored as an offset from that point.
  */
-export function spawnDefaultDecoItem(asset: SupportedDecoAsset, existingItems: DecoPlacementItem[]): DecoPlacementItem {
+export function spawnDefaultDecoItem(
+  asset: SupportedDecoAsset,
+  existingItems: DecoPlacementItem[],
+  anchors: CharacterAnchorSet,
+): DecoPlacementItem {
+  const anchor = defaultAnchorForAsset(asset.id)
+  const anchorPoint = anchors[anchor]
   const width = clampDecoWidth(DEFAULT_WIDTH)
   const height = heightFor(asset, width)
   const offset = SPAWN_OFFSET_CYCLE[existingItems.length % SPAWN_OFFSET_CYCLE.length]
@@ -154,33 +197,67 @@ export function spawnDefaultDecoItem(asset: SupportedDecoAsset, existingItems: D
   return {
     instanceId: generateDecoInstanceId(),
     itemId: asset.id,
-    x,
-    y,
+    anchor,
+    offsetX: x - anchorPoint.x,
+    offsetY: y - anchorPoint.y,
     width,
     height,
     scale: DECO_SCALE_DEFAULT,
     rotation: 0,
     layer: 'front',
+    flipped: false,
   }
 }
 
-/** Re-clamps a dragged (x, y) into the Deco zone, accounting for the item's current scale/rotation. Base width/height never change here — only a scale change resizes a sticker. */
-export function applyDecoMove(item: DecoPlacementItem, newX: number, newY: number): DecoPlacementItem {
+/**
+ * Re-clamps a dragged absolute (newX, newY) into the Deco zone, accounting
+ * for the item's current scale/rotation, then re-expresses the clamped
+ * position as an offset from `anchorPoint` (the resolved point for this
+ * item's own `anchor` key, at whatever character/state is currently
+ * showing — see lib/character-anchor.config.ts). Base width/height never
+ * change here — only a scale change resizes a sticker.
+ */
+export function applyDecoMove(item: DecoPlacementItem, anchorPoint: AnchorPoint, newX: number, newY: number): DecoPlacementItem {
   const { x, y } = clampDecoItemPosition(newX, newY, item.width, item.height, item.scale, item.rotation)
-  return { ...item, x, y }
+  return { ...item, offsetX: x - anchorPoint.x, offsetY: y - anchorPoint.y }
 }
 
 /**
  * Applies a scale and/or rotation change, then re-clamps position against
  * the item's new effective size — a sticker scaled up or rotated further
  * from its current spot could otherwise poke past the canvas edge even
- * though its old (x, y) was fine at the old size.
+ * though its old absolute position was fine at the old size. `anchorPoint`
+ * is the resolved point for this item's own `anchor` key (see applyDecoMove).
  */
-export function applyDecoTransform(item: DecoPlacementItem, patch: { scale?: number; rotation?: number }): DecoPlacementItem {
+export function applyDecoTransform(
+  item: DecoPlacementItem,
+  anchorPoint: AnchorPoint,
+  patch: { scale?: number; rotation?: number },
+): DecoPlacementItem {
   const scale = patch.scale !== undefined ? clampDecoScale(patch.scale) : item.scale
   const rotation = patch.rotation !== undefined ? clampDecoRotation(patch.rotation) : item.rotation
-  const { x, y } = clampDecoItemPosition(item.x, item.y, item.width, item.height, scale, rotation)
-  return { ...item, scale, rotation, x, y }
+  const currentX = anchorPoint.x + item.offsetX
+  const currentY = anchorPoint.y + item.offsetY
+  const { x, y } = clampDecoItemPosition(currentX, currentY, item.width, item.height, scale, rotation)
+  return { ...item, scale, rotation, offsetX: x - anchorPoint.x, offsetY: y - anchorPoint.y }
+}
+
+/**
+ * Reassigns which anchor a sticker tracks (see deco-properties-panel.tsx),
+ * without visually moving it: the sticker's current absolute position is
+ * preserved, only re-expressed as an offset from the new anchor point going
+ * forward — so switching "머리 -> 몸통" reads as "now follow the body
+ * instead," not as a jump.
+ */
+export function applyDecoReanchor(
+  item: DecoPlacementItem,
+  oldAnchorPoint: AnchorPoint,
+  newAnchor: CharacterAnchorKey,
+  newAnchorPoint: AnchorPoint,
+): DecoPlacementItem {
+  const absX = oldAnchorPoint.x + item.offsetX
+  const absY = oldAnchorPoint.y + item.offsetY
+  return { ...item, anchor: newAnchor, offsetX: absX - newAnchorPoint.x, offsetY: absY - newAnchorPoint.y }
 }
 
 let decoInstanceCounter = 0

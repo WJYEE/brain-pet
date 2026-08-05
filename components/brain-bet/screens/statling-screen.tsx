@@ -2,16 +2,19 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Toast } from '@base-ui/react/toast'
-import { BookOpen, ChevronLeft, Palette, Save, Undo2 } from 'lucide-react'
+import { BookOpen, ChevronLeft, Palette, Save, Sparkles, Undo2 } from 'lucide-react'
 import { AssetImage } from '@/components/brain-bet/asset-image'
 import { CharacterImage } from '@/components/brain-bet/character-image'
 import { ConfirmDialog } from '@/components/brain-bet/confirm-dialog'
 import { DecoCanvas } from '@/components/brain-bet/deco-canvas'
 import { DecoPropertiesPanel } from '@/components/brain-bet/deco-properties-panel'
+import { CHARACTER_BOX_SIZE } from '@/components/brain-bet/pet-mood-view'
 import { DexScreen } from '@/components/brain-bet/screens/dex-screen'
 import { ThemeScreen } from '@/components/brain-bet/screens/theme-screen'
 import type { StatId } from '@/lib/brain-bet'
-import { applyDecoTransform, spawnDefaultDecoItem } from '@/lib/deco-placement-layout'
+import type { CharacterAnchorKey } from '@/lib/character-anchor.config'
+import { resolveCharacterAnchors } from '@/lib/character-anchor.config'
+import { applyDecoReanchor, spawnDefaultDecoItem } from '@/lib/deco-placement-layout'
 import { deepCloneDecoPlacementState, decoPlacementStatesEqual, type DecoPlacementItem, type DecoPlacementState } from '@/lib/deco-placement-state'
 import { loadSavedDecoPlacementState, saveDecoPlacementState } from '@/lib/deco-placement-storage'
 import { getSupportedDecoAssetById, SUPPORTED_DECO_ASSETS } from '@/lib/deco-supported-assets'
@@ -26,6 +29,13 @@ interface StatlingScreenProps {
 }
 
 type StatlingView = 'main' | 'room' | 'dex'
+
+/**
+ * Beta-only messaging, mirrors theme-screen.tsx's SHOW_BETA_FURNITURE_NOTICE
+ * exactly (own flag so either notice can be turned off independently once a
+ * real shop/currency/unlock system ships for that surface).
+ */
+const SHOW_BETA_DECO_NOTICE = process.env.NEXT_PUBLIC_ENABLE_BETA_DECO_NOTICE !== 'false'
 
 /**
  * The Statling tab — a hub, not a single screen: `main` is the Deco
@@ -48,6 +58,15 @@ export function StatlingScreen({ statlingName, topStat, petProfile, onDirtyChang
 
   const selectedItem = draftDeco.items.find((item) => item.instanceId === selectedInstanceId) ?? null
   const selectedAsset = selectedItem ? getSupportedDecoAssetById(selectedItem.itemId) : null
+
+  // The editor only ever shows the Statling's static 'idle' art (petProfile.imageSrc
+  // is that same idle.png — see lib/pets/pet-profile.ts), so anchors are always
+  // resolved against 'idle' here. The live Home screen resolves against whatever
+  // mood/action art is actually showing at the time (see pet-mood-view.tsx) —
+  // that's exactly the point of anchor+offset over an absolute (x, y): a sticker
+  // placed here against idle's head position keeps tracking the head even once
+  // Home switches to a pose where the head is drawn somewhere else.
+  const anchors = useMemo(() => resolveCharacterAnchors(petProfile?.id ?? null, 'idle'), [petProfile?.id])
 
   const decoDirty = useMemo(() => !decoPlacementStatesEqual(draftDeco, savedDeco), [draftDeco, savedDeco])
   const decoDirtyRef = useRef(decoDirty)
@@ -84,7 +103,7 @@ export function StatlingScreen({ statlingName, topStat, petProfile, onDirtyChang
     }
     const asset = SUPPORTED_DECO_ASSETS.find((a) => a.id === assetId)
     if (!asset) return
-    const newItem = spawnDefaultDecoItem(asset, draftDeco.items)
+    const newItem = spawnDefaultDecoItem(asset, draftDeco.items, anchors)
     setDraftDeco((prev) => ({ ...prev, items: [...prev.items, newItem] }))
     setSelectedInstanceId(newItem.instanceId)
   }
@@ -96,25 +115,22 @@ export function StatlingScreen({ statlingName, topStat, petProfile, onDirtyChang
     setConfirmingDeleteDeco(false)
   }
 
-  function handleScaleChange(scale: number) {
+  function handleFlip() {
     if (!selectedInstanceId) return
     const current = draftDeco.items.find((item) => item.instanceId === selectedInstanceId)
     if (!current) return
-    const next = applyDecoTransform(current, { scale })
-    updateItem(selectedInstanceId, next)
-  }
-
-  function handleRotationChange(rotation: number) {
-    if (!selectedInstanceId) return
-    const current = draftDeco.items.find((item) => item.instanceId === selectedInstanceId)
-    if (!current) return
-    const next = applyDecoTransform(current, { rotation })
-    updateItem(selectedInstanceId, next)
+    updateItem(selectedInstanceId, { flipped: !current.flipped })
   }
 
   function handleSetLayer(layer: 'behind' | 'front') {
     if (!selectedInstanceId) return
     updateItem(selectedInstanceId, { layer })
+  }
+
+  function handleSetAnchor(anchor: CharacterAnchorKey) {
+    if (!selectedInstanceId || !selectedItem) return
+    const reanchored = applyDecoReanchor(selectedItem, anchors[selectedItem.anchor], anchor, anchors[anchor])
+    updateItem(selectedInstanceId, { anchor: reanchored.anchor, offsetX: reanchored.offsetX, offsetY: reanchored.offsetY })
   }
 
   function handleSaveDeco() {
@@ -160,9 +176,9 @@ export function StatlingScreen({ statlingName, topStat, petProfile, onDirtyChang
   }
 
   const statlingSlot = petProfile ? (
-    <AssetImage src={petProfile.imageSrc} alt={petProfile.name} size={200} />
+    <AssetImage src={petProfile.imageSrc} alt={petProfile.name} size={CHARACTER_BOX_SIZE} />
   ) : (
-    <CharacterImage type={topStat} size={200} />
+    <CharacterImage type={topStat} size={CHARACTER_BOX_SIZE} />
   )
 
   return (
@@ -171,6 +187,18 @@ export function StatlingScreen({ statlingName, topStat, petProfile, onDirtyChang
         <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Statling</p>
         <h1 className="font-display text-xl font-extrabold text-foreground">{statlingName || '내 Statling'}</h1>
       </header>
+
+      {/* Sets expectations up front, mirrors theme-screen.tsx's identical beta notice —
+          every deco sticker below is unlocked and free right now, no shop/currency/unlock
+          system exists yet, so this is simply true, not a promotional claim. */}
+      {SHOW_BETA_DECO_NOTICE && (
+        <div className="mt-4 flex items-start gap-2 rounded-2xl bg-secondary px-4 py-3 text-secondary-foreground toy-border">
+          <Sparkles size={18} className="mt-0.5 shrink-0" strokeWidth={2.4} />
+          <p className="text-xs font-bold leading-relaxed">
+            지금은 기본 데코를 전부 무료로 제공하고 있어요. 마음껏 자유롭게 Statling을 꾸며보세요!
+          </p>
+        </div>
+      )}
 
       <div className="mt-4 grid grid-cols-2 gap-2">
         <button
@@ -192,7 +220,8 @@ export function StatlingScreen({ statlingName, topStat, petProfile, onDirtyChang
       </div>
 
       <p className="mt-4 text-xs font-bold text-muted-foreground">
-        스티커를 눌러 붙이고, 드래그로 위치를 옮겨보세요. Statling 주변 정해진 범위 안에서만 움직일 수 있어요.
+        스티커를 눌러 붙이고, 드래그로 위치를 옮겨보세요. 선택하면 나오는 모서리를 당겨 크기를, 위쪽 손잡이를 돌려 각도를 바꿀 수 있어요.
+        Statling 주변 정해진 범위 안에서만 움직일 수 있어요.
       </p>
 
       <DecoCanvas
@@ -204,15 +233,17 @@ export function StatlingScreen({ statlingName, topStat, petProfile, onDirtyChang
         onChangeItem={updateItem}
         className="mt-3 toy-border toy-shadow-lg"
         statlingSlot={statlingSlot}
+        characterSize={CHARACTER_BOX_SIZE}
+        anchors={anchors}
       />
 
       {selectedItem && selectedAsset && (
         <DecoPropertiesPanel
           item={selectedItem}
           asset={selectedAsset}
-          onScaleChange={handleScaleChange}
-          onRotationChange={handleRotationChange}
+          onFlip={handleFlip}
           onSetLayer={handleSetLayer}
+          onSetAnchor={handleSetAnchor}
           onDelete={() => setConfirmingDeleteDeco(true)}
         />
       )}

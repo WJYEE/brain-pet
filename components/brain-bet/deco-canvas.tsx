@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, type ReactNode } from 'react'
+import type { CharacterAnchorSet } from '@/lib/character-anchor.config'
 import { DecoItemHandle } from '@/components/brain-bet/deco-item-handle'
 import { DecoOverlay } from '@/components/brain-bet/deco-overlay'
 import { getSupportedDecoAssetById } from '@/lib/deco-supported-assets'
@@ -12,8 +13,10 @@ interface DecoCanvasProps {
   items: DecoPlacementItem[]
   /** The Statling itself, centered — same pattern as room-canvas.tsx's statlingSlot, left entirely to the caller so existing character rendering is untouched. */
   statlingSlot: ReactNode
-  /** Must match whatever size `statlingSlot` actually renders at (e.g. AssetImage's `size` prop) — see DecoOverlay. Defaults to 200, matching statling-screen.tsx's editor preview. */
-  characterSize?: number
+  /** Must match whatever size `statlingSlot` actually renders at (e.g. AssetImage's `size` prop) — see DecoOverlay. Number = px, or a CSS size string (e.g. `clamp()`) for a responsive box without a JS resize listener. Defaults to 200, matching statling-screen.tsx's editor preview. */
+  characterSize?: number | string
+  /** Resolved head/face/body anchor points for whatever character/state `statlingSlot` is currently showing — see lib/character-anchor.config.ts. Passed straight through to DecoOverlay/DecoItemHandle. */
+  anchors: CharacterAnchorSet
   editable?: boolean
   selectedInstanceId?: string | null
   onSelectItem?: (instanceId: string) => void
@@ -36,6 +39,7 @@ export function DecoCanvas({
   items,
   statlingSlot,
   characterSize = 200,
+  anchors,
   editable = false,
   selectedInstanceId = null,
   onSelectItem,
@@ -48,7 +52,7 @@ export function DecoCanvas({
   if (!editable) {
     return (
       <div className={cn('flex aspect-square w-full items-center justify-center overflow-hidden rounded-3xl bg-secondary', className)}>
-        <DecoOverlay items={items} characterSize={characterSize} characterSlot={statlingSlot} />
+        <DecoOverlay items={items} characterSize={characterSize} anchors={anchors} characterSlot={statlingSlot} />
       </div>
     )
   }
@@ -76,6 +80,7 @@ export function DecoCanvas({
               key={item.instanceId}
               item={item}
               asset={asset}
+              anchorPoint={anchors[item.anchor]}
               stageRef={stageRef}
               selected={selectedInstanceId === item.instanceId}
               zIndex={DECO_BEHIND_Z_BASE + index}
@@ -98,6 +103,7 @@ export function DecoCanvas({
               key={item.instanceId}
               item={item}
               asset={asset}
+              anchorPoint={anchors[item.anchor]}
               stageRef={stageRef}
               selected={selectedInstanceId === item.instanceId}
               zIndex={DECO_FRONT_Z_BASE + index}

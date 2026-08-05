@@ -4,6 +4,7 @@ import { CharacterImage } from '@/components/brain-bet/character-image'
 import { DecoOverlay } from '@/components/brain-bet/deco-overlay'
 import { PetSpeechBubble } from '@/components/brain-bet/pet-speech-bubble'
 import type { StatId } from '@/lib/brain-bet'
+import { resolveCharacterAnchors } from '@/lib/character-anchor.config'
 import type { PetProfile } from '@/lib/pets/pet-profile'
 import {
   buildCharacterStateFolder,
@@ -23,8 +24,19 @@ import { cn } from '@/lib/utils'
  * oversized. Pure CSS, no resize-listener/hydration-mismatch risk: at the
  * `sm` breakpoint (640px) and up, 46vw already exceeds 270px, so the clamp
  * ceiling keeps desktop pixel-identical to before.
+ *
+ * Exported so theme-screen.tsx's 테마·방 꾸미기 editor (a different screen,
+ * same RoomCanvas, same normalized item coordinates) can render the Statling
+ * at this exact size too — the editor used to hardcode a plain 140px here,
+ * which made every placed item look correctly scaled/positioned next to the
+ * Statling while editing, then visibly off (the live Room's Statling is up
+ * to ~93% bigger on a PC-width viewport) the moment the same saved layout
+ * showed up on the actual Home screen. Items are positioned/sized as a
+ * percentage of the shared square canvas, not relative to the Statling, so
+ * the only way for "what you placed" to match "what you see at home" is for
+ * both screens to render the Statling at the same size.
  */
-const CHARACTER_BOX_SIZE = 'clamp(160px, 44vw, 270px)'
+export const CHARACTER_BOX_SIZE = 'clamp(160px, 44vw, 270px)'
 
 /** How long a manual click-preview (see the tester click handler below) overrides the live interaction-driven state before reverting. */
 const TESTER_PREVIEW_HOLD_MS = 1600
@@ -180,6 +192,15 @@ export function PetMoodView({
     ? CHARACTER_STATE_SEQUENCE[previewIndex]
     : (CHARACTER_STATE_SEQUENCE.find((d) => d.key === displayedLiveKey) ?? CHARACTER_STATE_SEQUENCE[0])
 
+  // Resolved against whichever state is actually on screen right now (tester
+  // preview included) — see lib/character-anchor.config.ts. This is what lets
+  // a Deco sticker keep tracking the head/face/body as the Statling's pose
+  // changes, instead of drifting the moment mood/animation swaps the art.
+  const anchors = useMemo(
+    () => resolveCharacterAnchors(activeFolder?.folderId ?? null, stateDef.key),
+    [activeFolder, stateDef.key],
+  )
+
   return (
     <div
       className="pet-zone-transition relative flex flex-col items-center"
@@ -200,6 +221,7 @@ export function PetMoodView({
             <DecoOverlay
               items={decoItems}
               characterSize={CHARACTER_BOX_SIZE}
+              anchors={anchors}
               characterSlot={
                 <AssetImage
                   key={`${stateDef.key}-${clickTick}`}
@@ -215,6 +237,7 @@ export function PetMoodView({
           <DecoOverlay
             items={decoItems}
             characterSize={CHARACTER_BOX_SIZE}
+            anchors={anchors}
             characterSlot={
               <AssetImage
                 src={realFolder.assets[stateDef.key]}
@@ -228,6 +251,7 @@ export function PetMoodView({
           <DecoOverlay
             items={decoItems}
             characterSize={CHARACTER_BOX_SIZE}
+            anchors={anchors}
             characterSlot={<CharacterImage type={topStat} size={CHARACTER_BOX_SIZE} className={ANIMATION_CLASS[animation]} />}
           />
         )}

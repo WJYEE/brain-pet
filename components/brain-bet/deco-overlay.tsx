@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { CharacterAnchorSet } from '@/lib/character-anchor.config'
 import { getSupportedDecoAssetById } from '@/lib/deco-supported-assets'
 import { DECO_BEHIND_Z_BASE, DECO_FRONT_Z_BASE, DECO_STATLING_Z_INDEX } from '@/lib/deco-placement-layout'
 import type { DecoPlacementItem } from '@/lib/deco-placement-state'
@@ -8,6 +9,8 @@ interface DecoOverlayProps {
   items: DecoPlacementItem[]
   /** The character's own rendered box size — e.g. AssetImage's `size` prop (number = px, or a CSS size string like `clamp()`). The overlay box is exactly this size (not a bigger canvas), so the normalized DECO_ZONE coordinates (lib/deco-placement-layout.ts) land on the same relative spot around the character everywhere this is used, at any box size. */
   characterSize: number | string
+  /** Resolved head/face/body anchor points for whatever character + expression/action state `characterSlot` is currently showing — see lib/character-anchor.config.ts. Each item's rendered position is this set's `[item.anchor]` point plus that item's own offset, so a sticker tracks the right spot even as the character's pose (and therefore where its head/face/body actually is) changes. */
+  anchors: CharacterAnchorSet
   characterSlot: ReactNode
   className?: string
 }
@@ -20,13 +23,24 @@ interface DecoOverlayProps {
  * and mirrors its exact box-size/z-index scheme for the editable one) — so
  * a Statling never looks different in Room than it did in the editor.
  */
-export function DecoOverlay({ items, characterSize, characterSlot, className }: DecoOverlayProps) {
+export function DecoOverlay({ items, characterSize, anchors, characterSlot, className }: DecoOverlayProps) {
   return (
     <div className={cn('relative', className)} style={{ width: characterSize, height: characterSize }}>
       {items.map((item, index) => {
         const asset = getSupportedDecoAssetById(item.itemId)
         if (!asset || item.layer !== 'behind') return null
-        return <StaticDecoItem key={item.instanceId} item={item} src={asset.src} name={asset.name} naturalWidth={asset.naturalWidth} naturalHeight={asset.naturalHeight} zIndex={DECO_BEHIND_Z_BASE + index} />
+        return (
+          <StaticDecoItem
+            key={item.instanceId}
+            item={item}
+            anchorPoint={anchors[item.anchor]}
+            src={asset.src}
+            name={asset.name}
+            naturalWidth={asset.naturalWidth}
+            naturalHeight={asset.naturalHeight}
+            zIndex={DECO_BEHIND_Z_BASE + index}
+          />
+        )
       })}
 
       <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: DECO_STATLING_Z_INDEX }}>
@@ -36,7 +50,18 @@ export function DecoOverlay({ items, characterSize, characterSlot, className }: 
       {items.map((item, index) => {
         const asset = getSupportedDecoAssetById(item.itemId)
         if (!asset || item.layer !== 'front') return null
-        return <StaticDecoItem key={item.instanceId} item={item} src={asset.src} name={asset.name} naturalWidth={asset.naturalWidth} naturalHeight={asset.naturalHeight} zIndex={DECO_FRONT_Z_BASE + index} />
+        return (
+          <StaticDecoItem
+            key={item.instanceId}
+            item={item}
+            anchorPoint={anchors[item.anchor]}
+            src={asset.src}
+            name={asset.name}
+            naturalWidth={asset.naturalWidth}
+            naturalHeight={asset.naturalHeight}
+            zIndex={DECO_FRONT_Z_BASE + index}
+          />
+        )
       })}
     </div>
   )
@@ -44,6 +69,8 @@ export function DecoOverlay({ items, characterSize, characterSlot, className }: 
 
 interface StaticDecoItemProps {
   item: DecoPlacementItem
+  /** This item's own `anchor` key, already resolved to a point — see DecoOverlay's doc comment. */
+  anchorPoint: { x: number; y: number }
   src: string
   name: string
   naturalWidth: number
@@ -51,16 +78,20 @@ interface StaticDecoItemProps {
   zIndex: number
 }
 
-export function StaticDecoItem({ item, src, name, naturalWidth, naturalHeight, zIndex }: StaticDecoItemProps) {
+export function StaticDecoItem({ item, anchorPoint, src, name, naturalWidth, naturalHeight, zIndex }: StaticDecoItemProps) {
   return (
     <div
       className="absolute"
       style={{
-        left: `${item.x * 100}%`,
-        top: `${item.y * 100}%`,
-        width: `${item.width * 100}%`,
+        left: `${(anchorPoint.x + item.offsetX) * 100}%`,
+        top: `${(anchorPoint.y + item.offsetY) * 100}%`,
+        // Matches deco-item-handle.tsx's effective-size box exactly (width
+        // already bakes in scale, rather than a separate CSS scale()
+        // transform) — same formula, same pixel result, so a sticker never
+        // looks different in Room than it did in the editor.
+        width: `${item.width * item.scale * 100}%`,
         zIndex,
-        transform: `translate(-50%, -50%) rotate(${item.rotation}deg) scale(${item.scale})`,
+        transform: `translate(-50%, -50%) rotate(${item.rotation}deg) scaleX(${item.flipped ? -1 : 1})`,
       }}
     >
       <img
