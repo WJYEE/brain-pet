@@ -23,6 +23,7 @@ import { RevealScreen } from '@/components/brain-bet/screens/reveal-screen'
 import { SaveScreen } from '@/components/brain-bet/screens/save-screen'
 import { NamingScreen } from '@/components/brain-bet/screens/naming-screen'
 import { RoomScreen } from '@/components/brain-bet/screens/room-screen'
+import { MissionScreen } from '@/components/brain-bet/screens/mission-screen'
 import { GrowScreen } from '@/components/brain-bet/screens/grow-screen'
 import { GrowGameScreen } from '@/components/brain-bet/screens/grow-game-screen'
 import { StatlingScreen } from '@/components/brain-bet/screens/statling-screen'
@@ -153,6 +154,7 @@ type Phase =
   | 'statling'
   | 'grow'
   | 'grow-game'
+  | 'mission'
 
 /** Phases that show the post-hatch bottom navigation. */
 const NAV_PHASES: Phase[] = ['room', 'mystats', 'ranking', 'statling', 'mypage']
@@ -1197,6 +1199,7 @@ export function GameFlow() {
             index={index}
             gameScore={lastResult.gameScore}
             raw={lastResult.raw}
+            finals={finals}
             personalBestScore={currentBestScore}
             isNewRecord={lastResult.isPersonalBest}
             onNext={goNextFirst}
@@ -1262,9 +1265,12 @@ export function GameFlow() {
             topStat={topStat}
             petProfile={displayedPetProfile}
             onGrow={() => setPhase('grow')}
+            onOpenMission={() => setPhase('mission')}
             testerFolder={activeTesterFolder}
           />
         )}
+
+        {phase === 'mission' && <MissionScreen onBack={returnToRoom} />}
 
         {phase === 'mystats' &&
           (() => {

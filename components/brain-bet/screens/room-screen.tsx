@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { ArrowRight, Crosshair, Sparkles } from 'lucide-react'
 import { Toast } from '@base-ui/react/toast'
 import { CareActionButton } from '@/components/brain-bet/care-action-button'
 import { PetCareHud } from '@/components/brain-bet/pet-care-hud'
@@ -39,6 +39,7 @@ interface RoomScreenProps {
    */
   petProfile: PetProfile | null
   onGrow: () => void
+  onOpenMission: () => void
   /** Dev/QA only — see qa-skip-menu.tsx and pet-mood-view.tsx. */
   testerFolder?: CharacterStateFolder | null
 }
@@ -55,7 +56,7 @@ interface RoomScreenProps {
  * feeds back into the hooks that produced it" dependency; `mode` itself
  * (computed last, from everyone's output) is a pure display-only value.
  */
-export function RoomScreen({ statlingName, topStat, petProfile, onGrow, testerFolder }: RoomScreenProps) {
+export function RoomScreen({ statlingName, topStat, petProfile, onGrow, onOpenMission, testerFolder }: RoomScreenProps) {
   const care = usePetCare()
   const toastManager = Toast.useToastManager()
   const { play } = useSound()
@@ -149,7 +150,17 @@ export function RoomScreen({ statlingName, topStat, petProfile, onGrow, testerFo
           <span className="text-xs font-bold text-muted-foreground sm:text-sm">우리 방 ·</span>
           {statlingName}
         </h1>
-        <StatBadge stat={STATS[topStat]} size="sm" />
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={onOpenMission}
+            className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-accent-foreground toy-border toy-shadow-sm transition-transform active:translate-y-0.5"
+            aria-label="미션"
+          >
+            <Crosshair size={18} strokeWidth={2.4} />
+          </button>
+          <StatBadge stat={STATS[topStat]} size="sm" />
+        </div>
       </header>
 
       <div className="mt-1 flex items-center gap-2">
