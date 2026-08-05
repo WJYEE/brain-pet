@@ -1,6 +1,19 @@
 import { ALL_SOUND_NAMES, SFX_CONFIG } from '@/lib/audio/audio-config'
 import { SoundPlayer } from '@/lib/audio/audio-player'
-import type { BgmName, SoundName } from '@/lib/audio/types'
+import { ALL_BGM_TRACK_IDS, BGM_TRACK_MAP, DEFAULT_BGM_VOLUME, MAIN_THEME_TRACK_ID } from '@/lib/audio/bgm-config'
+import type { BgmTrackId } from '@/lib/audio/bgm-config'
+import { BgmPlayer } from '@/lib/audio/bgm-player'
+import { loadBgmSettings, saveBgmSettings } from '@/lib/audio/bgm-settings-storage'
+import type { BgmMode, BgmSettings, SoundName } from '@/lib/audio/types'
+
+function shuffle<T>(items: T[]): T[] {
+  const result = [...items]
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
 
 /**
  * App-wide SFX manager — a plain singleton (not a React hook/context) so it
@@ -31,6 +44,28 @@ class AudioManager {
   private introLocked = false
   private unlocked = false
   private preloaded = false
+
+  private bgmPlayer = new BgmPlayer()
+  private bgmInitialized = false
+  private bgmVolume = DEFAULT_BGM_VOLUME
+  private currentBgmTrackId: BgmTrackId | null = null
+  /** Materialized play order for sequential/shuffle — rebuilt whenever mode or the selected-track subset changes. */
+  private bgmRotation: BgmTrackId[] = []
+  private bgmRotationIndex = 0
+  /**
+   * Hardcoded fallback, not `loadBgmSettings()` — reading localStorage here
+   * would run at module-import time (this class is instantiated once at
+   * import), before AudioProvider ever mounts. Real persisted settings are
+   * loaded in initBgm(), called from AudioProvider the same way
+   * preloadAll()/setMuted() are.
+   */
+  private bgmSettings: BgmSettings = {
+    enabled: true,
+    mode: 'repeat-one',
+    repeatTrackId: MAIN_THEME_TRACK_ID,
+    selectedTrackIds: [...ALL_BGM_TRACK_IDS],
+    lastTrackId: null,
+  }
 
   private getPlayer(name: SoundName): SoundPlayer {
     let player = this.players.get(name)
@@ -110,19 +145,161 @@ class AudioManager {
   }
 
   /**
-   * Not implemented yet — no BGM assets exist in
-   * public/assets/statling/audio/bgm/ today. This method (and BgmName)
-   * exist purely so hooks/use-bgm.ts has a real singleton to call into;
-   * wiring an actual track in later is a change to this method's body only,
-   * never to call sites. The muted/introLocked guard is already here so a
-   * future implementation automatically inherits "silent in Intro, silent
-   * until the player opts in" without any call site needing to re-check it.
+   * BGM is deliberately NOT gated by `muted`/`introLocked` — those encode an
+   * SFX-only product decision (SFX defaults off until opt-in, forced silent
+   * for the whole Intro). BGM has the opposite default (autoplay from the
+   * first visit, never stops for Intro) and its own `bgmSettings.enabled`
+   * flag, so the two systems can never fight over one boolean.
+   *
+   * Called once from AudioProvider on mount, same spot as preloadAll(). Not
+   * called from any screen/minigame — see game-flow.tsx comment banning
+   * per-screen BGM calls; this is the only start point plus the mode/track
+   * setters below (driven by MyPageScreen) and the internal ended-driven
+   * advanceBgm().
    */
-  playBgm(_name: BgmName): void {
-    if (this.muted || this.introLocked) return
+  initBgm(): void {
+    if (this.bgmInitialized || typeof window === 'undefined') return
+    this.bgmInitialized = true
+    this.bgmSettings = loadBgmSettings()
+    this.bgmPlayer.onEnded(() => this.advanceBgm())
+    this.bgmPlayer.setVolume(this.bgmVolume)
+    this.rebuildBgmRotation()
+
+    const startId =
+      this.bgmSettings.mode === 'repeat-one' ? this.bgmSettings.repeatTrackId : this.resolveResumeTrackId()
+    this.loadBgmTrack(startId)
   }
-  stopBgm(): void {}
-  setBgmVolume(_volume: number): void {}
+
+  /** Mirrors SoundPlayer/AudioManager's SFX unlock() — the same first-gesture listener in AudioProvider calls both. */
+  unlockBgm(): void {
+    if (!this.bgmInitialized || !this.bgmSettings.enabled) return
+    this.bgmPlayer.play()
+  }
+
+  isBgmEnabled(): boolean {
+    return this.bgmSettings.enabled
+  }
+
+  setBgmEnabled(enabled: boolean): void {
+    this.bgmSettings.enabled = enabled
+    this.persistBgmSettings()
+    if (!this.bgmInitialized) {
+      if (enabled) this.initBgm()
+      return
+    }
+    if (enabled) {
+      this.bgmPlayer.play()
+    } else {
+      this.bgmPlayer.pause()
+    }
+  }
+
+  getBgmMode(): BgmMode {
+    return this.bgmSettings.mode
+  }
+
+  setBgmMode(mode: BgmMode): void {
+    if (this.bgmSettings.mode === mode) return
+    this.bgmSettings.mode = mode
+    this.persistBgmSettings()
+    this.rebuildBgmRotation()
+    this.syncBgmTrackToSettings()
+  }
+
+  getBgmRepeatTrackId(): BgmTrackId {
+    return this.bgmSettings.repeatTrackId
+  }
+
+  setBgmRepeatTrack(id: BgmTrackId): void {
+    if (!BGM_TRACK_MAP.has(id)) return
+    this.bgmSettings.repeatTrackId = id
+    this.persistBgmSettings()
+    if (this.bgmSettings.mode === 'repeat-one') this.loadBgmTrack(id)
+  }
+
+  getBgmSelectedTrackIds(): BgmTrackId[] {
+    return [...this.bgmSettings.selectedTrackIds]
+  }
+
+  /** The "선택곡" subset sequential/shuffle rotate through — falls back to all 31 tracks if the caller clears the selection entirely. */
+  setBgmSelectedTrackIds(ids: BgmTrackId[]): void {
+    const filtered = ids.filter((id) => BGM_TRACK_MAP.has(id))
+    this.bgmSettings.selectedTrackIds = filtered.length > 0 ? filtered : [...ALL_BGM_TRACK_IDS]
+    this.persistBgmSettings()
+    if (this.bgmSettings.mode !== 'repeat-one') {
+      this.rebuildBgmRotation()
+      this.syncBgmTrackToSettings()
+    }
+  }
+
+  getCurrentBgmTrackId(): BgmTrackId | null {
+    return this.currentBgmTrackId
+  }
+
+  /** Manual "next" for the settings UI. No-op in repeat-one — there's only the one chosen track. */
+  skipBgm(): void {
+    if (!this.bgmInitialized || this.bgmSettings.mode === 'repeat-one') return
+    this.advanceBgm()
+  }
+
+  setBgmVolume(volume: number): void {
+    this.bgmVolume = volume
+    this.bgmPlayer.setVolume(volume)
+  }
+
+  private persistBgmSettings(): void {
+    saveBgmSettings(this.bgmSettings)
+  }
+
+  private rebuildBgmRotation(): void {
+    const ids = this.bgmSettings.selectedTrackIds.length > 0 ? this.bgmSettings.selectedTrackIds : ALL_BGM_TRACK_IDS
+    this.bgmRotation = this.bgmSettings.mode === 'shuffle' ? shuffle(ids) : [...ids]
+    const idx = this.currentBgmTrackId ? this.bgmRotation.indexOf(this.currentBgmTrackId) : -1
+    this.bgmRotationIndex = idx >= 0 ? idx : 0
+  }
+
+  private resolveResumeTrackId(): BgmTrackId {
+    const saved = this.bgmSettings.lastTrackId
+    const idx = saved ? this.bgmRotation.indexOf(saved) : -1
+    this.bgmRotationIndex = idx >= 0 ? idx : 0
+    return this.bgmRotation[this.bgmRotationIndex] ?? MAIN_THEME_TRACK_ID
+  }
+
+  /** Only switches tracks if the mode change actually implies a different one — avoids an audible restart when e.g. the current track is already in the newly-selected subset. */
+  private syncBgmTrackToSettings(): void {
+    const targetId =
+      this.bgmSettings.mode === 'repeat-one' ? this.bgmSettings.repeatTrackId : this.bgmRotation[this.bgmRotationIndex]
+    if (!targetId) return
+    this.bgmPlayer.setLoop(this.bgmSettings.mode === 'repeat-one')
+    if (targetId === this.currentBgmTrackId) return
+    this.loadBgmTrack(targetId)
+  }
+
+  private loadBgmTrack(id: BgmTrackId): void {
+    const track = BGM_TRACK_MAP.get(id)
+    if (!track) return
+    this.currentBgmTrackId = id
+    this.bgmSettings.lastTrackId = id
+    this.persistBgmSettings()
+    this.bgmPlayer.setLoop(this.bgmSettings.mode === 'repeat-one')
+    this.bgmPlayer.load(track.src)
+    if (this.bgmSettings.enabled) this.bgmPlayer.play()
+  }
+
+  /**
+   * `<audio>`'s native `loop` already handles repeat-one, so this only ever
+   * fires for sequential/shuffle — advancing via the real `ended` event
+   * (never a timer/estimated duration, per spec) so it can't drift or fire
+   * early on a track with unusual trailing silence.
+   */
+  private advanceBgm(): void {
+    if (this.bgmSettings.mode === 'repeat-one') return
+    if (this.bgmRotation.length === 0) this.rebuildBgmRotation()
+    if (this.bgmRotation.length === 0) return
+    this.bgmRotationIndex = (this.bgmRotationIndex + 1) % this.bgmRotation.length
+    const nextId = this.bgmRotation[this.bgmRotationIndex]
+    if (nextId) this.loadBgmTrack(nextId)
+  }
 }
 
 export const audioManager = new AudioManager()

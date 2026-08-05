@@ -1,19 +1,34 @@
 import { audioManager } from '@/lib/audio/audio-manager'
-import type { BgmName } from '@/lib/audio/types'
+import { BGM_TRACKS } from '@/lib/audio/bgm-config'
+import type { BgmTrackId } from '@/lib/audio/bgm-config'
+import type { BgmMode } from '@/lib/audio/types'
 
 /**
- * Reserved for background music — not implemented yet (spec §8: no BGM
- * assets exist today, public/assets/statling/audio/bgm/ is still empty).
- * The API shape is real (backed by audioManager.playBgm/stopBgm, not a
- * local no-op) so wiring in an actual track later means: add files to
- * lib/audio/audio-config.ts's future BGM table + fill in
- * AudioManager#playBgm's body — call sites that adopt useBgm() now never
- * need to change.
+ * Thin wrapper over the audioManager BGM singleton — mirrors hooks/use-sound.ts.
+ * `tracks` is exported for the settings UI's track-picker list; every other
+ * getter reads audioManager's live state (safe pre-init too, since
+ * AudioManager seeds `bgmSettings` with a hardcoded default before
+ * initBgm() ever runs — see audio-manager.ts).
+ *
+ * Playback itself is never started from here: AudioProvider calls
+ * audioManager.initBgm()/unlockBgm() once at the app root, and nothing in
+ * components/brain-bet/screens or games should call play/stop directly —
+ * this hook only exposes the settings surface (mode, track selection,
+ * on/off, skip).
  */
 export function useBgm() {
   return {
-    play: (name: BgmName) => audioManager.playBgm(name),
-    stop: () => audioManager.stopBgm(),
+    tracks: BGM_TRACKS,
+    isEnabled: () => audioManager.isBgmEnabled(),
+    setEnabled: (enabled: boolean) => audioManager.setBgmEnabled(enabled),
+    getMode: () => audioManager.getBgmMode(),
+    setMode: (mode: BgmMode) => audioManager.setBgmMode(mode),
+    getRepeatTrackId: () => audioManager.getBgmRepeatTrackId(),
+    setRepeatTrack: (id: BgmTrackId) => audioManager.setBgmRepeatTrack(id),
+    getSelectedTrackIds: () => audioManager.getBgmSelectedTrackIds(),
+    setSelectedTrackIds: (ids: BgmTrackId[]) => audioManager.setBgmSelectedTrackIds(ids),
+    getCurrentTrackId: () => audioManager.getCurrentBgmTrackId(),
+    skip: () => audioManager.skipBgm(),
     setVolume: (volume: number) => audioManager.setBgmVolume(volume),
   }
 }

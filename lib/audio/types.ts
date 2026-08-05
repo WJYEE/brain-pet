@@ -1,3 +1,5 @@
+import type { BgmTrackId } from '@/lib/audio/bgm-config'
+
 /**
  * Every SFX name the app can play, keyed 1:1 to a file in
  * public/assets/statling/audio/sfx_fix/<name>.mp3 (see audio-config.ts).
@@ -41,5 +43,20 @@ export interface SoundConfig {
   maxConcurrent?: number
 }
 
-/** Placeholder surface for a future BGM system — see hooks/use-bgm.ts. */
-export type BgmName = 'none'
+/** 단일 반복 / 선택곡 순차 재생 / 선택곡 랜덤 재생 — see lib/audio/audio-manager.ts. */
+export type BgmMode = 'repeat-one' | 'sequential' | 'shuffle'
+
+/**
+ * Persisted BGM preference (see bgm-settings-storage.ts). `selectedTrackIds`
+ * is the "선택곡" subset used by sequential/shuffle rotation — defaults to
+ * all 31 tracks until the player narrows it down. `lastTrackId` lets a
+ * reload resume roughly where playback left off instead of always
+ * restarting the rotation from the top.
+ */
+export interface BgmSettings {
+  enabled: boolean
+  mode: BgmMode
+  repeatTrackId: BgmTrackId
+  selectedTrackIds: BgmTrackId[]
+  lastTrackId: BgmTrackId | null
+}
