@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Trophy } from 'lucide-react'
 import { ConfirmDialog } from '@/components/brain-bet/confirm-dialog'
 import { LandingScreen } from '@/components/brain-bet/screens/landing-screen'
 import { ReactionGame } from '@/components/brain-bet/games/reaction-game'
@@ -26,8 +25,8 @@ import { NamingScreen } from '@/components/brain-bet/screens/naming-screen'
 import { RoomScreen } from '@/components/brain-bet/screens/room-screen'
 import { GrowScreen } from '@/components/brain-bet/screens/grow-screen'
 import { GrowGameScreen } from '@/components/brain-bet/screens/grow-game-screen'
-import { ComingSoonScreen } from '@/components/brain-bet/screens/coming-soon-screen'
 import { StatlingScreen } from '@/components/brain-bet/screens/statling-screen'
+import { RankingScreen } from '@/components/brain-bet/screens/ranking-screen'
 import { MyPageScreen } from '@/components/brain-bet/screens/my-page-screen'
 import { OnboardingModal } from '@/components/brain-bet/onboarding-modal'
 import { loadOnboardingSeen } from '@/lib/onboarding-storage'
@@ -72,6 +71,7 @@ import {
   recordMiniGameCompletion,
   savePlayerSkillState,
 } from '@/lib/game/player-skill-storage'
+import { addXp, loadXpState, saveXpState } from '@/lib/ranking/xp-ledger'
 import {
   clearIntroProgress,
   loadIntroProgress,
@@ -387,6 +387,12 @@ export function GameFlow() {
       completedAt: new Date().toISOString(),
     })
     if (applied) savePlayerSkillState(state)
+    // Ranking XP — same choke point, so every valid completion (Intro or Free
+    // Play, any of the 12 on*Complete handlers) earns XP exactly once, in
+    // lockstep with the skill record it's paired with above. See
+    // lib/ranking/xp-ledger.ts for why this is a separate ledger from both
+    // gameDifficultyBestRecords above and pet-care's intimacyExp.
+    if (applied) saveXpState(addXp(loadXpState(), gameScore))
   }
 
   /**
@@ -1281,13 +1287,7 @@ export function GameFlow() {
             )
           })()}
 
-        {phase === 'ranking' && (
-          <ComingSoonScreen
-            icon={Trophy}
-            title="랭킹"
-            message={'더 많은 Statling이 모이면\n새로운 경쟁이 시작돼요.'}
-          />
-        )}
+        {phase === 'ranking' && <RankingScreen statlingName={statlingName} topStat={topStat} />}
 
         {phase === 'mypage' && (
           <MyPageScreen
