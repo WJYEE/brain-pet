@@ -67,16 +67,23 @@ export function getMemoryDifficultySequenceForDifficulty(difficulty: GameDifficu
 export const MEMORY_DIFFICULTY_ACCURACY_WEIGHTS = [1.0, 1.19, 1.25]
 
 /** Delay before the flash starts, so the grid doesn't flash the instant it appears. */
-export const MEMORY_PRE_FLASH_DELAY_MS = 150
+export const MEMORY_PRE_FLASH_DELAY_MS = 100
 
 /** How long a single tile's correct/wrong click-feedback flash stays up before settling to a neutral "selected" mark. */
 export const MEMORY_CLICK_FEEDBACK_MS = 220
 
-/** How long the per-round result (PERFECT! / x/y 기억했어요 + full reveal) stays up before advancing. */
-export const MEMORY_ROUND_FEEDBACK_MS = 800
+/**
+ * How long the per-round result (PERFECT! / x/y 기억했어요 + full reveal)
+ * stays up before advancing. Trimmed from 800ms — every tile is `disabled`
+ * during this window (see memory-game.tsx's handleCellClick guard), so on
+ * touch it read as "the last tap didn't do anything" rather than a
+ * deliberate results pause. Kept long enough to register the outcome, short
+ * enough that it no longer feels like the round hung.
+ */
+export const MEMORY_ROUND_FEEDBACK_MS = 500
 
-/** How long the Tutorial → Real transition message stays up — raised from 1100ms to 2200ms so the rule callout was actually readable, then trimmed back down ~1s once the callout got its own persistent reminder alongside it. */
-export const MEMORY_TUTORIAL_TRANSITION_MS = 1200
+/** How long the Tutorial → Real transition message stays up — raised from 1100ms to 2200ms so the rule callout was actually readable, then trimmed back down ~1s once the callout got its own persistent reminder alongside it, then trimmed again since this stage's grid is untappable the whole time (pure "next round" filler, not reading time). */
+export const MEMORY_TUTORIAL_TRANSITION_MS = 800
 
 /** Added to a round's response time per wrong click, before it counts toward scoring/Personal Best. */
 export const MEMORY_WRONG_TIME_PENALTY_MS = 500

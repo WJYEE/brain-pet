@@ -100,7 +100,7 @@ export function NumberPatternGame({ index, mode, difficulty, onComplete }: Numbe
         const gameScore = calculateNumberPatternScore(rawSummary, detectDevice().inputType)
         onComplete({ answers: updated, rawSummary, gameScore })
       }
-    }, 1200)
+    }, 800)
   }
 
   const secondsLeft = Math.ceil(remainingMs / 1000)

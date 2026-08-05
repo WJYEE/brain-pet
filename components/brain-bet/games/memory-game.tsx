@@ -333,7 +333,15 @@ export function MemoryGame({ index, mode, difficulty: gameDifficulty, onComplete
           {/* Fixed footprint (max-width + aspect-square) regardless of gridSize,
               so the grid's center never shifts between 3x3 and 6x6 rounds. */}
           <div
-            className="mx-auto grid aspect-square w-full max-w-[320px] gap-1.5"
+            className={cn(
+              'mx-auto grid aspect-square w-full max-w-[320px] gap-1.5',
+              // Every tile is `disabled` for this brief pre-flash window (see
+              // handleCellClick's stage guard below) — without some motion
+              // here, a completely static, unresponsive grid reads as "stuck
+              // loading" rather than "about to flash". Purely cosmetic, so it's
+              // safe to skip under prefers-reduced-motion.
+              stage === 'showing' && !flashActive && 'motion-safe:animate-pulse',
+            )}
             style={{ gridTemplateColumns: `repeat(${difficulty.gridSize}, minmax(0,1fr))` }}
           >
             {Array.from({ length: cellCount }, (_, i) => String(i)).map((cellId) => {

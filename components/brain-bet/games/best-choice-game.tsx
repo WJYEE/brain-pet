@@ -100,7 +100,7 @@ export function BestChoiceGame({ index, mode, difficulty, onComplete }: BestChoi
         const gameScore = calculateBestChoiceScore(rawSummary)
         onComplete({ answers: updated, rawSummary, gameScore })
       }
-    }, 1100)
+    }, 800)
   }
 
   const secondsLeft = Math.ceil(remainingMs / 1000)
