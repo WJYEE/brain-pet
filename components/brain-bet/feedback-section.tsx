@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Toast } from '@base-ui/react/toast'
-import { Check, CheckCircle2, MessageCircleHeart, Pencil } from 'lucide-react'
+import { Check, CheckCircle2, ChevronDown, MessageCircleHeart, Pencil } from 'lucide-react'
 import { loadFeedbackRecord, upsertFeedbackRecord } from '@/lib/feedback/feedback-storage'
 import {
   emptyFeedbackDraft,
@@ -154,6 +154,8 @@ export function FeedbackSection({ petProfile }: FeedbackSectionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [justSubmitted, setJustSubmitted] = useState(false)
   const [showValidation, setShowValidation] = useState(false)
+  /** Open by default so existing behavior (form always visible) doesn't change for anyone — collapsing is purely an opt-in way to shrink MyPage, not a new default-hidden state. */
+  const [isOpen, setIsOpen] = useState(true)
 
   const isEditingExisting = existingRecord !== null
   const missingRequired =
@@ -191,121 +193,143 @@ export function FeedbackSection({ petProfile }: FeedbackSectionProps) {
     }
   }
 
-  if (justSubmitted) {
-    return (
-      <div className="mt-6 flex flex-col items-center gap-2 rounded-2xl bg-card px-4 py-8 text-center toy-border">
-        <CheckCircle2 size={28} strokeWidth={2.4} className="text-primary" />
-        <p className="font-display text-sm font-extrabold text-foreground">
-          {isEditingExisting ? '의견이 수정되었어요!' : '피드백을 보내주셔서 감사해요!'}
-        </p>
-        <button
-          type="button"
-          onClick={() => {
-            setJustSubmitted(false)
-            setShowValidation(false)
-          }}
-          className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary underline underline-offset-2"
-        >
-          <Pencil size={12} strokeWidth={2.6} />
-          내 의견 수정하기
-        </button>
-      </div>
-    )
-  }
-
   return (
     <div className="mt-6 rounded-2xl bg-card px-4 py-5 toy-border">
-      <div className="flex items-center gap-2">
-        <MessageCircleHeart size={18} strokeWidth={2.4} className="text-primary" />
-        <h2 className="font-display text-base font-extrabold text-foreground">Statling, 어떠셨나요?</h2>
-      </div>
-      <p className="mt-1 text-xs text-muted-foreground">
-        {isEditingExisting ? '보내주신 의견을 언제든 수정할 수 있어요.' : '더 나은 Statling을 만드는 데 큰 도움이 돼요.'}
-      </p>
+      <button
+        type="button"
+        onClick={() => setIsOpen((v) => !v)}
+        aria-expanded={isOpen}
+        className="flex w-full items-center gap-2 text-left"
+      >
+        <MessageCircleHeart size={18} strokeWidth={2.4} className="shrink-0 text-primary" />
+        <h2 className="flex-1 font-display text-base font-extrabold text-foreground">Statling, 어떠셨나요?</h2>
+        <ChevronDown
+          size={18}
+          strokeWidth={2.4}
+          aria-hidden="true"
+          className={cn('shrink-0 text-muted-foreground transition-transform duration-200', isOpen && 'rotate-180')}
+        />
+      </button>
 
-      <div className="mt-4 flex flex-col gap-5">
-        <div>
-          <p className={FIELD_LABEL_CLASS}>1. 전체적으로 얼마나 만족했나요?</p>
-          <div className="mt-2">
-            <RadioGroup
-              name="satisfaction"
-              options={SATISFACTION_OPTIONS}
-              value={draft.satisfaction}
-              onChange={(v) => updateField('satisfaction', v)}
-            />
-          </div>
-        </div>
-
-        <div>
-          <p className={FIELD_LABEL_CLASS}>
-            2. 가장 만족한 부분은 무엇인가요? <span className="font-normal text-muted-foreground">(복수 선택 가능)</span>
-          </p>
-          <div className="mt-2">
-            <CheckboxGroup
-              name="favoritePart"
-              options={FAVORITE_PART_OPTIONS}
-              value={draft.favoritePart}
-              onChange={(v) => updateField('favoritePart', v)}
-            />
-          </div>
-        </div>
-
-        <div>
-          <p className={FIELD_LABEL_CLASS}>
-            3. 가장 아쉬웠던 부분은 무엇인가요? <span className="font-normal text-muted-foreground">(복수 선택 가능)</span>
-          </p>
-          <div className="mt-2">
-            <CheckboxGroup
-              name="improvementArea"
-              options={IMPROVEMENT_AREA_OPTIONS}
-              value={draft.improvementArea}
-              onChange={(v) => updateField('improvementArea', v)}
-            />
-          </div>
-        </div>
-
-        <div>
-          <p className={FIELD_LABEL_CLASS}>4. 앞으로도 다시 사용하고 싶나요?</p>
-          <div className="mt-2">
-            <RadioGroup
-              name="returnIntent"
-              options={RETURN_INTENT_OPTIONS}
-              value={draft.returnIntent}
-              onChange={(v) => updateField('returnIntent', v)}
-            />
-          </div>
-        </div>
-
-        <div>
-          <p className={FIELD_LABEL_CLASS}>
-            5. 추가로 하고 싶은 말 <span className="font-normal text-muted-foreground">(선택)</span>
-          </p>
-          <textarea
-            value={draft.comment}
-            onChange={(e) => updateField('comment', e.target.value)}
-            placeholder="자유롭게 의견을 남겨주세요."
-            rows={3}
-            maxLength={500}
-            className="mt-2 w-full resize-none rounded-xl bg-secondary px-3 py-2.5 text-sm text-foreground toy-border placeholder:text-muted-foreground focus:outline-none"
-          />
-          <p className="mt-1 text-[11px] text-muted-foreground">이름, 연락처 등 개인정보는 적지 않아주세요.</p>
-        </div>
-
-        {showValidation && missingRequired && (
-          <p className="text-xs font-bold text-destructive">1~4번 항목을 모두 선택해주세요.</p>
+      {/* grid-rows trick collapses/expands without measuring content height in JS — works regardless of which branch (form vs. submitted card) is rendered inside. */}
+      <div
+        className={cn(
+          'grid transition-[grid-template-rows] duration-300 ease-in-out',
+          isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
         )}
+      >
+        <div className="overflow-hidden">
+          {justSubmitted ? (
+            <div className="mt-4 flex flex-col items-center gap-2 py-4 text-center">
+              <CheckCircle2 size={28} strokeWidth={2.4} className="text-primary" />
+              <p className="font-display text-sm font-extrabold text-foreground">
+                {isEditingExisting ? '의견이 수정되었어요!' : '피드백을 보내주셔서 감사해요!'}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setJustSubmitted(false)
+                  setShowValidation(false)
+                }}
+                className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary underline underline-offset-2"
+              >
+                <Pencil size={12} strokeWidth={2.6} />
+                내 의견 수정하기
+              </button>
+            </div>
+          ) : (
+            <>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {isEditingExisting ? '보내주신 의견을 언제든 수정할 수 있어요.' : '더 나은 Statling을 만드는 데 큰 도움이 돼요.'}
+              </p>
 
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-          className={cn(
-            'rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground toy-border toy-shadow transition-opacity',
-            isSubmitting && 'opacity-60',
+              <div className="mt-4 flex flex-col gap-5">
+                <div>
+                  <p className={FIELD_LABEL_CLASS}>1. 전체적으로 얼마나 만족했나요?</p>
+                  <div className="mt-2">
+                    <RadioGroup
+                      name="satisfaction"
+                      options={SATISFACTION_OPTIONS}
+                      value={draft.satisfaction}
+                      onChange={(v) => updateField('satisfaction', v)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <p className={FIELD_LABEL_CLASS}>
+                    2. 가장 만족한 부분은 무엇인가요? <span className="font-normal text-muted-foreground">(복수 선택 가능)</span>
+                  </p>
+                  <div className="mt-2">
+                    <CheckboxGroup
+                      name="favoritePart"
+                      options={FAVORITE_PART_OPTIONS}
+                      value={draft.favoritePart}
+                      onChange={(v) => updateField('favoritePart', v)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <p className={FIELD_LABEL_CLASS}>
+                    3. 가장 아쉬웠던 부분은 무엇인가요? <span className="font-normal text-muted-foreground">(복수 선택 가능)</span>
+                  </p>
+                  <div className="mt-2">
+                    <CheckboxGroup
+                      name="improvementArea"
+                      options={IMPROVEMENT_AREA_OPTIONS}
+                      value={draft.improvementArea}
+                      onChange={(v) => updateField('improvementArea', v)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <p className={FIELD_LABEL_CLASS}>4. 앞으로도 다시 사용하고 싶나요?</p>
+                  <div className="mt-2">
+                    <RadioGroup
+                      name="returnIntent"
+                      options={RETURN_INTENT_OPTIONS}
+                      value={draft.returnIntent}
+                      onChange={(v) => updateField('returnIntent', v)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <p className={FIELD_LABEL_CLASS}>
+                    5. 추가로 하고 싶은 말 <span className="font-normal text-muted-foreground">(선택)</span>
+                  </p>
+                  <textarea
+                    value={draft.comment}
+                    onChange={(e) => updateField('comment', e.target.value)}
+                    placeholder="자유롭게 의견을 남겨주세요."
+                    rows={3}
+                    maxLength={500}
+                    className="mt-2 w-full resize-none rounded-xl bg-secondary px-3 py-2.5 text-sm text-foreground toy-border placeholder:text-muted-foreground focus:outline-none"
+                  />
+                  <p className="mt-1 text-[11px] text-muted-foreground">이름, 연락처 등 개인정보는 적지 않아주세요.</p>
+                </div>
+
+                {showValidation && missingRequired && (
+                  <p className="text-xs font-bold text-destructive">1~4번 항목을 모두 선택해주세요.</p>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className={cn(
+                    'rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground toy-border toy-shadow transition-opacity',
+                    isSubmitting && 'opacity-60',
+                  )}
+                >
+                  {isSubmitting ? '제출 중...' : isEditingExisting ? '의견 수정하기' : '의견 보내기'}
+                </button>
+              </div>
+            </>
           )}
-        >
-          {isSubmitting ? '제출 중...' : isEditingExisting ? '의견 수정하기' : '의견 보내기'}
-        </button>
+        </div>
       </div>
     </div>
   )
