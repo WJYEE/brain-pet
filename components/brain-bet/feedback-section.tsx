@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Toast } from '@base-ui/react/toast'
-import { CheckCircle2, MessageCircleHeart, Pencil } from 'lucide-react'
+import { Check, CheckCircle2, MessageCircleHeart, Pencil } from 'lucide-react'
 import { loadFeedbackRecord, upsertFeedbackRecord } from '@/lib/feedback/feedback-storage'
 import {
   emptyFeedbackDraft,
@@ -10,10 +10,8 @@ import {
   IMPROVEMENT_AREA_OPTIONS,
   RETURN_INTENT_OPTIONS,
   SATISFACTION_OPTIONS,
-  type FavoritePartValue,
   type FeedbackDraft,
   type FeedbackRecord,
-  type ImprovementAreaValue,
   type ReturnIntentValue,
   type SatisfactionValue,
 } from '@/lib/feedback/feedback-types'
@@ -66,6 +64,56 @@ function RadioGroup<T extends string>({ name, options, value, onChange }: RadioG
   )
 }
 
+interface CheckboxGroupProps<T extends string> {
+  name: string
+  options: { value: T; label: string }[]
+  value: T[]
+  onChange: (value: T[]) => void
+}
+
+/** Same visual language as RadioGroup, but each option toggles independently — a rounded-square indicator instead of a circle, since more than one choice is allowed. */
+function CheckboxGroup<T extends string>({ name, options, value, onChange }: CheckboxGroupProps<T>) {
+  function toggle(optValue: T) {
+    onChange(value.includes(optValue) ? value.filter((v) => v !== optValue) : [...value, optValue])
+  }
+
+  return (
+    <div role="group" aria-label={name} className="flex flex-col gap-2">
+      {options.map((opt) => {
+        const selected = value.includes(opt.value)
+        return (
+          <label
+            key={opt.value}
+            className={cn(
+              'flex min-h-[44px] cursor-pointer items-center gap-2.5 rounded-xl bg-card px-3 py-2.5 toy-border transition-colors',
+              selected && 'bg-accent/40',
+            )}
+          >
+            <input
+              type="checkbox"
+              name={name}
+              value={opt.value}
+              checked={selected}
+              onChange={() => toggle(opt.value)}
+              className="sr-only"
+            />
+            <span
+              aria-hidden="true"
+              className={cn(
+                'grid h-5 w-5 shrink-0 place-items-center rounded-md border-2',
+                selected ? 'border-primary bg-primary' : 'border-[color:var(--ink)]',
+              )}
+            >
+              {selected && <Check size={13} strokeWidth={3} className="text-primary-foreground" />}
+            </span>
+            <span className="text-sm font-semibold text-foreground">{opt.label}</span>
+          </label>
+        )
+      })}
+    </div>
+  )
+}
+
 const FIELD_LABEL_CLASS = 'text-sm font-bold text-foreground'
 
 function draftFromRecord(record: FeedbackRecord): FeedbackDraft {
@@ -90,8 +138,9 @@ interface FeedbackSectionProps {
  * upsertFeedbackRecord) — "내 의견 수정하기," not "다른 의견도 남기기." On
  * mount, an existing record (if any) pre-fills the form so editing reads as
  * "here's what you told us, change anything" rather than starting blank.
- * Q1/Q2/Q3/Q4 are required single-select radios; Q5 is an optional
- * free-text comment. Submitting is guarded by `isSubmitting` (blocks a
+ * Q1/Q4 are required single-select radios, Q2/Q3 are required multi-select
+ * checkboxes (at least one choice each); Q5 is an optional free-text
+ * comment. Submitting is guarded by `isSubmitting` (blocks a
  * double-click from writing two updates in a row) and the form is replaced
  * by a confirmation card right after a successful submit.
  */
@@ -108,7 +157,7 @@ export function FeedbackSection({ petProfile }: FeedbackSectionProps) {
 
   const isEditingExisting = existingRecord !== null
   const missingRequired =
-    !draft.satisfaction || !draft.favoritePart || !draft.improvementArea || !draft.returnIntent
+    !draft.satisfaction || draft.favoritePart.length === 0 || draft.improvementArea.length === 0 || !draft.returnIntent
 
   function updateField<K extends keyof FeedbackDraft>(key: K, value: FeedbackDraft[K]) {
     setDraft((prev) => ({ ...prev, [key]: value }))
@@ -125,8 +174,8 @@ export function FeedbackSection({ petProfile }: FeedbackSectionProps) {
     try {
       const saved = upsertFeedbackRecord({
         satisfaction: draft.satisfaction as SatisfactionValue,
-        favoritePart: draft.favoritePart as FavoritePartValue,
-        improvementArea: draft.improvementArea as ImprovementAreaValue,
+        favoritePart: draft.favoritePart,
+        improvementArea: draft.improvementArea,
         returnIntent: draft.returnIntent as ReturnIntentValue,
         comment: draft.comment,
         statlingId: petProfile?.id ?? null,
@@ -188,9 +237,11 @@ export function FeedbackSection({ petProfile }: FeedbackSectionProps) {
         </div>
 
         <div>
-          <p className={FIELD_LABEL_CLASS}>2. 가장 만족한 부분은 무엇인가요?</p>
+          <p className={FIELD_LABEL_CLASS}>
+            2. 가장 만족한 부분은 무엇인가요? <span className="font-normal text-muted-foreground">(복수 선택 가능)</span>
+          </p>
           <div className="mt-2">
-            <RadioGroup
+            <CheckboxGroup
               name="favoritePart"
               options={FAVORITE_PART_OPTIONS}
               value={draft.favoritePart}
@@ -200,9 +251,11 @@ export function FeedbackSection({ petProfile }: FeedbackSectionProps) {
         </div>
 
         <div>
-          <p className={FIELD_LABEL_CLASS}>3. 가장 아쉬웠던 부분은 무엇인가요?</p>
+          <p className={FIELD_LABEL_CLASS}>
+            3. 가장 아쉬웠던 부분은 무엇인가요? <span className="font-normal text-muted-foreground">(복수 선택 가능)</span>
+          </p>
           <div className="mt-2">
-            <RadioGroup
+            <CheckboxGroup
               name="improvementArea"
               options={IMPROVEMENT_AREA_OPTIONS}
               value={draft.improvementArea}

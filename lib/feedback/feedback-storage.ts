@@ -29,8 +29,8 @@ function isWellFormedRecord(value: Record<string, unknown>): value is Record<str
   return (
     typeof value.id === 'string' &&
     typeof value.satisfaction === 'string' &&
-    typeof value.favoritePart === 'string' &&
-    typeof value.improvementArea === 'string' &&
+    Array.isArray(value.favoritePart) &&
+    Array.isArray(value.improvementArea) &&
     typeof value.returnIntent === 'string' &&
     typeof value.comment === 'string' &&
     typeof value.submittedAt === 'string' &&
@@ -59,8 +59,8 @@ function saveFeedbackRecord(record: FeedbackRecord): void {
 
 export interface FeedbackAnswers {
   satisfaction: SatisfactionValue
-  favoritePart: FavoritePartValue
-  improvementArea: ImprovementAreaValue
+  favoritePart: FavoritePartValue[]
+  improvementArea: ImprovementAreaValue[]
   returnIntent: ReturnIntentValue
   comment: string
   /** The representative pet's catalog id + display name, if one exists yet — see lib/pets/pet-profile.ts. Both null before a Statling is hatched. */

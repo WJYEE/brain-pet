@@ -61,10 +61,13 @@ export const RETURN_INTENT_OPTIONS: { value: ReturnIntentValue; label: string }[
  * One user's feedback — always exactly one per device (see
  * lib/feedback/feedback-storage.ts#upsertFeedbackRecord: a new submission
  * UPDATEs this record rather than adding another one). `satisfaction`/
- * `favoritePart`/`improvementArea`/`returnIntent` are the four required
- * single-select questions; `comment` is the only optional field. No name/
- * contact field exists on purpose — the form itself warns against writing
- * personal info into `comment` (see feedback-section.tsx).
+ * `returnIntent` are single-select (a satisfaction level / return intent is
+ * one value, not several); `favoritePart`/`improvementArea` are multi-select
+ * (a user can like or dislike more than one aspect) — all four are required
+ * (at least one choice for the multi-select pair). `comment` is the only
+ * optional field. No name/contact field exists on purpose — the form itself
+ * warns against writing personal info into `comment` (see
+ * feedback-section.tsx).
  *
  * `appVersion`/`deviceType`/`statlingId`/`statlingName` are captured
  * automatically (not asked of the user) — lightweight context for reading
@@ -76,8 +79,8 @@ export const RETURN_INTENT_OPTIONS: { value: ReturnIntentValue; label: string }[
 export interface FeedbackRecord {
   id: string
   satisfaction: SatisfactionValue
-  favoritePart: FavoritePartValue
-  improvementArea: ImprovementAreaValue
+  favoritePart: FavoritePartValue[]
+  improvementArea: ImprovementAreaValue[]
   returnIntent: ReturnIntentValue
   comment: string
   appVersion: string
@@ -91,12 +94,12 @@ export interface FeedbackRecord {
 
 export type FeedbackDraft = {
   satisfaction: SatisfactionValue | null
-  favoritePart: FavoritePartValue | null
-  improvementArea: ImprovementAreaValue | null
+  favoritePart: FavoritePartValue[]
+  improvementArea: ImprovementAreaValue[]
   returnIntent: ReturnIntentValue | null
   comment: string
 }
 
 export function emptyFeedbackDraft(): FeedbackDraft {
-  return { satisfaction: null, favoritePart: null, improvementArea: null, returnIntent: null, comment: '' }
+  return { satisfaction: null, favoritePart: [], improvementArea: [], returnIntent: null, comment: '' }
 }
