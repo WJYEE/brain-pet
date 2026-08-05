@@ -156,9 +156,17 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    /* Safety net against stray horizontal scroll on mobile/in-app browsers
+       (e.g. a fixed-width child briefly overflowing before layout settles). */
+    max-width: 100%;
+    overflow-x: hidden;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 }
 

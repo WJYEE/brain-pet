@@ -74,6 +74,14 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
+  // A custom `viewport` export replaces Next's default meta tag entirely, so
+  // width/initialScale must be spelled out here — without them, in-app
+  // browsers like KakaoTalk's WebView fall back to a desktop-width layout
+  // viewport (~980px) instead of the actual device width, which is what was
+  // pushing/clipping fixed-width mobile UI (e.g. the Landing autosave notice
+  // card) off to the right.
+  width: 'device-width',
+  initialScale: 1,
   colorScheme: 'light dark',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#f7f0e3' },
