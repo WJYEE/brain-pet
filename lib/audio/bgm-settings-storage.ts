@@ -4,14 +4,13 @@ import type { BgmMode, BgmSettings } from '@/lib/audio/types'
 const BGM_SETTINGS_KEY = 'statling:audio:bgmSettings'
 
 /**
- * Unlike SFX (audio-settings-storage.ts — default OFF, opt-in only), BGM
- * defaults ON with the Main Theme in repeat-one mode: spec requires music to
- * autoplay for a player who has never touched the setting, with no explicit
- * "press play" step.
+ * Same rule as SFX (audio-settings-storage.ts) — defaults OFF, opt-in only.
+ * A first-time visitor should never hear anything autoplay; BGM only starts
+ * once the player explicitly flips the switch in MyPageScreen.
  */
 function defaultBgmSettings(): BgmSettings {
   return {
-    enabled: true,
+    enabled: false,
     mode: 'repeat-one',
     repeatTrackId: DEFAULT_BGM_TRACK_ID,
     selectedTrackIds: [...ALL_BGM_TRACK_IDS],

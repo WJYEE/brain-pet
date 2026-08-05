@@ -60,7 +60,7 @@ class AudioManager {
    * preloadAll()/setMuted() are.
    */
   private bgmSettings: BgmSettings = {
-    enabled: true,
+    enabled: false,
     mode: 'repeat-one',
     repeatTrackId: MAIN_THEME_TRACK_ID,
     selectedTrackIds: [...ALL_BGM_TRACK_IDS],
@@ -147,9 +147,10 @@ class AudioManager {
   /**
    * BGM is deliberately NOT gated by `muted`/`introLocked` — those encode an
    * SFX-only product decision (SFX defaults off until opt-in, forced silent
-   * for the whole Intro). BGM has the opposite default (autoplay from the
-   * first visit, never stops for Intro) and its own `bgmSettings.enabled`
-   * flag, so the two systems can never fight over one boolean.
+   * for the whole Intro). BGM defaults off the same way (see
+   * bgm-settings-storage.ts) but is tracked through its own
+   * `bgmSettings.enabled` flag, so the two systems can never fight over one
+   * boolean.
    *
    * Called once from AudioProvider on mount, same spot as preloadAll(). Not
    * called from any screen/minigame — see game-flow.tsx comment banning

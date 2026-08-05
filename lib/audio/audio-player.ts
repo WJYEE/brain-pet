@@ -68,26 +68,34 @@ export class SoundPlayer {
 
   /**
    * Mobile Safari/Chrome only allow an <audio> element to play once it has
-   * been play()'d inside a real user-gesture call stack — immediately
-   * pausing it again keeps this silent (no audible blip) while still
-   * satisfying that one-time requirement for every future untrusted-context
-   * play() call (a setTimeout, a countdown tick, etc.).
+   * been play()'d inside a real user-gesture call stack. Muting before
+   * play() (and restoring the original muted state after) is what actually
+   * keeps this silent — pausing alone still let a real chorus of blips
+   * through on some mobile in-app browsers (e.g. KakaoTalk's WebView),
+   * because el.play() can render a frame of audible audio before the
+   * pause() in the .then() callback lands. Every pooled element across every
+   * sound gets unlocked here in one pass (see AudioManager.unlock), so
+   * without muting this was the "several SFX auto-play on first mobile
+   * touch" bug.
    */
   unlock(): void {
     this.preload()
     for (const el of this.elements) {
       try {
-        const playResult = el.play()
-        if (playResult && typeof playResult.then === 'function') {
-          playResult
-            .then(() => {
-              el.pause()
-              el.currentTime = 0
-            })
-            .catch(() => {})
-        } else {
+        const wasMuted = el.muted
+        el.muted = true
+        const restore = () => {
           el.pause()
           el.currentTime = 0
+          el.muted = wasMuted
+        }
+        const playResult = el.play()
+        if (playResult && typeof playResult.then === 'function') {
+          playResult.then(restore).catch(() => {
+            el.muted = wasMuted
+          })
+        } else {
+          restore()
         }
       } catch {
         // ignore — nothing to unlock in this environment
