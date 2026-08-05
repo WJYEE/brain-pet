@@ -1199,7 +1199,6 @@ export function GameFlow() {
             index={index}
             gameScore={lastResult.gameScore}
             raw={lastResult.raw}
-            finals={finals}
             personalBestScore={currentBestScore}
             isNewRecord={lastResult.isPersonalBest}
             onNext={goNextFirst}
