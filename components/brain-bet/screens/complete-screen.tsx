@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { ArrowRight, Check, PartyPopper, Trophy } from 'lucide-react'
 import { EggImage } from '@/components/brain-bet/egg-image'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
+import { RadarChart } from '@/components/brain-bet/radar-chart'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { useSound } from '@/hooks/use-sound'
 import { PLAY_ORDER, STATS, TOTAL_GAMES, type RawRecord, type StatId } from '@/lib/brain-bet'
@@ -20,6 +21,15 @@ interface CompleteScreenProps {
   gameScore: number
   /** display raw record for this round (formatted per-game, see lib/scoring/*) — shown as a small parenthetical under the score, never as the headline */
   raw: RawRecord
+  /**
+   * The running 0-100 value per stat as of this round, same shape/values as
+   * the `finals` state in game-flow.tsx — every stat completed so far
+   * (including this one) already holds its real gameScore, every stat not
+   * yet played is still 0. Fed straight into the radar chart below so it
+   * accumulates one axis per game and lands on exactly the same numbers MY
+   * STATUS shows once all 6 are done.
+   */
+  finals: Record<StatId, number>
   /** current Personal Best gameScore, if one exists and differs from this round's */
   personalBestScore?: number | null
   /** whether this round's result is now the Personal Best */
@@ -32,6 +42,7 @@ export function CompleteScreen({
   index,
   gameScore,
   raw,
+  finals,
   personalBestScore,
   isNewRecord,
   onNext,
@@ -42,6 +53,8 @@ export function CompleteScreen({
   /** How many of the 6 First Play games are done as of this screen — doubles as the Egg's growth stage. */
   const eggStage = index + 1
   const motion = EGG_STAGE_MOTION[eggStage] ?? EGG_STAGE_MOTION[1]
+  /** Stats discovered so far, in play order, through and including this round — drives the radar chart's progressive reveal. */
+  const revealedStats = PLAY_ORDER.slice(0, index + 1)
   const { play } = useSound()
 
   useEffect(() => {
@@ -50,7 +63,7 @@ export function CompleteScreen({
   }, [])
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-10 text-center">
+    <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col items-center justify-center px-5 py-10 text-center">
       <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground toy-border toy-shadow-sm">
         <PartyPopper size={14} strokeWidth={2.6} />
         {stat.name} 발견
@@ -63,14 +76,14 @@ export function CompleteScreen({
         </span>
       </div>
 
-      <h1 className="mt-5 font-display text-3xl font-extrabold leading-tight text-foreground">
+      <h1 className="mt-5 max-w-md font-display text-3xl font-extrabold leading-tight text-foreground">
         좋아요!
         <br />
         <span className="text-primary">{stat.name}</span>을 발견했어요.
       </h1>
 
       {/* this round's gameScore — the headline number; raw detail (개수/정확도) is a small parenthetical below it, never the other way around */}
-      <div className="mt-6 w-full rounded-2xl bg-card px-6 py-5 toy-border toy-shadow">
+      <div className="mt-6 w-full max-w-md rounded-2xl bg-card px-6 py-5 toy-border toy-shadow">
         <div className="flex items-center justify-center gap-2">
           <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             이번 점수
@@ -103,44 +116,56 @@ export function CompleteScreen({
         )}
       </div>
 
-      {/* egg growth teaser — one more of the 6 games done, one step closer to Hatch.
-          Card layout/size never changes across stages; only the egg's own
+      {/* egg growth teaser + accumulated stat radar, side by side on wider screens.
+          Egg card layout/size never changes across stages; only the egg's own
           entrance motion (transform, not layout) and the decorative overlays
-          below vary, so nothing here ever shifts surrounding text/CTA. */}
-      <div className="mt-6 flex flex-col items-center gap-1.5 rounded-2xl bg-card px-6 py-4 toy-border toy-shadow-sm">
-        <div className="relative" style={{ width: 92, height: 92 }}>
-          {motion.glow && (
-            <span
-              className="animate-egg-glow-pulse pointer-events-none absolute inset-0 rounded-full"
-              style={{ boxShadow: '0 0 22px 8px var(--accent)' }}
-              aria-hidden="true"
-            />
-          )}
-          {motion.ring && (
-            <span
-              className="animate-egg-impact-ring pointer-events-none absolute inset-0 rounded-full"
-              style={{ boxShadow: '0 0 0 3px var(--accent)' }}
-              aria-hidden="true"
-            />
-          )}
-          <EggImage key={eggStage} stage={eggStage} size={92} className={motion.animationClass} />
-          {SPARKLE_POSITIONS.slice(0, motion.sparkles).map((pos, i) => (
-            <span
-              key={pos}
-              className={`animate-sparkle-burst pointer-events-none absolute text-lg ${pos}`}
-              style={{ animationDelay: `${420 + i * 150}ms` }}
-              aria-hidden="true"
-            >
-              ✨
-            </span>
-          ))}
+          below vary, so nothing here ever shifts surrounding text/CTA. The
+          radar reuses the same `finals` values MY STATUS shows later, just
+          revealing one axis per completed game (see revealedStats above). */}
+      <div className="mt-6 flex w-full max-w-md flex-col items-center gap-6 rounded-2xl bg-card px-6 py-5 toy-border toy-shadow-sm sm:max-w-xl sm:flex-row sm:justify-center sm:gap-8 sm:px-8">
+        <div className="flex flex-col items-center gap-1.5">
+          <div className="relative" style={{ width: 92, height: 92 }}>
+            {motion.glow && (
+              <span
+                className="animate-egg-glow-pulse pointer-events-none absolute inset-0 rounded-full"
+                style={{ boxShadow: '0 0 22px 8px var(--accent)' }}
+                aria-hidden="true"
+              />
+            )}
+            {motion.ring && (
+              <span
+                className="animate-egg-impact-ring pointer-events-none absolute inset-0 rounded-full"
+                style={{ boxShadow: '0 0 0 3px var(--accent)' }}
+                aria-hidden="true"
+              />
+            )}
+            <EggImage key={eggStage} stage={eggStage} size={92} className={motion.animationClass} />
+            {SPARKLE_POSITIONS.slice(0, motion.sparkles).map((pos, i) => (
+              <span
+                key={pos}
+                className={`animate-sparkle-burst pointer-events-none absolute text-lg ${pos}`}
+                style={{ animationDelay: `${420 + i * 150}ms` }}
+                aria-hidden="true"
+              >
+                ✨
+              </span>
+            ))}
+          </div>
+          <p className="text-pretty text-sm font-bold text-foreground">{EGG_STAGE_MESSAGE[eggStage]}</p>
+          <p className="text-xs font-semibold text-muted-foreground">알 성장 {eggStage}/{TOTAL_GAMES}</p>
         </div>
-        <p className="text-pretty text-sm font-bold text-foreground">{EGG_STAGE_MESSAGE[eggStage]}</p>
-        <p className="text-xs font-semibold text-muted-foreground">알 성장 {eggStage}/{TOTAL_GAMES}</p>
+
+        <div className="hidden w-px self-stretch bg-border sm:block" aria-hidden="true" />
+        <div className="h-px w-full max-w-[200px] bg-border sm:hidden" aria-hidden="true" />
+
+        <div className="flex w-full max-w-[240px] flex-col items-center gap-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">누적 스탯</p>
+          <RadarChart values={finals} revealedStats={revealedStats} newlyRevealedStat={statId} compact />
+        </div>
       </div>
 
       {/* overall progress */}
-      <div className="mt-6 flex flex-col items-center gap-2">
+      <div className="mt-6 flex w-full max-w-md flex-col items-center gap-2">
         <ProgressTrack current={index + 1} />
       </div>
 
@@ -148,7 +173,7 @@ export function CompleteScreen({
       <button
         type="button"
         onClick={onNext}
-        className="group mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 font-display text-lg font-extrabold text-primary-foreground toy-border toy-shadow-lg transition-transform duration-150 hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none"
+        className="group mt-8 inline-flex w-full max-w-md items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 font-display text-lg font-extrabold text-primary-foreground toy-border toy-shadow-lg transition-transform duration-150 hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none"
       >
         {isLast ? 'MY STATUS 보기' : `다음: ${nextStat?.name}`}
         <ArrowRight

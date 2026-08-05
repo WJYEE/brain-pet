@@ -1,9 +1,21 @@
 import type { CSSProperties } from 'react'
 import { STATS, STAT_DISPLAY_ORDER, type StatId } from '@/lib/brain-bet'
+import { cn } from '@/lib/utils'
 
 interface RadarChartProps {
   /** Stat values 0–100 keyed by stat id. */
   values: Record<StatId, number>
+  /**
+   * Which axes count as "discovered" yet — used by the per-game result
+   * screen (CompleteScreen) to build up the chart one axis at a time as the
+   * First Play run progresses. Omit entirely (MY STATUS, my-stats) to reveal
+   * every axis as before.
+   */
+  revealedStats?: StatId[]
+  /** The axis that was just revealed this render — gets a small pop-in highlight instead of appearing instantly. */
+  newlyRevealedStat?: StatId
+  /** Smaller badge/label sizing for tight layouts (e.g. next to the egg on CompleteScreen). */
+  compact?: boolean
   className?: string
 }
 
@@ -25,13 +37,18 @@ function pointAt(radius: number, angle: number) {
 }
 
 /** Six-axis radar / status chart built from computed geometry. */
-export function RadarChart({ values, className }: RadarChartProps) {
+export function RadarChart({ values, revealedStats, newlyRevealedStat, compact, className }: RadarChartProps) {
   const stats = STAT_DISPLAY_ORDER
   const n = stats.length
+  // undefined revealedStats means "reveal everything" — the original MY STATUS / my-stats behavior.
+  const revealedSet = revealedStats ? new Set(revealedStats) : null
+  const isRevealed = (id: StatId) => !revealedSet || revealedSet.has(id)
 
   const outer = stats.map((_, i) => pointAt(CHART_R, angleFor(i, n)))
   const dataPts = stats.map((id, i) => {
-    const v = Math.max(0, Math.min(100, values[id] ?? 0))
+    // Axes not yet discovered stay collapsed at the center, regardless of
+    // whatever value happens to be sitting in `values[id]`.
+    const v = isRevealed(id) ? Math.max(0, Math.min(100, values[id] ?? 0)) : 0
     return pointAt((v / 100) * CHART_R, angleFor(i, n))
   })
 
@@ -40,7 +57,12 @@ export function RadarChart({ values, className }: RadarChartProps) {
 
   return (
     <div className={className}>
-      <div className="relative mx-auto aspect-square w-full max-w-[440px]">
+      <div
+        className={cn(
+          'relative mx-auto aspect-square w-full',
+          compact ? 'max-w-[260px]' : 'max-w-[440px]',
+        )}
+      >
         <svg
           viewBox="0 0 100 100"
           className="h-full w-full overflow-visible"
@@ -78,18 +100,23 @@ export function RadarChart({ values, className }: RadarChartProps) {
             strokeWidth={1.4}
             strokeLinejoin="round"
           />
-          {/* data vertices */}
-          {dataPts.map((p, i) => (
-            <circle
-              key={i}
-              cx={p.x}
-              cy={p.y}
-              r={1.8}
-              fill="var(--card)"
-              stroke={`var(${STATS[stats[i]].colorVar})`}
-              strokeWidth={1.6}
-            />
-          ))}
+          {/* data vertices — axes not yet discovered have no marker sitting at the collapsed center */}
+          {dataPts.map((p, i) => {
+            const id = stats[i]
+            if (!isRevealed(id)) return null
+            return (
+              <circle
+                key={i}
+                cx={p.x}
+                cy={p.y}
+                r={1.8}
+                fill="var(--card)"
+                stroke={`var(${STATS[id].colorVar})`}
+                strokeWidth={1.6}
+                className={id === newlyRevealedStat ? 'animate-record-pop' : undefined}
+              />
+            )
+          })}
         </svg>
 
         {/* labels positioned around the chart */}
@@ -97,20 +124,33 @@ export function RadarChart({ values, className }: RadarChartProps) {
           const p = pointAt(LABEL_R, angleFor(i, n))
           const stat = STATS[id]
           const Icon = stat.icon
+          const revealed = isRevealed(id)
           return (
             <div
               key={id}
-              className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
+              className={cn(
+                'absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 transition-opacity duration-300',
+                !revealed && 'opacity-40',
+                id === newlyRevealedStat && 'animate-record-pop',
+              )}
               style={{ left: `${p.x}%`, top: `${p.y}%` }}
             >
               <span
-                className="grid h-8 w-8 place-items-center rounded-xl toy-border text-[color:var(--ink)]"
-                style={{ backgroundColor: `var(${stat.colorVar})` } as CSSProperties}
+                className={cn(
+                  'grid place-items-center rounded-xl toy-border text-[color:var(--ink)]',
+                  compact ? 'h-6 w-6' : 'h-8 w-8',
+                )}
+                style={{ backgroundColor: revealed ? `var(${stat.colorVar})` : 'var(--muted)' } as CSSProperties}
               >
-                <Icon size={16} strokeWidth={2.4} />
+                <Icon size={compact ? 12 : 16} strokeWidth={2.4} />
               </span>
-              <span className="font-display text-sm font-extrabold leading-none text-foreground">
-                {Math.round(values[id] ?? 0)}
+              <span
+                className={cn(
+                  'font-display font-extrabold leading-none text-foreground',
+                  compact ? 'text-xs' : 'text-sm',
+                )}
+              >
+                {revealed ? Math.round(values[id] ?? 0) : '?'}
               </span>
             </div>
           )
