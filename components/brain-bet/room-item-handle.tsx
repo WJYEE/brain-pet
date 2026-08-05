@@ -26,6 +26,9 @@ interface RoomItemHandleProps {
  * needed; updates are throttled to one commit per animation frame so
  * dragging never floods parent state updates faster than the screen paints.
  */
+/** Beyond this many raw pixels of pointer movement, a press counts as a drag rather than a tap-to-select — see the comment in handlePointerMove. */
+const TAP_MOVE_THRESHOLD_PX = 8
+
 export function RoomItemHandle({ item, asset, stageRef, selected, onSelect, onChange }: RoomItemHandleProps) {
   const dragState = useRef<{ startX: number; startY: number; itemX: number; itemY: number; moved: boolean } | null>(null)
   const pendingFrame = useRef<number | null>(null)
@@ -57,7 +60,20 @@ export function RoomItemHandle({ item, asset, stageRef, selected, onSelect, onCh
     const rect = stageRef.current.getBoundingClientRect()
     const deltaX = (event.clientX - dragState.current.startX) / rect.width
     const deltaY = (event.clientY - dragState.current.startY) / rect.height
-    if (Math.abs(deltaX) > 0.002 || Math.abs(deltaY) > 0.002) dragState.current.moved = true
+    // Fixed pixel tolerance, not a fraction of stage size: at 0.002 of a
+    // ~330px-wide mobile canvas that's under 1px, so ordinary finger-contact
+    // jitter on a tap (a mouse click has ~0px of movement, a touch tap
+    // routinely has several) almost always tripped `moved`, which meant
+    // onSelect() below never fired on touch — tapping a placed item to
+    // select it silently failed on mobile while working every time with a
+    // mouse. TAP_MOVE_THRESHOLD_PX gives touch the same tap-to-select
+    // reliability as a mouse click while still being far tighter than any
+    // intentional drag.
+    if (
+      Math.abs(event.clientX - dragState.current.startX) > TAP_MOVE_THRESHOLD_PX ||
+      Math.abs(event.clientY - dragState.current.startY) > TAP_MOVE_THRESHOLD_PX
+    )
+      dragState.current.moved = true
     const moved = applyMove(item, asset, dragState.current.itemX + deltaX, dragState.current.itemY + deltaY)
     schedulePatch({ x: moved.x, y: moved.y })
   }

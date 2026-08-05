@@ -161,12 +161,19 @@ export function RoomScreen({ statlingName, topStat, petProfile, onGrow, testerFo
           Capped narrower on mobile (still centered, still a perfect square so
           the background art is never cropped/distorted) — full edge-to-edge
           at 270px-Statling scale left too little room below it for the HUD
-          and care actions to fit without scrolling on a 375px-wide phone. */}
-      <div className="relative mx-auto mt-3 w-full max-w-70 overflow-hidden rounded-3xl toy-border toy-shadow-lg sm:mt-4 sm:max-w-none">
+          and care actions to fit without scrolling on a 375px-wide phone.
+          toy-border/toy-shadow-lg go on RoomCanvas itself (not this wrapper)
+          so its border sits on the exact same element theme-screen.tsx's
+          editor uses — otherwise the editor's items are positioned inside a
+          bordered box while Home's items are positioned inside an unbordered
+          one 1.5px larger, a real (if small) coordinate-basis mismatch
+          between "what you placed" and "what you see". */}
+      <div className="relative mx-auto mt-3 w-full max-w-70 overflow-hidden rounded-3xl sm:mt-4 sm:max-w-none">
         <RoomCanvas
           backgroundAsset={backgroundAsset}
           items={roomState.items}
           editable={false}
+          className="toy-border toy-shadow-lg"
           statlingSlot={
             <PetMoodView
               petProfile={petProfile}

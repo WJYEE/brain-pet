@@ -285,18 +285,31 @@ export function GameFlow() {
         }
       : real
 
-  // Resume an in-progress (not yet confirmed) reveal straight to the Reveal
-  // screen on mount — e.g. after a refresh before ever confirming. A
-  // CONFIRMED pet never auto-navigates anywhere; only this one bounce-back
-  // case is handled, since no other phase is persisted (GAME_SPEC: keep
-  // existing navigation as-is otherwise).
+  // Restores whatever representative-pet state already exists on mount, so a
+  // reload never re-offers the Landing/Intro flow to someone who's already
+  // been through it:
+  // - CONFIRMED: skip Landing/Intro entirely and land straight in Room — the
+  //   pet is permanent, so there is nothing left for Intro to decide.
+  //   Without this, `phase` defaults to 'landing' on every fresh mount
+  //   regardless of stored state, and 'landing' is reachable no other way
+  //   (see NAV_PHASES) — so a reload was the one loophole that let Intro run
+  //   again against an already-locked pet, always surfacing the old
+  //   `refreshGrowthData`-preserved pet no matter what the new finals were.
+  // - Not yet confirmed: bounce to Reveal instead (e.g. after a refresh
+  //   before ever confirming) — unchanged from before.
   useEffect(() => {
     const stored = loadStoredPetProfile()
-    if (stored && !stored.confirmed) {
+    if (!stored) return
+    if (stored.confirmed) {
       setFinals(stored.latestFinals)
       setPetRecord(stored)
-      setPhase('reveal')
+      if (stored.statlingName) setStatlingName(stored.statlingName)
+      setPhase('room')
+      return
     }
+    setFinals(stored.latestFinals)
+    setPetRecord(stored)
+    setPhase('reveal')
   }, [])
 
   // Offers "이어서 하기" on Landing only when a resumable, not-yet-stale
@@ -1231,6 +1244,7 @@ export function GameFlow() {
             petProfile={applyTesterOverride(displayedPetProfile)}
             onConfirm={(name) => {
               setStatlingName(name)
+              if (petRecord) saveStoredPetProfile({ ...petRecord, statlingName: name })
               setPhase('room')
             }}
           />

@@ -6,6 +6,7 @@ import { RotateCcw, Save, Sparkles, Undo2 } from 'lucide-react'
 import { AssetImage } from '@/components/brain-bet/asset-image'
 import { CharacterImage } from '@/components/brain-bet/character-image'
 import { ConfirmDialog } from '@/components/brain-bet/confirm-dialog'
+import { CHARACTER_BOX_SIZE } from '@/components/brain-bet/pet-mood-view'
 import { RoomCanvas } from '@/components/brain-bet/room-canvas'
 import { RoomPropertiesPanel } from '@/components/brain-bet/room-properties-panel'
 import { ToyButton } from '@/components/brain-bet/toy-button'
@@ -232,9 +233,9 @@ export function ThemeScreen({ topStat, petProfile, onDirtyChange }: ThemeScreenP
         className="toy-border toy-shadow-lg"
         statlingSlot={
           petProfile ? (
-            <AssetImage src={petProfile.imageSrc} alt={petProfile.name} size={140} />
+            <AssetImage src={petProfile.imageSrc} alt={petProfile.name} size={CHARACTER_BOX_SIZE} />
           ) : (
-            <CharacterImage type={topStat} size={140} />
+            <CharacterImage type={topStat} size={CHARACTER_BOX_SIZE} />
           )
         }
       />

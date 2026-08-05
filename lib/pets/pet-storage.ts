@@ -44,6 +44,9 @@ export interface StoredPetProfile {
   createdAt: string
   updatedAt: string
   confirmedAt?: string
+
+  /** The nickname given on the Naming screen, right after confirming — undefined until then. Persisted here (not just in-memory GameFlow state) so a reload after naming doesn't lose it. */
+  statlingName?: string
 }
 
 /** Minimal structural check for the current-format record — anything short of this is treated as corrupt (fresh start), never thrown from. */
