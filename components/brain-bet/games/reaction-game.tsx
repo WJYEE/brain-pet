@@ -230,21 +230,25 @@ export function ReactionGame({ index, mode, difficulty, onComplete }: ReactionGa
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-5 py-6">
-      <header className="flex items-center justify-between gap-4">
-        <Logo size="sm" />
-        {mode === 'first' ? (
-          <div className="flex items-center gap-2">
-            <ProgressTrack current={index} />
+      <header className="flex flex-col gap-2">
+        {mode === 'first' && (
+          <div className="flex justify-end">
             <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-[10px] font-bold text-secondary-foreground toy-border">
               <Save size={11} strokeWidth={2.6} />
               자동 저장 중
             </span>
           </div>
-        ) : (
-          <span className="rounded-xl bg-secondary px-3 py-1.5 text-xs font-bold text-secondary-foreground toy-border">
-            FREE PLAY
-          </span>
         )}
+        <div className="flex items-center justify-between gap-4">
+          <Logo size="sm" />
+          {mode === 'first' ? (
+            <ProgressTrack current={index} />
+          ) : (
+            <span className="rounded-xl bg-secondary px-3 py-1.5 text-xs font-bold text-secondary-foreground toy-border">
+              FREE PLAY
+            </span>
+          )}
+        </div>
       </header>
 
       <div className="mt-6 flex items-center justify-between gap-4">

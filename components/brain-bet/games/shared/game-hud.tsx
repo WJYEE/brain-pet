@@ -32,17 +32,19 @@ interface GameHudProps {
 export function GameHud({ stat, gameName, mode, index, objective, statusSlot, onHelp }: GameHudProps) {
   return (
     <header className="flex flex-col gap-4">
+      {mode === 'first' && (
+        <div className="flex justify-end">
+          {/* Every completed Intro game is already checkpointed by the time this screen shows (see game-flow.tsx's recordIntroCheckpoint) — a static reassurance badge, not a transient spinner. */}
+          <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-[10px] font-bold text-secondary-foreground toy-border">
+            <Save size={11} strokeWidth={2.6} />
+            자동 저장 중
+          </span>
+        </div>
+      )}
       <div className="flex items-center justify-between gap-4">
         <Logo size="sm" />
         {mode === 'first' ? (
-          <div className="flex items-center gap-2">
-            <ProgressTrack current={index} />
-            {/* Every completed Intro game is already checkpointed by the time this screen shows (see game-flow.tsx's recordIntroCheckpoint) — a static reassurance badge, not a transient spinner. */}
-            <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-[10px] font-bold text-secondary-foreground toy-border">
-              <Save size={11} strokeWidth={2.6} />
-              자동 저장 중
-            </span>
-          </div>
+          <ProgressTrack current={index} />
         ) : (
           <span className="rounded-xl bg-secondary px-3 py-1.5 text-xs font-bold text-secondary-foreground toy-border">
             FREE PLAY
