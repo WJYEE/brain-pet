@@ -14,6 +14,8 @@ const BASE_WEIGHTS: Record<AutonomousActionId, number> = {
   askAttention: 1,
   celebrate: 1,
   playAlone: 1.5,
+  /** The 'thinking' art's "가끔 랜덤으로" trigger — a calm musing beat, so it only leans in under `allStable` below, same as idle/look/walk. */
+  ponder: 1.2,
 }
 
 export interface AutonomousSelectionInput {
@@ -61,6 +63,7 @@ export function pickAutonomousAction(input: AutonomousSelectionInput): Autonomou
     weights.lookRight *= 1.5
     weights.walkLeft *= 1.5
     weights.walkRight *= 1.5
+    weights.ponder *= 1.5
   }
 
   const motionHeavy: AutonomousActionId[] = ['smallHop', 'walkLeft', 'walkRight']
@@ -96,6 +99,7 @@ const ANIMATION_BY_AUTONOMOUS_ACTION: Record<AutonomousActionId, PetAnimation> =
   askAttention: 'askAttention',
   celebrate: 'celebrate',
   playAlone: 'playAlone',
+  ponder: 'ponder',
 }
 
 export function animationForAutonomousAction(action: AutonomousActionId): PetAnimation {

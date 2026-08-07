@@ -20,6 +20,7 @@ import {
   feedEffectFor,
   feedMessageFor,
   feedTier,
+  petAlreadySatisfied,
   petEffectFor,
   petIntimacyTier,
   petMessageFor,
@@ -112,6 +113,9 @@ export function performFeed(state: PetCareState, now: Date): ActionResult {
     now,
   )
 
+  // Always 'eat' here — whether the already-full case still shows 'eat' art
+  // or falls back to idle/happy is a mapping decision, made from raw stats
+  // by characterStateForInteraction, not duplicated here.
   return { petState, deltas, message: feedMessageFor(tier), animation: 'eat', levelUp: expGain.levelUp }
 }
 
@@ -130,6 +134,8 @@ export function performShower(state: PetCareState, now: Date): ActionResult {
     now,
   )
 
+  // Always 'wash' here — already-clean reading as 'surprised' instead is a
+  // mapping decision, made from raw stats by characterStateForInteraction.
   return { petState, deltas, message: showerMessageFor(tier), animation: 'wash', levelUp: expGain.levelUp }
 }
 
@@ -167,14 +173,14 @@ export function performPlay(state: PetCareState, now: Date): ActionResult {
   const blocked = blockedByCooldown(state, 'play', now)
   if (blocked) return blocked
 
-  const tier = playTier(state.stats.energy)
+  const tier = playTier(state.stats.energy, state.stats.happiness)
   const deltas = playEffectFor(tier, state.stats.happiness)
   const nextStats = applyDeltas(state.stats, deltas)
 
   const candidates = PLAY_VARIANT_IDS.filter((id) => id !== state.lastPlayVariantId)
   const playVariantId = candidates[Math.floor(Math.random() * candidates.length)]
 
-  const expGain = gainExp(state, PLAY_EXP)
+  const expGain = gainExp(state, tier === 'high' ? 0 : PLAY_EXP)
   const petState = withCooldown(
     {
       ...state,
@@ -187,6 +193,8 @@ export function performPlay(state: PetCareState, now: Date): ActionResult {
     now,
   )
 
+  // Always 'play' here — already-plenty-happy falling back to idle/happy art
+  // instead is a mapping decision, made from raw stats by characterStateForInteraction.
   return { petState, deltas, message: playMessageFor(tier), animation: 'play', playVariantId, levelUp: expGain.levelUp }
 }
 
@@ -195,17 +203,21 @@ export function performPet(state: PetCareState, now: Date): ActionResult {
   if (blocked) return blocked
 
   const tier = petIntimacyTier(state.intimacyLevel)
-  const deltas = petEffectFor()
+  const alreadySatisfied = petAlreadySatisfied(state.stats.affection)
+  const deltas = petEffectFor(alreadySatisfied)
   const nextStats = applyDeltas(state.stats, deltas)
 
-  const expGain = gainExp(state, PET_INTIMACY_EXP)
+  const expGain = gainExp(state, alreadySatisfied ? 0 : PET_INTIMACY_EXP)
   const petState = withCooldown(
     { ...state, stats: nextStats, intimacyLevel: expGain.intimacyLevel, intimacyExp: expGain.intimacyExp },
     'pet',
     now,
   )
 
-  return { petState, deltas, message: petMessageFor(tier), animation: 'pet', levelUp: expGain.levelUp }
+  // Always 'pet' here — already-loved-plenty falling back to idle/happy/love
+  // art instead (or to 'angry' when over-petted) is a mapping decision, made
+  // from raw stats/isOverPetted by characterStateForInteraction.
+  return { petState, deltas, message: petMessageFor(tier, alreadySatisfied), animation: 'pet', levelUp: expGain.levelUp }
 }
 
 export function performTalk(state: PetCareState, category: DialogueCategory, now: Date): ActionResult {

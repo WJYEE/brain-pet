@@ -15,11 +15,12 @@ export type SecondaryTag = 'roomMessy'
  * action (e.g. `eat`) briefly overrides whatever idle motion the current
  * mood would otherwise pick, then falls back to the mood's idle animation.
  *
- * The last 9 values (lookLeft..playAlone) are autonomous-only — never
+ * The last 10 values (lookLeft..ponder) are autonomous-only — never
  * triggered by a user button, only by lib/pet-care/autonomous-actions.ts.
  * `sleep`/`idle` are shared between the mood-idle fallback and the
  * autonomous scheduler's own `sleep`/`idle` picks, since they already read
- * the same either way.
+ * the same either way. `ponder` is the "가끔 랜덤으로" musing beat behind the
+ * 'thinking' art — see autonomous-action-selector.ts's BASE_WEIGHTS.
  */
 export type PetAnimation =
   | 'idle'
@@ -41,6 +42,7 @@ export type PetAnimation =
   | 'askAttention'
   | 'celebrate'
   | 'playAlone'
+  | 'ponder'
 
 /** Horizontal zone the pet currently occupies inside the Room canvas — see lib/pet-care/autonomous-action-selector.ts#zoneAfter. */
 export type PetZone = 'left' | 'center' | 'right'
@@ -59,6 +61,7 @@ export type AutonomousActionId =
   | 'askAttention'
   | 'celebrate'
   | 'playAlone'
+  | 'ponder'
 
 /** Priority state the Room screen composes speech/animation from — see lib/pet-care/interaction-mode.ts. Purely a derived display value; gating itself is done via linear hook call order (see room-screen.tsx). */
 export type PetInteractionMode = 'idle' | 'autonomous' | 'userAction' | 'speaking' | 'levelUp' | 'gameReaction'
@@ -81,6 +84,15 @@ export interface PetCareState {
   intimacyExp: number
   /** Reward levels already granted — guards against re-granting on reload/replay. */
   unlockedRewardLevels: number[]
+  /**
+   * The most recent GIFT_LEVEL_INTERVAL milestone (see
+   * lib/config/character-state.config.ts) crossed and not yet claimed — null
+   * once claimed (tapping the Statling while this is set). Deliberately
+   * separate from `unlockedRewardLevels`/leveling.ts's REWARD_UNLOCKS: this
+   * is a presentational-only "gift" art state, never a mission/achievement
+   * payload.
+   */
+  giftReadyLevel: number | null
   /** ISO timestamp — the ground truth decay is computed from. */
   lastUpdatedAt: string
   cooldowns: CooldownState
@@ -113,6 +125,8 @@ export interface PendingGameReaction {
   stat: StatId
   normalizedScore: number
   accuracy?: number
+  /** Mirrors GameResult.isPersonalBest — a personal-best completion always reads as 'excited' (see lib/pet-care/game-reactions.ts), regardless of which stat it was. */
+  isPersonalBest: boolean
   completedAt: string
 }
 

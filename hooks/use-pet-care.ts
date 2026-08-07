@@ -13,6 +13,12 @@ import {
   OVERPET_REACTION_HOLD_MS,
 } from '@/lib/config/pet-care.config'
 import {
+  GIFT_LEVEL_INTERVAL,
+  OVERTALK_COUNT_THRESHOLD,
+  OVERTALK_REACTION_HOLD_MS,
+  OVERTALK_WINDOW_MS,
+} from '@/lib/config/character-state.config'
+import {
   buildDirectEffect,
   getCooldownStatus,
   performClean,
@@ -46,10 +52,24 @@ export interface LevelUpEvent {
   unlocks: RewardUnlock[]
 }
 
+/**
+ * `lonely` deliberately does NOT force 'sad' here (unlike a real sad mood) —
+ * it stays plain 'idle' so the animation switch's idle-family `break` cases
+ * let it fall through to characterStateForInteraction's mood switch, which
+ * resolves lonely to its own 'cry' art. Forcing 'sad' here would intercept
+ * that resolution earlier (the 'sad' PetAnimation case returns 'sad'
+ * unconditionally), making 'cry' unreachable in practice.
+ */
 function idleAnimationForMood(mood: Mood): PetAnimation {
   if (mood === 'sleepy') return 'sleep'
-  if (mood === 'sad' || mood === 'lonely') return 'sad'
+  if (mood === 'sad') return 'sad'
   return 'idle'
+}
+
+/** Highest GIFT_LEVEL_INTERVAL milestone among the levels just crossed, or null if none — see PetCareState.giftReadyLevel. */
+function giftMilestoneCrossed(levelsGained: number[]): number | null {
+  const milestones = levelsGained.filter((level) => level % GIFT_LEVEL_INTERVAL === 0)
+  return milestones.length > 0 ? Math.max(...milestones) : null
 }
 
 let deltaIdSeq = 0
@@ -80,6 +100,9 @@ export function usePetCare() {
   /** True for OVERPET_REACTION_HOLD_MS right after a petting streak crosses OVERPET_COUNT_THRESHOLD — see the 'pet' case in performAction below. Session-only, not persisted. */
   const [isOverPetted, setIsOverPetted] = useState(false)
   const petClickTimestampsRef = useRef<number[]>([])
+  /** Mirrors isOverPetted/petClickTimestampsRef exactly, for the 'talk' action — see the 'talk' case in performAction below. */
+  const [isOverTalked, setIsOverTalked] = useState(false)
+  const talkClickTimestampsRef = useRef<number[]>([])
 
   const petStateRef = useRef(petState)
   petStateRef.current = petState
@@ -190,9 +213,11 @@ export function usePetCare() {
 
     if (result.levelUp) {
       const unlocks = getNewlyUnlockedRewards(beforeLevel, result.levelUp.level, finalPetState.unlockedRewardLevels)
+      const giftLevel = giftMilestoneCrossed(result.levelUp.levelsGained)
       finalPetState = {
         ...finalPetState,
         unlockedRewardLevels: [...finalPetState.unlockedRewardLevels, ...unlocks.map((u) => u.level)],
+        giftReadyLevel: giftLevel ?? finalPetState.giftReadyLevel,
       }
       play('pet-level-up')
       setLevelUpEvent({ key: Date.now(), level: result.levelUp.level, unlocks })
@@ -247,10 +272,30 @@ export function usePetCare() {
         finalizeAction(performPet(pet, now))
         return
       }
-      case 'talk':
+      case 'talk': {
+        const nowMs = now.getTime()
+        const recentClicks = [...talkClickTimestampsRef.current, nowMs].filter(
+          (t) => nowMs - t < OVERTALK_WINDOW_MS,
+        )
+        talkClickTimestampsRef.current = recentClicks
+        if (recentClicks.length >= OVERTALK_COUNT_THRESHOLD) {
+          talkClickTimestampsRef.current = [] // fires once per streak, not on every talk after
+          setIsOverTalked(true)
+          schedule(() => setIsOverTalked(false), OVERTALK_REACTION_HOLD_MS)
+        }
         finalizeAction(performTalk(pet, mood, now))
         return
+      }
     }
+  }
+
+  /** Tapping the Statling while a gift is ready — clears giftReadyLevel and shows a small thank-you. A no-op otherwise (see pet-mood-view.tsx's click handler). */
+  function claimGift() {
+    if (petStateRef.current.giftReadyLevel === null) return
+    const nextState: PetCareState = { ...petStateRef.current, giftReadyLevel: null }
+    setPetState(nextState)
+    savePetCareState(nextState)
+    showSpeech('고마워요! 소중히 간직할게요.')
   }
 
   /**
@@ -273,9 +318,11 @@ export function usePetCare() {
 
     if (result.levelUp) {
       const unlocks = getNewlyUnlockedRewards(beforeLevel, result.levelUp.level, finalPetState.unlockedRewardLevels)
+      const giftLevel = giftMilestoneCrossed(result.levelUp.levelsGained)
       finalPetState = {
         ...finalPetState,
         unlockedRewardLevels: [...finalPetState.unlockedRewardLevels, ...unlocks.map((u) => u.level)],
+        giftReadyLevel: giftLevel ?? finalPetState.giftReadyLevel,
       }
       play('pet-level-up')
       setLevelUpEvent({ key: Date.now(), level: result.levelUp.level, unlocks })
@@ -313,12 +360,14 @@ export function usePetCare() {
     floatingDeltas,
     levelUpEvent,
     isOverPetted,
+    isOverTalked,
     lastUserActionAt,
     expToNext: expRequiredForLevel(petState.intimacyLevel),
     cooldowns,
     attentionFlags,
     performAction,
     applyEffect,
+    claimGift,
     /** Tap-to-dismiss support — lets room-screen close the bubble immediately instead of waiting out its auto-hide timer. */
     dismissSpeech: () => setSpeech(null),
   }

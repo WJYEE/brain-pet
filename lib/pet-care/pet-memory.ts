@@ -6,6 +6,7 @@ import {
   RECENT_INITIATED_DIALOGUE_HISTORY_SIZE,
 } from '@/lib/config/pet-care.config'
 import { PENDING_GAME_REACTION_MAX_AGE_MS } from '@/lib/config/game-reactions.config'
+import { LOVE_CONSISTENT_PLAY_COUNT_THRESHOLD } from '@/lib/config/character-state.config'
 import { normalizedScoreFor } from '@/lib/pet-care/game-reactions'
 import { pushRecentId } from '@/lib/pet-care/dialogue'
 import { toLocalDateKey } from '@/lib/pet-care/visit-context'
@@ -118,12 +119,25 @@ export function recordGameCompletion(memory: PetMemory, result: GameResult, now:
 
   return {
     ...memory,
-    pendingGameReaction: { gameId, stat: result.gameId, normalizedScore, accuracy, completedAt: now.toISOString() },
+    pendingGameReaction: {
+      gameId,
+      stat: result.gameId,
+      normalizedScore,
+      accuracy,
+      isPersonalBest: result.isPersonalBest,
+      completedAt: now.toISOString(),
+    },
     recentGameIds: pushRecentId(memory.recentGameIds, gameId, RECENT_GAME_HISTORY_SIZE),
     recentGameStats: pushRecentId(memory.recentGameStats, result.gameId, RECENT_GAME_HISTORY_SIZE) as StatId[],
     gamePlayCountsByStat,
     mostPlayedStat: mostFrequentEntry(gamePlayCountsByStat),
   }
+}
+
+/** "미니게임을 일정 수준 이상 꾸준히 플레이했을 때" (the 'love' art's second trigger — see character-state.config.ts) — total completions logged across every stat, so no single game needs to be replayed a lot on its own. */
+export function isConsistentPlayer(memory: PetMemory): boolean {
+  const totalPlays = Object.values(memory.gamePlayCountsByStat).reduce((sum: number, count) => sum + (count ?? 0), 0)
+  return totalPlays >= LOVE_CONSISTENT_PLAY_COUNT_THRESHOLD
 }
 
 /** A pendingGameReaction sitting unconsumed for over 24h reads as stale — discard it rather than surprise the player with an old result. */

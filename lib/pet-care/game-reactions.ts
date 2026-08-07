@@ -141,11 +141,16 @@ export interface GameReactionResolution {
   intimacyExp: number
 }
 
-/** Never fails on missing tier data — resolveGameReaction always has a full dialogue/effect table for all 6 stats. */
+/**
+ * Never fails on missing tier data — resolveGameReaction always has a full
+ * dialogue/effect table for all 6 stats. A personal-best completion always
+ * plays 'celebrate' (-> the 'excited' art) regardless of which stat it was —
+ * "미니게임 최고기록 갱신 시" outranks the per-stat animation table below.
+ */
 export function resolveGameReaction(pending: PendingGameReaction): GameReactionResolution {
   const tier = reactionTierFor(pending.normalizedScore)
   return {
-    animation: ANIMATION_BY_STAT[pending.stat],
+    animation: pending.isPersonalBest ? 'celebrate' : ANIMATION_BY_STAT[pending.stat],
     dialogue: pickReactionDialogue(pending.stat, tier),
     deltas: { happiness: GAME_REACTION_HAPPINESS_BY_TIER[tier] },
     intimacyExp: GAME_REACTION_EXP_GAIN,

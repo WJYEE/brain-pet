@@ -18,6 +18,7 @@ export function createDefaultPetCareState(): PetCareState {
     intimacyLevel: 1,
     intimacyExp: 0,
     unlockedRewardLevels: [],
+    giftReadyLevel: null,
     lastUpdatedAt: new Date().toISOString(),
     cooldowns: {},
     recentDialogueIds: [],

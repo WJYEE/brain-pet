@@ -13,7 +13,7 @@ import {
   type CharacterStateFolder,
 } from '@/lib/character-state-assets'
 import { loadSavedDecoPlacementState } from '@/lib/deco-placement-storage'
-import type { Mood, PetAnimation } from '@/lib/pet-care/types'
+import type { CareStatId, Mood, PetAnimation } from '@/lib/pet-care/types'
 import { cn } from '@/lib/utils'
 
 /**
@@ -65,6 +65,7 @@ const ANIMATION_CLASS: Record<PetAnimation, string> = {
   askAttention: 'animate-pet-gesture',
   celebrate: 'animate-pet-celebrate',
   playAlone: 'animate-pet-play', // reuses the button-놀기 motion — same visual, only the trigger source differs
+  ponder: 'animate-float', // a calm musing beat — reuses the plain idle float rather than a new keyframe
 }
 
 interface PetMoodViewProps {
@@ -79,10 +80,22 @@ interface PetMoodViewProps {
   onDismissSpeech?: () => void
   /** Signed lean angle (degrees) while walking left/right — see hooks/use-pet-autonomy.ts's `walkTiltDeg`. 0 the rest of the time. */
   tiltDeg?: number
-  /** Raw 0-100 cleanliness stat — only used (tester mode) to tell a freshly-dirty mood apart from a long-neglected one. See characterStateForInteraction. */
-  cleanliness?: number
+  /** Which way the body currently faces — see hooks/use-pet-autonomy.ts's `facing`. The source art always faces 'left'; 'right' mirrors it (and everything layered on it, deco included) via CSS scaleX(-1). */
+  facing?: 'left' | 'right'
+  /** Raw 0-100 care stats — several of the 24 states (sick/tired/love/excited/happy, and each action's "already satisfied" check) read straight from these. See characterStateForInteraction. */
+  stats: Record<CareStatId, number>
   /** True briefly after a petting streak — see hooks/use-pet-care.ts's `isOverPetted`. */
   isOverPetted?: boolean
+  /** True briefly after a talking streak — see hooks/use-pet-care.ts's `isOverTalked`. */
+  isOverTalked?: boolean
+  /** True briefly right after mount, following a long absence — see room-screen.tsx's `isReconnectGreeting`. */
+  isReconnectGreeting?: boolean
+  /** True while an unclaimed level-milestone gift is waiting — tapping the Statling (see the click handler below) claims it. */
+  isGiftReady?: boolean
+  /** "미니게임을 일정 수준 이상 꾸준히 플레이했을 때" — see lib/pet-care/pet-memory.ts#isConsistentPlayer. */
+  isConsistentPlayer?: boolean
+  /** Called when the Statling is tapped while isGiftReady — see hooks/use-pet-care.ts's `claimGift`. */
+  onClaimGift?: () => void
   /**
    * Dev/QA only (see qa-skip-menu.tsx) — when set, the character is rendered
    * from this folder's 24-state art instead of the normal petProfile/type
@@ -114,8 +127,14 @@ export function PetMoodView({
   playVariantId,
   positionOffsetPx = 0,
   tiltDeg = 0,
-  cleanliness,
+  facing = 'left',
+  stats,
   isOverPetted = false,
+  isOverTalked = false,
+  isReconnectGreeting = false,
+  isGiftReady = false,
+  isConsistentPlayer = false,
+  onClaimGift,
   onDismissSpeech,
   testerFolder,
 }: PetMoodViewProps) {
@@ -157,7 +176,16 @@ export function PetMoodView({
   const activeFolder = testerFolder ?? realFolder
 
   const liveStateKey = activeFolder
-    ? characterStateForInteraction({ mood, animation, cleanliness, isOverPetted })
+    ? characterStateForInteraction({
+        mood,
+        animation,
+        stats,
+        isOverPetted,
+        isOverTalked,
+        isReconnectGreeting,
+        isGiftReady,
+        isConsistentPlayer,
+      })
     : null
 
   // Periodic blink — only while the live (non-preview) state genuinely reads
@@ -210,7 +238,15 @@ export function PetMoodView({
         <PetSpeechBubble key={speech} text={speech} onDismiss={onDismissSpeech} className="absolute -top-16 z-10" />
       )}
 
-      <div className="relative">
+      {/* Facing flip — separate from the outer zone-move transform above, its
+          own short transition, and applied here (not on the outer wrapper)
+          so it mirrors the character + DecoOverlay together (a placed
+          sticker keeps tracking the same anchor as the body turns) while
+          leaving the speech bubble sibling above completely unaffected. */}
+      <div
+        className="pet-facing-transition relative"
+        style={{ transform: facing === 'right' ? 'scaleX(-1)' : 'scaleX(1)' }}
+      >
         {testerFolder ? (
           <button
             type="button"
@@ -234,19 +270,42 @@ export function PetMoodView({
             />
           </button>
         ) : realFolder && petProfile ? (
-          <DecoOverlay
-            items={decoItems}
-            characterSize={CHARACTER_BOX_SIZE}
-            anchors={anchors}
-            characterSlot={
-              <AssetImage
-                src={realFolder.assets[stateDef.key]}
-                alt={petProfile.name}
-                size={CHARACTER_BOX_SIZE}
-                className={ANIMATION_CLASS[animation]}
+          isGiftReady ? (
+            <button
+              type="button"
+              onClick={onClaimGift}
+              className="block cursor-pointer rounded-full"
+              title="탭해서 선물을 받아보세요"
+            >
+              <DecoOverlay
+                items={decoItems}
+                characterSize={CHARACTER_BOX_SIZE}
+                anchors={anchors}
+                characterSlot={
+                  <AssetImage
+                    src={realFolder.assets[stateDef.key]}
+                    alt={petProfile.name}
+                    size={CHARACTER_BOX_SIZE}
+                    className={ANIMATION_CLASS[animation]}
+                  />
+                }
               />
-            }
-          />
+            </button>
+          ) : (
+            <DecoOverlay
+              items={decoItems}
+              characterSize={CHARACTER_BOX_SIZE}
+              anchors={anchors}
+              characterSlot={
+                <AssetImage
+                  src={realFolder.assets[stateDef.key]}
+                  alt={petProfile.name}
+                  size={CHARACTER_BOX_SIZE}
+                  className={ANIMATION_CLASS[animation]}
+                />
+              }
+            />
+          )
         ) : (
           <DecoOverlay
             items={decoItems}

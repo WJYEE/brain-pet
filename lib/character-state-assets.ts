@@ -1,4 +1,18 @@
-import type { Mood, PetAnimation } from '@/lib/pet-care/types'
+import {
+  FEED_SATIETY_MAX_THRESHOLD,
+  PET_AFFECTION_MAX_THRESHOLD,
+  PLAY_HAPPINESS_MAX_THRESHOLD,
+  SHOWER_CLEANLINESS_MAX_THRESHOLD,
+} from '@/lib/config/pet-care.config'
+import {
+  EXCITED_HAPPINESS_THRESHOLD,
+  HAPPY_ALL_STATS_THRESHOLD,
+  LOVE_AFFECTION_THRESHOLD,
+  SICK_CLEANLINESS_THRESHOLD,
+  SICK_SATIETY_THRESHOLD,
+  TIRED_ENERGY_THRESHOLD,
+} from '@/lib/config/character-state.config'
+import type { CareStatId, Mood, PetAnimation } from '@/lib/pet-care/types'
 
 /**
  * The 24-state expression set a fully-illustrated character folder provides
@@ -156,50 +170,88 @@ export const TESTER_CHARACTER_FOLDERS: CharacterStateFolder[] = CHARACTER_ROSTER
 )
 
 /**
- * Maps the app's real Mood/PetAnimation state (lib/pet-care/types.ts) onto
- * the closest of the 24 character states, so the QA tester view can show
- * the actual matching art for actual interactions (feed/wash/play/pet/talk,
- * mood shifts) rather than a manual-only preview.
+ * Maps the app's real Mood/PetAnimation/stat state (lib/pet-care/types.ts)
+ * onto the closest of the 24 character states, so both the live Room and the
+ * QA tester view show the actual matching art for actual interactions
+ * (feed/wash/play/pet/talk, mood shifts, milestones) rather than a
+ * manual-only preview.
  *
- * `animation` wins over `mood` whenever it's not the idle fallback — an
- * action (eating, being petted, ...) briefly overrides whatever the mood
- * would otherwise show, same priority `lib/pet-care` already uses for the
- * CSS motion class.
+ * Every one of the 24 states now has a real trigger EXCEPT `embarrassed`
+ * (reserved for a future dialogue line — see lib/pet-care/dialogue.ts) and
+ * `evolve` (no evolution feature exists yet); both are still reachable via
+ * the tester's manual click-through preview.
  *
- * Not every one of the 24 states has a real trigger yet — embarrassed, love
- * (planned for the future dialogue/talk feature), gift (planned for a future
- * level-reward claim popup), and evolve (no evolution feature exists yet)
- * are only reachable via the tester's manual click-through preview, not this
- * function.
+ * Priority, top to bottom (see each section's own comment for why):
+ * 1. Over-petting/over-talking — wins regardless of the underlying action's
+ *    tier, so even an already-satisfied press still reads as annoyed once
+ *    the streak crosses its threshold.
+ * 2. The action currently playing (eat/wash/play/pet/talk/...) — each one
+ *    individually re-checked against the matching stat's "already
+ *    satisfied" ceiling, since that's a mapping decision (art), never an
+ *    effect decision (numbers), which stays in lib/pet-care/actions.ts.
+ * 3. A brief reconnect flash after a long absence.
+ * 4. `sick` — satiety AND cleanliness both critically low, checked
+ *    independent of Mood entirely (Mood's own hungry-before-dirty priority
+ *    means it can never represent "both are bad at once").
+ * 5. Mood's own urgent physical needs (hungry/dirty/lonely) — unchanged.
+ * 6. An unclaimed level-milestone gift — persists until the Statling is tapped.
+ * 7. `love` — affection maxed, or a consistently-played history.
+ * 8. `excited` — happiness maxed.
+ * 9. Mood sleepy -> `sleep`.
+ * 10. `tired` — energy low but not sleepy-low, across any non-urgent Mood.
+ * 11. Mood's remaining bands: sad / happy (gated on all 4 stats) / calm.
  */
 export interface InteractionStateContext {
   mood: Mood
   animation: PetAnimation
-  /** Raw 0-100 cleanliness stat. A 'dirty' mood only escalates to the 'sick' art once this drops below SICK_CLEANLINESS_THRESHOLD — i.e. neglected for a while, not just freshly dirty. Defaults to 100 (never sick) when omitted. */
-  cleanliness?: number
-  /** True for a few seconds right after a petting streak crosses OVERPET_COUNT_THRESHOLD (see hooks/use-pet-care.ts) — swaps the 'pet' animation's art to 'angry' for that window. Defaults to false. */
+  /** Raw 0-100 care stats — several states below (sick/tired/love/excited/happy, and each action's "already satisfied" check) need more than the single representative Mood to resolve correctly. */
+  stats: Record<CareStatId, number>
+  /** True for a few seconds right after a petting streak crosses OVERPET_COUNT_THRESHOLD (see hooks/use-pet-care.ts). */
   isOverPetted?: boolean
+  /** True for a few seconds right after a talking streak crosses OVERTALK_COUNT_THRESHOLD (see hooks/use-pet-care.ts) — mirrors isOverPetted. */
+  isOverTalked?: boolean
+  /** True for a brief window right after entering the Room following a long absence (lib/pet-care/visit-context.ts's isLongAbsence). */
+  isReconnectGreeting?: boolean
+  /** True while a GIFT_LEVEL_INTERVAL milestone is crossed and unclaimed (PetCareState.giftReadyLevel != null) — see lib/config/character-state.config.ts. */
+  isGiftReady?: boolean
+  /** "미니게임을 일정 수준 이상 꾸준히 플레이했을 때" — see lib/pet-care/pet-memory.ts#isConsistentPlayer. */
+  isConsistentPlayer?: boolean
 }
-
-/** Below this cleanliness, a 'dirty' mood reads as neglected-long-enough-to-be-sick rather than just freshly dirty. */
-export const SICK_CLEANLINESS_THRESHOLD = 10
 
 export function characterStateForInteraction({
   mood,
   animation,
-  cleanliness = 100,
+  stats,
   isOverPetted = false,
+  isOverTalked = false,
+  isReconnectGreeting = false,
+  isGiftReady = false,
+  isConsistentPlayer = false,
 }: InteractionStateContext): CharacterStateKey {
+  // Over-use wins outright — checked ahead of the action switch so it
+  // applies whether or not that action's own tier would otherwise suppress
+  // its art (see the 'pet'/'talk' cases below).
+  if (animation === 'pet' && isOverPetted) return 'angry'
+  if (animation === 'talk' && isOverTalked) return 'angry'
+
   switch (animation) {
     case 'eat':
-      return 'eat'
+      // Already full: no fresh 'eat' happened, so fall through to the
+      // idle-family tier below instead of claiming one.
+      if (stats.satiety < FEED_SATIETY_MAX_THRESHOLD) return 'eat'
+      break
     case 'wash':
-      return 'wash'
+      // Already clean: reads as "어, 씻길 게 없는데?" surprise, not a fallback
+      // to idle — mirrors performClean's alreadyClean case (always 'shake').
+      if (stats.cleanliness < SHOWER_CLEANLINESS_MAX_THRESHOLD) return 'wash'
+      return 'surprised'
     case 'play':
     case 'playAlone':
-      return 'play'
+      if (stats.happiness < PLAY_HAPPINESS_MAX_THRESHOLD) return 'play'
+      break
     case 'pet':
-      return isOverPetted ? 'angry' : 'pet'
+      if (stats.affection < PET_AFFECTION_MAX_THRESHOLD) return 'pet'
+      break
     case 'talk':
       return 'talk'
     case 'sleep':
@@ -210,6 +262,8 @@ export function characterStateForInteraction({
     // reused for anything else, so it maps 1:1 to the levelUp art.
     case 'jump':
       return 'levelUp'
+    // Also the target of a personal-best minigame reaction — see
+    // lib/pet-care/game-reactions.ts#resolveGameReaction.
     case 'celebrate':
       return 'excited'
     // 청소하기(room clean) — reads as "어, 방이 반짝여졌네?" surprise rather than a generic smile.
@@ -221,6 +275,9 @@ export function characterStateForInteraction({
       return 'thinking'
     case 'askAttention':
       return 'surprised'
+    // The 'thinking' art's "가끔 랜덤으로" trigger (see autonomous-action-selector.ts).
+    case 'ponder':
+      return 'thinking'
     case 'lookLeft':
     case 'lookRight':
     case 'hop':
@@ -229,21 +286,25 @@ export function characterStateForInteraction({
       break
   }
 
-  switch (mood) {
-    case 'hungry':
-      return 'hungry'
-    case 'dirty':
-      return cleanliness <= SICK_CLEANLINESS_THRESHOLD ? 'sick' : 'dirty'
-    case 'lonely':
-      return 'cry'
-    case 'sleepy':
-      return 'tired'
-    case 'sad':
-      return 'sad'
-    case 'joyful':
-    case 'happy':
-      return 'happy'
-    case 'calm':
-      return 'idle'
+  // Idle-family fallback tier — see the priority list in this function's doc comment.
+  if (isReconnectGreeting) return 'angry'
+  if (stats.satiety <= SICK_SATIETY_THRESHOLD && stats.cleanliness <= SICK_CLEANLINESS_THRESHOLD) return 'sick'
+  if (mood === 'hungry') return 'hungry'
+  if (mood === 'dirty') return 'dirty'
+  if (mood === 'lonely') return 'cry'
+  if (isGiftReady) return 'gift'
+  if (stats.affection >= LOVE_AFFECTION_THRESHOLD || isConsistentPlayer) return 'love'
+  if (stats.happiness >= EXCITED_HAPPINESS_THRESHOLD) return 'excited'
+  if (mood === 'sleepy') return 'sleep'
+  if (stats.energy < TIRED_ENERGY_THRESHOLD) return 'tired'
+  if (mood === 'sad') return 'sad'
+  if (mood === 'joyful' || mood === 'happy') {
+    const allFourSatisfied =
+      stats.satiety >= HAPPY_ALL_STATS_THRESHOLD &&
+      stats.cleanliness >= HAPPY_ALL_STATS_THRESHOLD &&
+      stats.affection >= HAPPY_ALL_STATS_THRESHOLD &&
+      stats.happiness >= HAPPY_ALL_STATS_THRESHOLD
+    return allFourSatisfied ? 'happy' : 'idle'
   }
+  return 'idle' // calm
 }

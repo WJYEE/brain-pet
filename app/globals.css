@@ -356,6 +356,14 @@
   .pet-zone-transition {
     transition: transform 700ms ease-in-out;
   }
+
+  /* Body-facing flip (scaleX(-1) on walkRight, back to none on walkLeft) —
+     deliberately much shorter than the 700ms zone move: the turn should read
+     as quick, with the walk itself being the slower part. Same
+     class-not-inline-style reasoning as .pet-zone-transition above. */
+  .pet-facing-transition {
+    transition: transform 200ms ease-in-out;
+  }
 }
 
 /* Reduced-motion users still get the full pop/scale-free content — the
@@ -399,6 +407,9 @@
   }
   /* The zone (left/center/right) move still happens, just as an instant snap instead of a slide — spec: "이동 최소화". */
   .pet-zone-transition {
+    transition: none;
+  }
+  .pet-facing-transition {
     transition: none;
   }
 }

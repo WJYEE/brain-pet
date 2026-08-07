@@ -1,9 +1,11 @@
 import {
   FEED_EFFECT,
   FEED_SATIETY_MAX_THRESHOLD,
+  PET_AFFECTION_MAX_THRESHOLD,
   PET_EFFECT,
   PET_REACTION_THRESHOLDS,
   PLAY_EFFECT,
+  PLAY_HAPPINESS_MAX_THRESHOLD,
   SHOWER_CLEANLINESS_MAX_THRESHOLD,
   SHOWER_EFFECT,
 } from '@/lib/config/pet-care.config'
@@ -58,12 +60,20 @@ export function showerMessageFor(tier: IntensityTier): string | undefined {
 
 // ---- 놀기 ----
 
-/** Below lowEnergy: a gentler play instead of the old full suppression — still applies a (reduced) effect rather than zero, per this feature's spec. */
-export function playTier(energyBefore: number): IntensityTier {
+/**
+ * Below lowEnergy: a gentler play instead of the old full suppression —
+ * still applies a (reduced) effect rather than zero, per this feature's
+ * spec. `high` (happiness already at/above PLAY_HAPPINESS_MAX_THRESHOLD)
+ * mirrors feedTier/showerTier's "already full" suppression — checked first
+ * since a maxed-out happiness reading takes priority over the low-energy read.
+ */
+export function playTier(energyBefore: number, happinessBefore: number): IntensityTier {
+  if (happinessBefore >= PLAY_HAPPINESS_MAX_THRESHOLD) return 'high'
   return energyBefore < PET_REACTION_THRESHOLDS.lowEnergy ? 'low' : 'mid'
 }
 
 export function playEffectFor(tier: IntensityTier, happinessBefore: number): Partial<Record<CareStatId, number>> {
+  if (tier === 'high') return {}
   if (tier === 'low') {
     return {
       happiness: Math.round(PLAY_EFFECT.happiness * 0.6),
@@ -76,6 +86,7 @@ export function playEffectFor(tier: IntensityTier, happinessBefore: number): Par
 }
 
 export function playMessageFor(tier: IntensityTier): string | undefined {
+  if (tier === 'high') return '이미 충분히 즐거워요!'
   return tier === 'low' ? '오늘은 천천히 놀자.' : undefined
 }
 
@@ -87,12 +98,18 @@ export function petIntimacyTier(intimacyLevel: number): IntensityTier {
   return 'high'
 }
 
-/** Numeric effect never changes by intimacy tier (PET_EFFECT stays constant) — only the reaction text/animation nuance does. */
-export function petEffectFor(): Partial<Record<CareStatId, number>> {
-  return { affection: PET_EFFECT.affection, happiness: PET_EFFECT.happiness }
+/** Above this affection, "쓰다듬기" is already-satisfied (suppressed effect) — a separate axis from petIntimacyTier (which only nuances the reaction text/animation, never suppresses the effect). */
+export function petAlreadySatisfied(affectionBefore: number): boolean {
+  return affectionBefore >= PET_AFFECTION_MAX_THRESHOLD
 }
 
-export function petMessageFor(tier: IntensityTier): string | undefined {
+/** Numeric effect never changes by intimacy tier (PET_EFFECT stays constant) — only the reaction text/animation nuance does. Suppressed entirely when petAlreadySatisfied. */
+export function petEffectFor(alreadySatisfied: boolean): Partial<Record<CareStatId, number>> {
+  return alreadySatisfied ? {} : { affection: PET_EFFECT.affection, happiness: PET_EFFECT.happiness }
+}
+
+export function petMessageFor(tier: IntensityTier, alreadySatisfied: boolean): string | undefined {
+  if (alreadySatisfied) return '이미 사랑을 듬뿍 받고 있어요!'
   if (tier === 'low') return '앗, 깜짝이야...'
   if (tier === 'high') return '더 가까이 있고 싶어요.'
   return undefined

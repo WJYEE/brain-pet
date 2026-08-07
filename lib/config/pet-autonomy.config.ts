@@ -26,6 +26,7 @@ export const AUTONOMOUS_ACTION_HOLD_MS: Record<AutonomousActionId, number> = {
   askAttention: 2_400,
   celebrate: 1_600,
   playAlone: 2_600,
+  ponder: 1_800,
 }
 
 /** Fixed pixel offsets for the 3-zone horizontal layout — see pet-mood-view.tsx's `positionOffsetPx`. */

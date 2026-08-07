@@ -22,8 +22,10 @@ import { CARE_ACTIONS } from '@/lib/room'
 import { ROOM_ASSETS } from '@/lib/room-assets'
 import { loadSavedRoomState } from '@/lib/room/room-storage'
 import { MOOD_LABEL, SECONDARY_TAG_LABEL } from '@/lib/pet-care/mood'
+import { isConsistentPlayer } from '@/lib/pet-care/pet-memory'
 import { computeInteractionMode } from '@/lib/pet-care/interaction-mode'
 import type { PetAnimation } from '@/lib/pet-care/types'
+import { RECONNECT_ANGRY_HOLD_MS } from '@/lib/config/character-state.config'
 
 interface RoomScreenProps {
   statlingName: string
@@ -97,6 +99,21 @@ export function RoomScreen({ statlingName, topStat, petProfile, onGrow, onOpenMi
   const [roomState] = useState(() => loadSavedRoomState())
   const backgroundAsset = ROOM_ASSETS[roomState.backgroundId] ?? ROOM_ASSETS['wood-background']
 
+  // Brief "화났어요" flash right after entering following a long absence
+  // (memory.visitContext.isLongAbsence, frozen at mount) — a momentary
+  // flourish, not a lingering mood; the normal longAbsence welcome dialogue
+  // (usePetInitiatedDialogue) plays independently of this.
+  const [isReconnectGreeting, setIsReconnectGreeting] = useState(memory.visitContext.isLongAbsence)
+  useEffect(() => {
+    if (!isReconnectGreeting) return
+    const id = window.setTimeout(() => setIsReconnectGreeting(false), RECONNECT_ANGRY_HOLD_MS)
+    return () => window.clearTimeout(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire once for this mount's initial value only
+  }, [])
+
+  const isGiftReady = care.petState.giftReadyLevel !== null
+  const isConsistentPlayerNow = isConsistentPlayer(memory.memory)
+
   useEffect(() => {
     if (!care.levelUpEvent) return
     toastManager.add({ title: `Lv.${care.levelUpEvent.level} 달성!`, type: 'success' })
@@ -141,6 +158,15 @@ export function RoomScreen({ statlingName, topStat, petProfile, onGrow, onOpenMi
     else if (actionId === 'shower') play('pet-wash')
     else if (actionId === 'play') play('pet-play')
     else if (actionId === 'pet') play('pet-care-pop')
+  }
+
+  /** Blocks 성장시키기(and therefore every minigame it leads to) while the Statling is asleep — the only entry point into Grow/minigames from Room. */
+  function handleGrowClick() {
+    if (care.mood === 'sleepy') {
+      toastManager.add({ title: 'Statling이 자고 있어요!', description: '잠에서 깨면 다시 시도해주세요.' })
+      return
+    }
+    onGrow()
   }
 
   return (
@@ -195,8 +221,14 @@ export function RoomScreen({ statlingName, topStat, petProfile, onGrow, onOpenMi
               playVariantId={care.petState.lastPlayVariantId}
               positionOffsetPx={autonomy.offsetPx}
               tiltDeg={autonomy.walkTiltDeg}
-              cleanliness={care.petState.stats.cleanliness}
+              facing={autonomy.facing}
+              stats={care.petState.stats}
               isOverPetted={care.isOverPetted}
+              isOverTalked={care.isOverTalked}
+              isReconnectGreeting={isReconnectGreeting}
+              isGiftReady={isGiftReady}
+              isConsistentPlayer={isConsistentPlayerNow}
+              onClaimGift={care.claimGift}
               onDismissSpeech={dismissSpeech}
               testerFolder={testerFolder}
             />
@@ -228,7 +260,7 @@ export function RoomScreen({ statlingName, topStat, petProfile, onGrow, onOpenMi
       </div>
 
       {/* grow CTA — the one action on this screen meant to stand out more than the compact HUD above */}
-      <ToyButton className="mx-auto mt-3 w-full max-w-xs px-5 py-2.5 sm:mt-4 sm:py-3" onClick={onGrow}>
+      <ToyButton className="mx-auto mt-3 w-full max-w-xs px-5 py-2.5 sm:mt-4 sm:py-3" onClick={handleGrowClick}>
         <Sparkles size={18} strokeWidth={2.6} />
         성장시키기
         <ArrowRight size={18} strokeWidth={2.8} />

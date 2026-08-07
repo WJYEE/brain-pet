@@ -35,6 +35,15 @@ export function usePetAutonomy(input: UsePetAutonomyInput) {
   const [animation, setAnimation] = useState<PetAnimation | null>(null)
   /** Signed lean angle while a walkLeft/walkRight move is in flight — 0 the rest of the time. See WALK_TILT_DEG. */
   const [walkTiltDeg, setWalkTiltDeg] = useState(0)
+  /**
+   * Which way the Statling's body currently faces — 'left' matches the
+   * source art's own facing (never flipped), so this only ever changes on an
+   * actual walkLeft/walkRight relocation (never on a mere lookLeft/lookRight
+   * glance) and then stays put (sticky) until the next one — the character
+   * keeps facing the direction it last walked, exactly like it visually kept
+   * moving that way.
+   */
+  const [facing, setFacing] = useState<'left' | 'right'>('left')
 
   const zoneRef = useRef(zone)
   zoneRef.current = zone
@@ -87,6 +96,8 @@ export function usePetAutonomy(input: UsePetAutonomyInput) {
       setAnimation(outcome.animation)
       setZone(outcome.zone)
       setWalkTiltDeg(outcome.animation === 'walk' && movedPx !== 0 ? Math.sign(movedPx) * WALK_TILT_DEG : 0)
+      if (action === 'walkLeft') setFacing('left')
+      else if (action === 'walkRight') setFacing('right')
 
       if (outcome.requestDialogueCategory) onRequestDialogueRef.current(outcome.requestDialogueCategory)
       if (outcome.bonusKind) onBonusRef.current(outcome.bonusKind)
@@ -128,5 +139,6 @@ export function usePetAutonomy(input: UsePetAutonomyInput) {
     animation,
     offsetPx: ZONE_OFFSET_PX[zone],
     walkTiltDeg,
+    facing,
   }
 }
