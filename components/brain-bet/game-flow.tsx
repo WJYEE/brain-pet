@@ -233,6 +233,8 @@ export function GameFlow() {
   /** A resumable Intro checkpoint found on mount (see lib/game/intro-progress-storage.ts) — non-null only while Landing can still offer "이어서 하기". Cleared the moment the player resumes, restarts, or the run finishes. */
   const [introResume, setIntroResume] = useState<IntroProgressState | null>(null)
   const [confirmingRestartIntro, setConfirmingRestartIntro] = useState(false)
+  /** Gates CompleteScreen's "다시 하기" (6/6 result screen) — same reset as confirmingRestartIntro (start()), just a separate trigger point with its own wording, so a stray tap can't silently discard the just-finished run either. */
+  const [confirmingReplayIntro, setConfirmingReplayIntro] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   /** Guards the auto-show effect below so it only ever fires once per mount, even as `phase` keeps changing between nav tabs — reopening manually (MyPageScreen's "온보딩 다시 보기") goes through setShowOnboarding directly and doesn't touch this. */
   const autoOnboardingShownRef = useRef(false)
@@ -1210,7 +1212,7 @@ export function GameFlow() {
               clearIntroProgress()
               handleMeetStatling()
             }}
-            onReplay={start}
+            onReplay={() => setConfirmingReplayIntro(true)}
           />
         )}
 
@@ -1355,6 +1357,16 @@ export function GameFlow() {
         confirmLabel="처음부터 다시 하기"
         cancelLabel="계속 이어하기"
         onConfirm={restartIntro}
+      />
+
+      <ConfirmDialog
+        open={confirmingReplayIntro}
+        onOpenChange={setConfirmingReplayIntro}
+        title="다시 하시겠어요?"
+        description="현재 진행 상황이 초기화됩니다."
+        confirmLabel="다시 하기"
+        cancelLabel="취소"
+        onConfirm={start}
       />
     </main>
   )
