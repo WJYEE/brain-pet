@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { PET_AUTONOMY_CONFIG, WALK_TILT_DEG, ZONE_OFFSET_PX } from '@/lib/config/pet-autonomy.config'
+import { PET_AUTONOMY_CONFIG, WALK_TILT_DEG, ZONE_OFFSET_SIGN } from '@/lib/config/pet-autonomy.config'
 import { pickAutonomousAction } from '@/lib/pet-care/autonomous-action-selector'
 import { resolveAutonomousOutcome } from '@/lib/pet-care/autonomous-actions'
 import type { InitiatedDialogueCategory } from '@/lib/pet-care/initiated-dialogue'
@@ -48,7 +48,7 @@ export function usePetAutonomy(input: UsePetAutonomyInput) {
   const zoneRef = useRef(zone)
   zoneRef.current = zone
   /** Last zone actually applied — compared against the new one each tick purely to sign the walk tilt (left move vs right move), independent of `action`'s exact id. */
-  const prevOffsetPxRef = useRef(ZONE_OFFSET_PX[zone])
+  const prevOffsetSignRef = useRef(ZONE_OFFSET_SIGN[zone])
   const lastActionIdRef = useRef<AutonomousActionId | null>(null)
   const statsRef = useRef(input.stats)
   statsRef.current = input.stats
@@ -80,22 +80,35 @@ export function usePetAutonomy(input: UsePetAutonomyInput) {
         return
       }
 
-      const action = pickAutonomousAction({
+      const rawAction = pickAutonomousAction({
         stats: statsRef.current,
         lastActionId: lastActionIdRef.current,
         reducedMotion: prefersReducedMotion(),
       })
+      // A walk picked while already sitting at an extreme always reverses —
+      // "이동 후... 방향을 바꿔 다시 이동" — instead of stepping further into
+      // the same wall/corner it's already at. This only ever remaps which
+      // *direction* a walk goes; whether a walk happens at all (and how
+      // often) is still entirely pickAutonomousAction's own unchanged
+      // weighted-random call, so the existing autonomy behavior/weighting is
+      // untouched.
+      const action: AutonomousActionId =
+        rawAction === 'walkLeft' && zoneRef.current === 'left'
+          ? 'walkRight'
+          : rawAction === 'walkRight' && zoneRef.current === 'right'
+            ? 'walkLeft'
+            : rawAction
       lastActionIdRef.current = action
       const outcome = resolveAutonomousOutcome(action, zoneRef.current)
 
-      const newOffsetPx = ZONE_OFFSET_PX[outcome.zone]
-      const movedPx = newOffsetPx - prevOffsetPxRef.current
-      prevOffsetPxRef.current = newOffsetPx
+      const newOffsetSign = ZONE_OFFSET_SIGN[outcome.zone]
+      const movedSign = newOffsetSign - prevOffsetSignRef.current
+      prevOffsetSignRef.current = newOffsetSign
 
       setActiveAction(action)
       setAnimation(outcome.animation)
       setZone(outcome.zone)
-      setWalkTiltDeg(outcome.animation === 'walk' && movedPx !== 0 ? Math.sign(movedPx) * WALK_TILT_DEG : 0)
+      setWalkTiltDeg(outcome.animation === 'walk' && movedSign !== 0 ? Math.sign(movedSign) * WALK_TILT_DEG : 0)
       if (action === 'walkLeft') setFacing('left')
       else if (action === 'walkRight') setFacing('right')
 
@@ -137,7 +150,7 @@ export function usePetAutonomy(input: UsePetAutonomyInput) {
   return {
     active: activeAction !== null,
     animation,
-    offsetPx: ZONE_OFFSET_PX[zone],
+    offsetSign: ZONE_OFFSET_SIGN[zone],
     walkTiltDeg,
     facing,
   }

@@ -13,6 +13,7 @@ import {
   type CharacterStateFolder,
 } from '@/lib/character-state-assets'
 import { loadSavedDecoPlacementState } from '@/lib/deco-placement-storage'
+import { WALK_OFFSET_DISTANCE } from '@/lib/config/pet-autonomy.config'
 import type { CareStatId, Mood, PetAnimation } from '@/lib/pet-care/types'
 import { cn } from '@/lib/utils'
 
@@ -75,8 +76,8 @@ interface PetMoodViewProps {
   animation: PetAnimation
   speech: string | null
   playVariantId?: string
-  /** Horizontal zone offset (px) from the autonomous scheduler — see hooks/use-pet-autonomy.ts. 0 = centered. */
-  positionOffsetPx?: number
+  /** Which horizontal zone the autonomous scheduler currently has the Statling in — -1 left / 0 centered / 1 right — see hooks/use-pet-autonomy.ts's `offsetSign`. The actual distance is WALK_OFFSET_DISTANCE (lib/config/pet-autonomy.config.ts), applied below via translateX(calc(sign * distance)). */
+  offsetSign?: -1 | 0 | 1
   onDismissSpeech?: () => void
   /** Signed lean angle (degrees) while walking left/right — see hooks/use-pet-autonomy.ts's `walkTiltDeg`. 0 the rest of the time. */
   tiltDeg?: number
@@ -125,7 +126,7 @@ export function PetMoodView({
   animation,
   speech,
   playVariantId,
-  positionOffsetPx = 0,
+  offsetSign = 0,
   tiltDeg = 0,
   facing = 'left',
   stats,
@@ -232,7 +233,7 @@ export function PetMoodView({
   return (
     <div
       className="pet-zone-transition relative flex flex-col items-center"
-      style={{ transform: `translateX(${positionOffsetPx}px) rotate(${tiltDeg}deg)` }}
+      style={{ transform: `translateX(calc(${offsetSign} * ${WALK_OFFSET_DISTANCE})) rotate(${tiltDeg}deg)` }}
     >
       {speech && (
         <PetSpeechBubble key={speech} text={speech} onDismiss={onDismissSpeech} className="absolute -top-16 z-10" />

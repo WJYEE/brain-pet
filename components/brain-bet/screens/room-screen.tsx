@@ -219,7 +219,7 @@ export function RoomScreen({ statlingName, topStat, petProfile, onGrow, onOpenMi
               animation={animation}
               speech={speech}
               playVariantId={care.petState.lastPlayVariantId}
-              positionOffsetPx={autonomy.offsetPx}
+              offsetSign={autonomy.offsetSign}
               tiltDeg={autonomy.walkTiltDeg}
               facing={autonomy.facing}
               stats={care.petState.stats}
