@@ -142,7 +142,6 @@ type Phase =
   | 'game'
   | 'complete'
   | 'freeplay-complete'
-  | 'status'
   | 'egg'
   | 'reveal'
   | 'save'
@@ -342,7 +341,6 @@ export function GameFlow() {
    */
   const isIntroPhase =
     phase === 'landing' ||
-    phase === 'status' ||
     phase === 'egg' ||
     phase === 'reveal' ||
     phase === 'save' ||
@@ -436,7 +434,12 @@ export function GameFlow() {
     setFlowMode('first')
     setIntroResume(null)
     if (nextIndex >= TOTAL_GAMES) {
-      setPhase('status')
+      // Defensive only — loadIntroProgress already treats a fully-completed
+      // checkpoint as "nothing to resume" (returns null), so introResume can
+      // never actually reach here with all 6 games done. If it somehow did,
+      // there's no just-played game left to show a result screen for, so
+      // skip straight to the same place a real finish now leads to.
+      handleMeetStatling(restoredFinals)
       return
     }
     setIndex(nextIndex)
@@ -450,16 +453,12 @@ export function GameFlow() {
     start()
   }
 
+  /** "다음" from any of the first 5 result screens. The 6th (last) result screen never calls this — it shows its own onMeetStatling/onReplay CTAs instead (see CompleteScreen's isLast branch and the 'complete' render below). */
   const goNextFirst = () => {
-    if (index < TOTAL_GAMES - 1) {
-      const nextIndex = index + 1
-      setIndex(nextIndex)
-      enterStatGame(PLAY_ORDER[nextIndex])
-      setPhase('game')
-    } else {
-      clearIntroProgress() // the run is fully done — nothing left to resume, see goNextFirst's else branch
-      setPhase('status')
-    }
+    const nextIndex = index + 1
+    setIndex(nextIndex)
+    enterStatGame(PLAY_ORDER[nextIndex])
+    setPhase('game')
   }
 
   /** Completion path for the real Reaction game. */
@@ -1203,6 +1202,15 @@ export function GameFlow() {
             personalBestScore={currentBestScore}
             isNewRecord={lastResult.isPersonalBest}
             onNext={goNextFirst}
+            onMeetStatling={() => {
+              // The run is fully done — nothing left to resume. Only reached
+              // from the last (6th) result screen (see CompleteScreen's
+              // isLast branch), which is this flow's final result page now
+              // that MY STATUS no longer appears in it.
+              clearIntroProgress()
+              handleMeetStatling()
+            }}
+            onReplay={start}
           />
         )}
 
@@ -1214,15 +1222,6 @@ export function GameFlow() {
             isNewRecord={lastResult.isPersonalBest}
             isRecommended={activeStatId === recommendedStat}
             onReturnToRoom={returnToRoom}
-          />
-        )}
-
-        {phase === 'status' && (
-          <StatusScreen
-            context="first-complete"
-            values={finals}
-            onMeetStatling={() => handleMeetStatling()}
-            onReplay={start}
           />
         )}
 

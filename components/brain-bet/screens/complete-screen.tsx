@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect } from 'react'
-import { ArrowRight, Check, PartyPopper, Trophy } from 'lucide-react'
+import { ArrowRight, Check, PartyPopper, RotateCcw, Trophy } from 'lucide-react'
 import { EggImage } from '@/components/brain-bet/egg-image'
 import { ProgressTrack } from '@/components/brain-bet/progress-track'
 import { RadarChart } from '@/components/brain-bet/radar-chart'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
+import { ToyButton } from '@/components/brain-bet/toy-button'
 import { useSound } from '@/hooks/use-sound'
 import { PLAY_ORDER, STATS, TOTAL_GAMES, type RawRecord, type StatId } from '@/lib/brain-bet'
 import { EGG_STAGE_MESSAGE } from '@/lib/egg-growth'
@@ -34,7 +35,17 @@ interface CompleteScreenProps {
   personalBestScore?: number | null
   /** whether this round's result is now the Personal Best */
   isNewRecord?: boolean
+  /** "다음: {stat}" — advances to the next game. Never called on the last (6th) result screen; that screen shows onMeetStatling/onReplay instead (see isLast below). */
   onNext: () => void
+  /**
+   * Primary CTA on the last (6th) result screen only — this screen now
+   * doubles as the final result page (MY STATUS's own screen was removed
+   * from this flow), so it borrows just MY STATUS's two actions rather than
+   * any of its other UI. Starts the hatch flow.
+   */
+  onMeetStatling: () => void
+  /** Secondary CTA on the last (6th) result screen only — restarts the 6-game Intro from game 1. */
+  onReplay: () => void
 }
 
 export function CompleteScreen({
@@ -46,6 +57,8 @@ export function CompleteScreen({
   personalBestScore,
   isNewRecord,
   onNext,
+  onMeetStatling,
+  onReplay,
 }: CompleteScreenProps) {
   const stat = STATS[statId]
   const isLast = index === TOTAL_GAMES - 1
@@ -154,19 +167,35 @@ export function CompleteScreen({
         <ProgressTrack current={index + 1} />
       </div>
 
-      {/* continue CTA */}
-      <button
-        type="button"
-        onClick={onNext}
-        className="group mt-8 inline-flex w-full max-w-md items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 font-display text-lg font-extrabold text-primary-foreground toy-border toy-shadow-lg transition-transform duration-150 hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none"
-      >
-        {isLast ? 'MY STATUS 보기' : `다음: ${nextStat?.name}`}
-        <ArrowRight
-          size={20}
-          strokeWidth={2.8}
-          className="transition-transform duration-150 group-hover:translate-x-1"
-        />
-      </button>
+      {/* continue CTA — the last (6th) result screen is now the final result
+          page (MY STATUS's own screen no longer appears in this flow), so it
+          shows MY STATUS's two actions instead of "다음"; every earlier
+          screen keeps the single "다음" CTA unchanged. */}
+      {isLast ? (
+        <div className="mt-8 flex w-full max-w-md flex-col items-center justify-center gap-3 sm:max-w-lg sm:flex-row">
+          <ToyButton className="w-full sm:w-auto" onClick={onMeetStatling}>
+            나의 Statling 만나러 가기
+            <ArrowRight size={20} strokeWidth={2.8} />
+          </ToyButton>
+          <ToyButton className="w-full sm:w-auto" variant="secondary" onClick={onReplay}>
+            <RotateCcw size={20} strokeWidth={2.6} />
+            다시 하기
+          </ToyButton>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={onNext}
+          className="group mt-8 inline-flex w-full max-w-md items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 font-display text-lg font-extrabold text-primary-foreground toy-border toy-shadow-lg transition-transform duration-150 hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none"
+        >
+          다음: {nextStat?.name}
+          <ArrowRight
+            size={20}
+            strokeWidth={2.8}
+            className="transition-transform duration-150 group-hover:translate-x-1"
+          />
+        </button>
+      )}
     </div>
   )
 }
