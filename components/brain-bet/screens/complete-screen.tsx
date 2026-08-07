@@ -8,10 +8,10 @@ import { RadarChart } from '@/components/brain-bet/radar-chart'
 import { StatBadge } from '@/components/brain-bet/stat-badge'
 import { useSound } from '@/hooks/use-sound'
 import { PLAY_ORDER, STATS, TOTAL_GAMES, type RawRecord, type StatId } from '@/lib/brain-bet'
-import { EGG_STAGE_MESSAGE, EGG_STAGE_MOTION } from '@/lib/egg-growth'
+import { EGG_STAGE_MESSAGE } from '@/lib/egg-growth'
 
-/** Fixed set of small-sparkle positions, sliced to however many a stage's EGG_STAGE_MOTION calls for. */
-const SPARKLE_POSITIONS = ['-left-3 -top-1', 'right-0 top-0', 'left-4 bottom-0']
+/** Egg size (px) when nested at the radar chart's center — small on purpose, the chart is the focal point now. */
+const CENTER_EGG_SIZE = 56
 
 interface CompleteScreenProps {
   statId: StatId
@@ -52,7 +52,6 @@ export function CompleteScreen({
   const nextStat = isLast ? null : STATS[PLAY_ORDER[index + 1]]
   /** How many of the 6 First Play games are done as of this screen — doubles as the Egg's growth stage. */
   const eggStage = index + 1
-  const motion = EGG_STAGE_MOTION[eggStage] ?? EGG_STAGE_MOTION[1]
   /** Stats discovered so far, in play order, through and including this round — drives the radar chart's progressive reveal. */
   const revealedStats = PLAY_ORDER.slice(0, index + 1)
   const { play } = useSound()
@@ -116,52 +115,38 @@ export function CompleteScreen({
         )}
       </div>
 
-      {/* egg growth teaser + accumulated stat radar, side by side on wider screens.
-          Egg card layout/size never changes across stages; only the egg's own
-          entrance motion (transform, not layout) and the decorative overlays
-          below vary, so nothing here ever shifts surrounding text/CTA. The
-          radar reuses the same `finals` values MY STATUS shows later, just
-          revealing one axis per completed game (see revealedStats above). */}
-      <div className="mt-6 flex w-full max-w-md flex-col items-center gap-6 rounded-2xl bg-card px-6 py-5 toy-border toy-shadow-sm sm:max-w-xl sm:flex-row sm:justify-center sm:gap-8 sm:px-8">
-        <div className="flex flex-col items-center gap-1.5">
-          <div className="relative" style={{ width: 92, height: 92 }}>
-            {motion.glow && (
+      {/* accumulated stat radar with the growing egg nested at its center.
+          The radar reuses the same `finals` values MY STATUS shows later,
+          revealing one axis per completed game (see revealedStats above);
+          the egg gives a very light one-shot wobble/shimmer each time a new
+          axis fills in (see RadarChart's centerSlot + the reveal-ray it
+          draws for `newlyRevealedStat`), instead of the old per-stage
+          glow/ring/sparkle set — those were tuned for a much larger egg off
+          to the side and would overwhelm this smaller, centered one. */}
+      <div className="mt-6 flex w-full max-w-md flex-col items-center gap-2 rounded-2xl bg-card px-6 py-6 toy-border toy-shadow-sm sm:max-w-lg sm:px-8">
+        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">누적 스탯</p>
+        <RadarChart
+          values={finals}
+          revealedStats={revealedStats}
+          newlyRevealedStat={statId}
+          compact
+          centerSlot={
+            <div
+              key={eggStage}
+              className="animate-egg-subtle-wobble relative"
+              style={{ width: CENTER_EGG_SIZE, height: CENTER_EGG_SIZE }}
+            >
               <span
-                className="animate-egg-glow-pulse pointer-events-none absolute inset-0 rounded-full"
-                style={{ boxShadow: '0 0 22px 8px var(--accent)' }}
+                className="animate-egg-subtle-shimmer pointer-events-none absolute inset-0 rounded-full"
+                style={{ boxShadow: '0 0 14px 5px var(--accent)' }}
                 aria-hidden="true"
               />
-            )}
-            {motion.ring && (
-              <span
-                className="animate-egg-impact-ring pointer-events-none absolute inset-0 rounded-full"
-                style={{ boxShadow: '0 0 0 3px var(--accent)' }}
-                aria-hidden="true"
-              />
-            )}
-            <EggImage key={eggStage} stage={eggStage} size={92} className={motion.animationClass} />
-            {SPARKLE_POSITIONS.slice(0, motion.sparkles).map((pos, i) => (
-              <span
-                key={pos}
-                className={`animate-sparkle-burst pointer-events-none absolute text-lg ${pos}`}
-                style={{ animationDelay: `${420 + i * 150}ms` }}
-                aria-hidden="true"
-              >
-                ✨
-              </span>
-            ))}
-          </div>
-          <p className="text-pretty text-sm font-bold text-foreground">{EGG_STAGE_MESSAGE[eggStage]}</p>
-          <p className="text-xs font-semibold text-muted-foreground">알 성장 {eggStage}/{TOTAL_GAMES}</p>
-        </div>
-
-        <div className="hidden w-px self-stretch bg-border sm:block" aria-hidden="true" />
-        <div className="h-px w-full max-w-[200px] bg-border sm:hidden" aria-hidden="true" />
-
-        <div className="flex w-full max-w-[240px] flex-col items-center gap-1">
-          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">누적 스탯</p>
-          <RadarChart values={finals} revealedStats={revealedStats} newlyRevealedStat={statId} compact />
-        </div>
+              <EggImage stage={eggStage} size={CENTER_EGG_SIZE} />
+            </div>
+          }
+        />
+        <p className="mt-2 text-pretty text-sm font-bold text-foreground">{EGG_STAGE_MESSAGE[eggStage]}</p>
+        <p className="text-xs font-semibold text-muted-foreground">알 성장 {eggStage}/{TOTAL_GAMES}</p>
       </div>
 
       {/* overall progress */}

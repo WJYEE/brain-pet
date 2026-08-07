@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { STATS, STAT_DISPLAY_ORDER, type StatId } from '@/lib/brain-bet'
 import { cn } from '@/lib/utils'
 
@@ -12,10 +12,12 @@ interface RadarChartProps {
    * every axis as before.
    */
   revealedStats?: StatId[]
-  /** The axis that was just revealed this render — gets a small pop-in highlight instead of appearing instantly. */
+  /** The axis that was just revealed this render — gets a small pop-in highlight plus a brief center-to-point reveal trace, instead of appearing instantly. */
   newlyRevealedStat?: StatId
-  /** Smaller badge/label sizing for tight layouts (e.g. next to the egg on CompleteScreen). */
+  /** Smaller badge/label sizing for tight layouts (e.g. CompleteScreen). */
   compact?: boolean
+  /** Small decoration rendered dead-center of the chart (e.g. the growing egg on CompleteScreen). Purely presentational — never intercepts pointer events. */
+  centerSlot?: ReactNode
   className?: string
 }
 
@@ -37,7 +39,14 @@ function pointAt(radius: number, angle: number) {
 }
 
 /** Six-axis radar / status chart built from computed geometry. */
-export function RadarChart({ values, revealedStats, newlyRevealedStat, compact, className }: RadarChartProps) {
+export function RadarChart({
+  values,
+  revealedStats,
+  newlyRevealedStat,
+  compact,
+  centerSlot,
+  className,
+}: RadarChartProps) {
   const stats = STAT_DISPLAY_ORDER
   const n = stats.length
   // undefined revealedStats means "reveal everything" — the original MY STATUS / my-stats behavior.
@@ -63,7 +72,7 @@ export function RadarChart({ values, revealedStats, newlyRevealedStat, compact, 
       <div
         className={cn(
           'relative mx-auto aspect-square w-full',
-          compact ? 'max-w-[260px]' : 'max-w-[440px]',
+          compact ? 'max-w-[300px] sm:max-w-[340px]' : 'max-w-[440px]',
         )}
       >
         <svg
@@ -103,6 +112,37 @@ export function RadarChart({ values, revealedStats, newlyRevealedStat, compact, 
             strokeWidth={1.4}
             strokeLinejoin="round"
           />
+          {/* newly revealed axis — a brief center-to-point trace so that stat
+              visibly "fills in" instead of just appearing. Purely a reveal
+              flourish drawn on top of the already-final polygon above, so it
+              never needs to stay in sync with anything after it fades out. */}
+          {(() => {
+            if (!newlyRevealedStat) return null
+            const idx = stats.indexOf(newlyRevealedStat)
+            if (idx === -1 || !isRevealed(newlyRevealedStat)) return null
+            const p = dataPts[idx]
+            const dist = Math.hypot(p.x - CENTER, p.y - CENTER)
+            if (dist <= 0.01) return null // stat measured at 0 — nothing to trace
+            return (
+              <line
+                x1={CENTER}
+                y1={CENTER}
+                x2={p.x}
+                y2={p.y}
+                stroke={`var(${STATS[newlyRevealedStat].colorVar})`}
+                strokeWidth={1.6}
+                strokeLinecap="round"
+                className="animate-radar-axis-fill"
+                style={
+                  {
+                    strokeDasharray: dist,
+                    strokeDashoffset: dist,
+                    '--radar-axis-len': dist,
+                  } as CSSProperties
+                }
+              />
+            )
+          })()}
           {/* data vertices — axes not yet discovered have no marker sitting at the collapsed center */}
           {dataPts.map((p, i) => {
             const id = stats[i]
@@ -133,7 +173,7 @@ export function RadarChart({ values, revealedStats, newlyRevealedStat, compact, 
               key={id}
               className={cn(
                 'absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 transition-opacity duration-300',
-                !revealed && 'opacity-40',
+                !revealed && 'opacity-25',
                 id === newlyRevealedStat && 'animate-record-pop',
               )}
               style={{ left: `${p.x}%`, top: `${p.y}%` }}
@@ -158,6 +198,12 @@ export function RadarChart({ values, revealedStats, newlyRevealedStat, compact, 
             </div>
           )
         })}
+
+        {centerSlot && (
+          <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+            {centerSlot}
+          </div>
+        )}
       </div>
     </div>
   )
