@@ -3,8 +3,8 @@ import { STATS, STAT_DISPLAY_ORDER, type StatId } from '@/lib/brain-bet'
 import { cn } from '@/lib/utils'
 
 interface RadarChartProps {
-  /** Stat values 0–100 keyed by stat id. */
-  values: Record<StatId, number>
+  /** Stat values 0–100 keyed by stat id. Missing/undefined — the whole object or individual keys — renders as 0 rather than throwing. */
+  values: Record<StatId, number> | null | undefined
   /**
    * Which axes count as "discovered" yet — used by the per-game result
    * screen (CompleteScreen) to build up the chart one axis at a time as the
@@ -43,12 +43,15 @@ export function RadarChart({ values, revealedStats, newlyRevealedStat, compact, 
   // undefined revealedStats means "reveal everything" — the original MY STATUS / my-stats behavior.
   const revealedSet = revealedStats ? new Set(revealedStats) : null
   const isRevealed = (id: StatId) => !revealedSet || revealedSet.has(id)
+  // `values` itself missing (not just a missing key) shouldn't crash the chart — render every axis as 0 instead.
+  const safeValues: Partial<Record<StatId, number>> = values ?? {}
+  const valueFor = (id: StatId) => safeValues[id] ?? 0
 
   const outer = stats.map((_, i) => pointAt(CHART_R, angleFor(i, n)))
   const dataPts = stats.map((id, i) => {
     // Axes not yet discovered stay collapsed at the center, regardless of
     // whatever value happens to be sitting in `values[id]`.
-    const v = isRevealed(id) ? Math.max(0, Math.min(100, values[id] ?? 0)) : 0
+    const v = isRevealed(id) ? Math.max(0, Math.min(100, valueFor(id))) : 0
     return pointAt((v / 100) * CHART_R, angleFor(i, n))
   })
 
@@ -150,7 +153,7 @@ export function RadarChart({ values, revealedStats, newlyRevealedStat, compact, 
                   compact ? 'text-xs' : 'text-sm',
                 )}
               >
-                {revealed ? Math.round(values[id] ?? 0) : '?'}
+                {revealed ? Math.round(valueFor(id)) : '?'}
               </span>
             </div>
           )
